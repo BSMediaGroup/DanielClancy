@@ -122,6 +122,81 @@ Browser/MCP rescan completed against the current live Wix pages before this refi
   - `cmsdata/wix/portfolio/cadset/`
   - `cmsdata/wix/portfolio/skpset/`
 
+## 2026-04-19 portfolio source audit
+
+### Source folders, files, and formats present
+
+- `cmsdata/wix/portfolio/bimset/`
+  - PNG, JPG, and PDF exports.
+  - Strongest matches to the service-centre redevelopment work, including `PNN_AR_DA.pdf`, page exports, canopy binder material, and rendered views.
+- `cmsdata/wix/portfolio/cadset/`
+  - Largest drawing-set source folder.
+  - JPG and PDF exports covering UPSS packages, residential work, Curtin Creative Quarter detail sheets, ACCE structural sets, and planning/traffic samples.
+- `cmsdata/wix/portfolio/skpset/`
+  - PNG and JPG concept exports.
+  - Most useful for the Curtin Creative Quarter concept work, especially pod and gallery visualisations.
+- `cmsdata/wix/portfolio/general/`
+  - Broad unsorted PDF material.
+  - Useful as retained reference, but not clean enough for immediate public promotion without more manual QA.
+- `cmsdata/wix/collection-tables/Design+Portfiolo.csv`
+  - Published-title list, company metadata, date strings, discipline arrays, software arrays, and Wix image references.
+- `cmsdata/wix/collection-tables/Legal+Disclaimers.csv`
+  - Useful later for disclaimer parity and future CMS migration work.
+- `cmsdata/wix/cv/`
+  - Current PDF CV asset used by the public site.
+
+### Clear project and grouping opportunities
+
+- `Ampol Highway Service Centre Redevelopment`
+  - Eastern Creek and Pheasants Nest read as the strongest BIM-backed redevelopment entries.
+- `Ampol (Caltex) Pump System Upgrades`
+  - Wyoming, North Richmond, Homebush, Brownsville, Grafton, and Beacon Hill form a credible multi-site archive family.
+- `Curtin Creative Quarter`
+  - Canopy concept, outdoor study pod concept, and container gallery concept can be surfaced as separate but related concept records.
+- Residential / landscape documentation
+  - `Spratt Residence - Proposed Addition` and `Cottesloe Beach House - Landscape Design`.
+- Urban planning / coordination
+  - `Wungong Urban Water Master Plan` and `Cue Roadhouse Traffic Management`.
+- Structural archive potential
+  - `ACCE_Page_*` and related PDFs appear valuable, but need a more careful metadata pass before public promotion.
+
+### Repeated disciplines and types observed
+
+- Published discipline arrays in the Wix table cluster mainly around:
+  - `["Architecture","General"]`
+  - `["General","Landscape"]`
+  - `["General","Urban Planning"]`
+- Repeated documentation types visible in filenames and PDF sets:
+  - redevelopment packages
+  - UPSS / fuel-system upgrade packages
+  - residence additions
+  - landscape drawing sets
+  - master-planning packages
+  - traffic-management plans
+  - concept visualisations and mixed detail sheets
+
+### Promoted into the site in this milestone
+
+- Featured archive entries:
+  - Pheasants Nest redevelopment
+  - Eastern Creek redevelopment
+  - Wungong Urban Water Master Plan
+- Broader archive entries:
+  - Wyoming, North Richmond, Homebush, Brownsville, Grafton, and Beacon Hill UPSS packages
+  - Spratt Residence
+  - Cottesloe Beach House
+  - Cue Roadhouse Traffic Management
+  - Curtin Creative Quarter canopy, study pod, and container gallery concepts
+- Content-model additions:
+  - location, sector, studio/company, subtype tags, software lists, source-folder references, source-file lists, and sensitivity notes
+
+### Deferred from the archive pass
+
+- ACCE structural sets and any other structural archive items not yet given clean public-facing summaries.
+- `general/GENERAL - UNSORTED.pdf` and other unsorted material requiring manual interpretation before publication.
+- Any deep-linked project routes or downloadable public document exposure beyond the current curated image-led presentation.
+- Full reconciliation between every Wix table row and every retained image/PDF export.
+
 ## Migrated in this milestone
 
 - Route scaffold for all required public and hidden pages.

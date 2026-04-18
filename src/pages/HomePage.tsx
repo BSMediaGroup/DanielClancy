@@ -7,6 +7,7 @@ import {
   featuredProjects,
   focusAreas,
   homeMetrics,
+  portfolioArchive,
   platformList,
   siteMeta,
   softwareGroups,
@@ -175,7 +176,7 @@ export function HomePage() {
       <Section
         eyebrow="Selected work"
         title="Curated project documentation rather than a generic gallery."
-        intro="The live Wix portfolio is image-led and filter-driven. This home view keeps the strongest samples visible while handing deeper review to the portfolio page."
+        intro={`The live Wix portfolio is image-led and filter-driven. This home view keeps the strongest samples visible while handing ${portfolioArchive.length} curated archive entries into the portfolio page.`}
         className="section--deep"
       >
         <div className="project-grid project-grid--featured">
@@ -190,7 +191,7 @@ export function HomePage() {
                 <h3>{project.title}</h3>
                 <p>{project.summary}</p>
                 <div className="tag-grid tag-grid--compact">
-                  {project.platforms.concat(project.disciplines).map((item) => (
+                  {project.software.concat(project.disciplines).map((item) => (
                     <span key={`${project.title}-${item}`} className="tag tag--muted">
                       {item}
                     </span>
