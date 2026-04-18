@@ -40,6 +40,10 @@ export function WatchPage() {
               experience. It is reserved for personal media, streaming, and social
               link aggregation work that may arrive later.
             </p>
+            <p className="hero__support">
+              It is visually aligned with the public-site system, but still kept
+              clearly outside the recruiter-facing flow.
+            </p>
             <div className="hero__actions">
               <Link className="button button--primary" to="/">
                 Return to main site
@@ -63,7 +67,7 @@ export function WatchPage() {
       >
         <div className="utility-grid">
           {socialBlocks.map((item) => (
-            <article key={item.title} className="surface utility-card">
+            <article key={item.title} className="surface surface--soft utility-card">
               <p className="utility-card__status">{item.status}</p>
               <h3>{item.title}</h3>
               <p>{item.body}</p>
@@ -80,7 +84,7 @@ export function WatchPage() {
         <div className="utility-gallery">
           {["Latest upload slot", "Recent livestream slot", "Archive highlight slot"].map(
             (item) => (
-              <article key={item} className="surface utility-gallery__item">
+              <article key={item} className="surface surface--soft utility-gallery__item">
                 <span className="utility-badge">Placeholder</span>
                 <h3>{item}</h3>
                 <p>

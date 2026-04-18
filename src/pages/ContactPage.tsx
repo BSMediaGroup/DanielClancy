@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { siteMeta } from "../content/siteContent";
+import { contactUseCases, siteMeta } from "../content/siteContent";
 
 export function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -19,20 +19,21 @@ export function ContactPage() {
         path="/contact"
       />
 
-      <section className="hero hero--subpage">
-        <div className="container hero__grid">
+      <section className="hero hero--subpage hero--contact">
+        <div className="container hero__grid hero__grid--contact">
           <div className="hero__copy reveal">
             <p className="hero__eyebrow">Direct contact</p>
             <h1>Contact Daniel Clancy</h1>
             <p className="hero__summary">
-              This route keeps the live site’s direct-contact emphasis while
-              staying explicit that form delivery wiring is a later milestone.
+              A direct, sparse contact route informed by the live site: details
+              first, enquiry scaffold second, and no unnecessary marketing layer.
             </p>
           </div>
 
-          <div className="surface reveal reveal--delay">
+          <div className="surface surface--soft reveal reveal--delay">
             <p className="contact-card__label">Primary contact details</p>
-            <h2>{siteMeta.contact.email}</h2>
+            <h2>{siteMeta.name}</h2>
+            <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
             <a href="tel:+61458747524">{siteMeta.contact.phone}</a>
             <p>{siteMeta.contact.postal}</p>
             <p>{siteMeta.contact.location}</p>
@@ -41,23 +42,23 @@ export function ContactPage() {
       </section>
 
       <Section
-        eyebrow="Enquiry form"
-        title="Presentable now, delivery integration later."
-        intro="For this milestone the form captures layout, tone, and field structure only. Email and phone remain the real contact channels."
+        eyebrow="Professional enquiries"
+        title="Clear contact details with a polished form scaffold."
+        intro="For this milestone the form remains local-only. Email and phone remain the real contact channels."
       >
-        <div className="two-column-grid">
+        <div className="two-column-grid two-column-grid--contact">
           <form className="surface form-shell" onSubmit={handleSubmit}>
             <label>
               Name
-              <input name="name" type="text" placeholder="Your name" />
+              <input name="name" type="text" placeholder="John Smith" />
             </label>
             <label>
               Email
-              <input name="email" type="email" placeholder="name@company.com" />
+              <input name="email" type="email" placeholder="hello@example.com" />
             </label>
             <label>
               Company
-              <input name="company" type="text" placeholder="Organisation" />
+              <input name="company" type="text" placeholder="Company name" />
             </label>
             <label>
               Message
@@ -72,18 +73,29 @@ export function ContactPage() {
             </button>
             <p className="form-note">
               {submitted
-                ? "Form capture is intentionally local-only in this milestone. Use email or phone for real contact."
-                : "Submission handling is not yet wired to email, CMS, or CRM infrastructure."}
+                ? "Submission remains local-only in this milestone. Use email or phone for active contact."
+                : "Delivery wiring is intentionally deferred until the employer-facing public foundation is settled."}
             </p>
           </form>
 
-          <div className="surface">
-            <h3>Best use cases for this site</h3>
-            <ul className="bullet-list">
-              <li>Recruiter and hiring manager review</li>
-              <li>CV and experience verification</li>
-              <li>Project sample and drafting capability assessment</li>
-            </ul>
+          <div className="contact-sidebar">
+            <div className="surface surface--soft">
+              <p className="contact-card__label">Best use cases</p>
+              <h3>How this site is intended to be used</h3>
+              <ul className="bullet-list">
+                {contactUseCases.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="surface surface--soft">
+              <p className="contact-card__label">Response path</p>
+              <p>
+                The current public build is designed for direct outreach rather
+                than a routed support queue or CRM workflow.
+              </p>
+            </div>
           </div>
         </div>
       </Section>

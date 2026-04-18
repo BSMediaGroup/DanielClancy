@@ -17,6 +17,17 @@ export type PortfolioItem = {
   image: string;
 };
 
+export type HighlightStat = {
+  label: string;
+  value: string;
+  note: string;
+};
+
+export type SoftwareGroup = {
+  label: string;
+  items: string[];
+};
+
 export const siteMeta = {
   name: "Daniel Clancy",
   role: "Design Consultant",
@@ -29,8 +40,26 @@ export const siteMeta = {
   heroSummary:
     "With 17 years of drafting and design experience since 2008, Daniel Clancy has contributed to structural, architectural, urban, landscape, and infrastructure work for firms including GHD, Urbis, PLACE Laboratory, Richmond+Ross, and Meriton Group.",
   heroSupport:
-    "This first rebuild milestone focuses on a cleaner, employer-facing foundation for CV review, project sampling, and direct contact.",
+    "The current public build is focused on employer-facing review: CV access, selected project documentation, software fluency, and direct contact without the noise of a broader personal platform.",
 };
+
+export const homeMetrics: HighlightStat[] = [
+  {
+    label: "Experience depth",
+    value: "17 years",
+    note: "Drafting and design documentation work since 2008.",
+  },
+  {
+    label: "Primary stack",
+    value: "Revit / AutoCAD",
+    note: "Core production tools supported by broader documentation software.",
+  },
+  {
+    label: "Sector range",
+    value: "Architecture / Structural / Urban",
+    note: "Coverage across building, landscape, infrastructure, and master planning work.",
+  },
+];
 
 export const platformList = [
   "Autodesk AutoCAD",
@@ -41,12 +70,36 @@ export const platformList = [
   "QGIS",
 ];
 
+export const softwareGroups: SoftwareGroup[] = [
+  {
+    label: "Drafting and BIM",
+    items: ["Autodesk AutoCAD", "Autodesk Revit"],
+  },
+  {
+    label: "Presentation and coordination",
+    items: ["Adobe Creative Cloud", "Microsoft Office"],
+  },
+  {
+    label: "Spatial and modelling support",
+    items: ["Trimble SketchUp", "QGIS"],
+  },
+];
+
 export const focusAreas = [
   "Architectural drafting",
   "Structural documentation",
   "Urban and landscape documentation",
   "Revit and AutoCAD production",
   "Tender and construction packages",
+];
+
+export const featuredEmployers = [
+  "Richmond+Ross",
+  "Meriton Group",
+  "Leffler Simes Architects",
+  "PLACE Laboratory",
+  "Urbis",
+  "GHD",
 ];
 
 export const experienceItems: ExperienceItem[] = [
@@ -216,17 +269,26 @@ export const featuredProjects: PortfolioItem[] = [
   },
 ];
 
+export const portfolioDisclaimer =
+  "Displayed materials represent selected work examples and may reflect different levels of completion. Sensitive, classified, or otherwise protected documents remain excluded for security and intellectual-property reasons.";
+
+export const contactUseCases = [
+  "Recruiter and hiring manager review",
+  "CV and employment-history follow-up",
+  "Project sample and drafting capability assessment",
+];
+
 export const migrationScope = {
   now: [
     "Primary route structure and navigation for Home, CV, Portfolio, and Contact.",
-    "Truthful first-pass employment timeline and featured work seeded from Wix-exported source data.",
-    "Professional dark visual system using local Recharge, Sui Generis, and SUSE Mono font assets.",
+    "Refined visual system informed by the live Wix site's industrial dark composition and divider rhythm.",
+    "Truthful employment timeline and curated work selection seeded from Wix-exported source data.",
     "Hidden /watch and /donate scaffolds isolated from primary SEO and navigation.",
   ],
   later: [
-    "Full portfolio pagination, filtering, and exhaustive project migration.",
+    "Full portfolio pagination, filtering, and broader project migration.",
     "Contact form delivery wiring, analytics, and production CMS/admin tooling.",
     "YouTube ingestion for /watch and payment integrations for /donate.",
-    "Refined content QA against all PDF/image source sets and final copy polish.",
+    "Final content QA against all PDF/image source sets and recruiter-facing copy polish.",
   ],
 };

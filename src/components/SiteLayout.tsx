@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
+import { siteMeta } from "../content/siteContent";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -14,7 +15,7 @@ export function SiteLayout() {
         <div className="container site-header__inner">
           <NavLink className="brand" to="/">
             <span className="brand__eyebrow">Daniel Clancy</span>
-            <span className="brand__title">Drafting and Design</span>
+            <span className="brand__title">Design Consultant</span>
           </NavLink>
 
           <nav aria-label="Primary" className="site-nav">
@@ -40,18 +41,32 @@ export function SiteLayout() {
 
       <footer className="site-footer">
         <div className="container site-footer__inner">
-          <div>
-            <p className="footer-label">Professional presentation</p>
+          <div className="site-footer__primary">
+            <p className="footer-label">Employer-facing public site</p>
             <p className="footer-copy">
-              Employer-facing rebuild scaffold for DanielClancy.net, prepared for
-              Cloudflare Pages static hosting.
+              Refined public front end for CV review, portfolio assessment, and
+              direct hiring enquiries.
             </p>
           </div>
 
           <div className="footer-contact">
-            <a href="mailto:mail@danielclancy.net">mail@danielclancy.net</a>
-            <a href="tel:+61458747524">+61 458 747 524</a>
-            <span>Potts Point, New South Wales</span>
+            <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
+            <a href="tel:+61458747524">{siteMeta.contact.phone}</a>
+            <span>{siteMeta.contact.location}</span>
+          </div>
+        </div>
+
+        <div className="container site-footer__utility">
+          <div>
+            <p className="footer-label">Secondary utility routes</p>
+            <p className="footer-copy footer-copy--muted">
+              Kept outside the primary navigation and excluded from indexing.
+            </p>
+          </div>
+
+          <div className="footer-utility-links" aria-label="Secondary utility routes">
+            <Link to="/watch">Watch</Link>
+            <Link to="/donate">Donate</Link>
           </div>
         </div>
       </footer>

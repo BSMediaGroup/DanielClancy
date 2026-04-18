@@ -36,6 +36,10 @@ export function DonatePage() {
               This route is intentionally isolated from the employer-facing site
               and exists only as a future support-page foundation.
             </p>
+            <p className="hero__support">
+              It remains visually related to the public build without being treated
+              as part of the professional hiring surface.
+            </p>
             <div className="hero__actions">
               <Link className="button button--primary" to="/">
                 Return to main site
@@ -43,7 +47,7 @@ export function DonatePage() {
             </div>
           </div>
 
-          <div className="surface reveal reveal--delay">
+          <div className="surface surface--soft reveal reveal--delay">
             <p className="contact-card__label">Integration status</p>
             <h2>Not connected yet</h2>
             <p>
@@ -61,7 +65,7 @@ export function DonatePage() {
       >
         <div className="utility-grid">
           {supportOptions.map((item) => (
-            <article key={item.title} className="surface utility-card">
+            <article key={item.title} className="surface surface--soft utility-card">
               <span className="utility-badge">Placeholder</span>
               <h3>{item.title}</h3>
               <p>{item.body}</p>

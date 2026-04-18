@@ -17,6 +17,7 @@ export function Section({
 }: SectionProps) {
   return (
     <section className={`section ${className}`.trim()}>
+      <div className="section__band" aria-hidden="true" />
       <div className="container">
         <div className="section-heading">
           {eyebrow ? <p className="section-heading__eyebrow">{eyebrow}</p> : null}
