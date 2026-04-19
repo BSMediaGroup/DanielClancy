@@ -375,8 +375,8 @@ code {
 
 .hero__copy h1 {
   max-width: 10ch;
-  font-size: clamp(2.7rem, 6vw, 5.5rem);
-  line-height: 0.98;
+  font-size: clamp(2.15rem, 4.8vw, 4.15rem);
+  line-height: 1.02;
 }
 
 .hero__copy--home h1 {
@@ -643,7 +643,7 @@ code {
 }
 
 .section-heading h2 {
-  font-size: clamp(1.85rem, 3.4vw, 3rem);
+  font-size: clamp(1.55rem, 2.8vw, 2.35rem);
 }
 
 .section-actions {
@@ -1027,6 +1027,29 @@ code {
   gap: 0.55rem;
 }
 
+.portfolio-evidence-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.9rem;
+}
+
+.portfolio-evidence-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 38%),
+    rgba(11, 14, 16, 0.9);
+}
+
+.portfolio-evidence-card strong {
+  font-family: "Recharge", sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .portfolio-detail__footer {
   display: grid;
   gap: 0.5rem;
@@ -1228,7 +1251,7 @@ code {
   }
 
   .hero__copy h1 {
-    font-size: clamp(2.25rem, 12vw, 3.4rem);
+    font-size: clamp(1.85rem, 9vw, 2.7rem);
   }
 
   .site-header__inner {

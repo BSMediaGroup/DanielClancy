@@ -226,3 +226,4 @@ Browser/MCP rescan completed against the current live Wix pages before this refi
 - This repo is the public Cloudflare Pages front end only.
 - Admin/dashboard work should stay in the separate admin repository and be integrated later through a controlled content pipeline.
 - Raw Wix export folders remain in place as source reference material and should not be removed until a replacement content workflow is proven.
+- Tranche-specific archive audits should be preserved as separate notes when they introduce new public promotions; see `docs/portfolio-tranche-2-audit.md`.

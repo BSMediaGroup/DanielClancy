@@ -1,11 +1,73 @@
 import { useState } from "react";
 import { Section } from "../components/Section";
+import {
+  featuredProjects,
+  portfolioArchive,
+  portfolioDisclaimer,
+  type PortfolioItem,
+} from "../content/siteContent";
 import { Seo } from "../components/Seo";
-import { featuredProjects, portfolioArchive, portfolioDisclaimer } from "../content/siteContent";
 
 type ViewMode = "all" | "featured";
 
-const disciplineOrder = ["Architecture", "Landscape", "Urban Planning", "General"];
+const disciplineOrder = ["Architecture", "Structural", "Landscape", "Urban Planning", "General"];
+const familyOrder = [
+  "Ampol highway service centres",
+  "Ampol UPSS upgrades",
+  "Curtin Creative Quarter",
+  "ACCE structural archive",
+  "Urban master planning",
+  "Urbis public-domain details",
+  "Traffic management",
+  "Residential additions",
+  "Residential landscape",
+  "GHD buildings archive",
+];
+
+function getPrimaryDiscipline(disciplines: string[]) {
+  return disciplines.find((discipline) => discipline !== "General") ?? disciplines[0];
+}
+
+function getProjectFamily(project: PortfolioItem) {
+  if (project.projectFamily) {
+    return project.projectFamily;
+  }
+
+  if (project.title.includes("Ampol Highway Service Centre")) {
+    return "Ampol highway service centres";
+  }
+
+  if (project.title.includes("Pump System Upgrades")) {
+    return "Ampol UPSS upgrades";
+  }
+
+  if (project.title.includes("Curtin Creative Quarter")) {
+    return "Curtin Creative Quarter";
+  }
+
+  if (project.title.includes("Spratt Residence")) {
+    return "Residential additions";
+  }
+
+  if (project.title.includes("Cottesloe Beach House")) {
+    return "Residential landscape";
+  }
+
+  if (project.title.includes("Wungong")) {
+    return "Urban master planning";
+  }
+
+  if (project.title.includes("Cue Roadhouse")) {
+    return "Traffic management";
+  }
+
+  return getPrimaryDiscipline(project.disciplines);
+}
+
+function getDocumentationType(project: PortfolioItem) {
+  return project.documentationType ?? project.subtypes[0] ?? "Documented archive sample";
+}
+
 const allDisciplines = Array.from(
   new Set(
     portfolioArchive.flatMap((project) =>
@@ -13,18 +75,33 @@ const allDisciplines = Array.from(
     ),
   ),
 );
-const allSoftware = Array.from(
-  new Set(portfolioArchive.flatMap((project) => project.software)),
-);
+const allSoftware = Array.from(new Set(portfolioArchive.flatMap((project) => project.software)));
+const allProjectFamilies = Array.from(
+  new Set(portfolioArchive.map((project) => getProjectFamily(project))),
+).sort((left, right) => {
+  const leftIndex = familyOrder.indexOf(left);
+  const rightIndex = familyOrder.indexOf(right);
 
-function getPrimaryDiscipline(disciplines: string[]) {
-  return disciplines.find((discipline) => discipline !== "General") ?? disciplines[0];
-}
+  if (leftIndex === -1 && rightIndex === -1) {
+    return left.localeCompare(right);
+  }
+
+  if (leftIndex === -1) {
+    return 1;
+  }
+
+  if (rightIndex === -1) {
+    return -1;
+  }
+
+  return leftIndex - rightIndex;
+});
 
 export function PortfolioPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("all");
   const [activeDiscipline, setActiveDiscipline] = useState<string>("All disciplines");
   const [activeSoftware, setActiveSoftware] = useState<string>("All software");
+  const [activeFamily, setActiveFamily] = useState<string>("All families");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(featuredProjects[0]?.id ?? "");
 
   const visibleProjects = portfolioArchive.filter((project) => {
@@ -43,6 +120,10 @@ export function PortfolioPage() {
       return false;
     }
 
+    if (activeFamily !== "All families" && getProjectFamily(project) !== activeFamily) {
+      return false;
+    }
+
     return true;
   });
 
@@ -53,12 +134,10 @@ export function PortfolioPage() {
   const selectedProject =
     visibleProjects.find((project) => project.id === selectedProjectId) ?? visibleProjects[0] ?? null;
 
-  const groupedArchive = disciplineOrder
-    .map((discipline) => ({
-      discipline,
-      items: visibleArchive.filter(
-        (project) => getPrimaryDiscipline(project.disciplines) === discipline,
-      ),
+  const groupedArchive = allProjectFamilies
+    .map((family) => ({
+      family,
+      items: visibleArchive.filter((project) => getProjectFamily(project) === family),
     }))
     .filter((group) => group.items.length > 0);
 
@@ -76,13 +155,13 @@ export function PortfolioPage() {
             <p className="hero__eyebrow">Curated project archive</p>
             <h1>Portfolio</h1>
             <p className="hero__summary">
-              A broader recruiter-facing archive drawn from the retained Wix source
-              folders: featured documentation first, grouped archive second, and
-              project metadata kept factual and restrained.
+              A broader recruiter-facing archive drawn from retained Wix source folders,
+              with stronger structural and unsorted-sheet coverage, grouped project
+              families, and evidence shown as documentation rather than sales copy.
             </p>
             <p className="hero__support">
-              This pass expands beyond the first teaser grid into a more systematic
-              archive of redevelopment, planning, landscape, and concept work.
+              Metadata remains intentionally restrained. Where titleblock or table data is
+              incomplete, the archive stays neutral and sheet-led.
             </p>
 
             <div className="archive-stat-strip">
@@ -92,14 +171,14 @@ export function PortfolioPage() {
                 <small>Curated from retained local source sets.</small>
               </div>
               <div>
-                <span>Featured evidence</span>
-                <strong>{featuredProjects.length}</strong>
-                <small>Kept visually prominent for faster review.</small>
+                <span>Project families</span>
+                <strong>{allProjectFamilies.length}</strong>
+                <small>Grouped to keep repeated sets legible.</small>
               </div>
               <div>
-                <span>Source folders</span>
-                <strong>4</strong>
-                <small>`bimset`, `cadset`, `skpset`, and table exports.</small>
+                <span>Featured evidence</span>
+                <strong>{featuredProjects.length}</strong>
+                <small>Kept prominent for faster review.</small>
               </div>
             </div>
           </div>
@@ -124,6 +203,29 @@ export function PortfolioPage() {
                   >
                     Featured only
                   </button>
+                </div>
+              </div>
+
+              <div>
+                <span className="filter-stack__label">Project family</span>
+                <div className="filter-chip-row">
+                  <button
+                    className={`filter-chip${activeFamily === "All families" ? " filter-chip--active" : ""}`}
+                    type="button"
+                    onClick={() => setActiveFamily("All families")}
+                  >
+                    All families
+                  </button>
+                  {allProjectFamilies.map((item) => (
+                    <button
+                      key={item}
+                      className={`filter-chip${activeFamily === item ? " filter-chip--active" : ""}`}
+                      type="button"
+                      onClick={() => setActiveFamily(item)}
+                    >
+                      {item}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -215,6 +317,10 @@ export function PortfolioPage() {
                   </div>
                   <h3>{project.title}</h3>
                   <p>{project.summary}</p>
+                  <div className="project-card__meta-list">
+                    <span>{getProjectFamily(project)}</span>
+                    <span>{getDocumentationType(project)}</span>
+                  </div>
                   <div className="tag-grid tag-grid--compact">
                     {project.software.concat(project.subtypes.slice(0, 2)).map((item) => (
                       <span key={`${project.id}-${item}`} className="tag tag--muted">
@@ -230,7 +336,7 @@ export function PortfolioPage() {
           <div className="surface surface--soft archive-empty-state">
             <p className="contact-card__label">Featured set</p>
             <h3>No featured projects match the current filters.</h3>
-            <p>Reset the discipline or software controls to restore the lead samples.</p>
+            <p>Reset the family, discipline, or software controls to restore the lead samples.</p>
           </div>
         )}
       </Section>
@@ -268,6 +374,14 @@ export function PortfolioPage() {
                   <strong>{selectedProject.studio.join(" / ")}</strong>
                 </div>
                 <div>
+                  <span>Project family</span>
+                  <strong>{getProjectFamily(selectedProject)}</strong>
+                </div>
+                <div>
+                  <span>Documentation type</span>
+                  <strong>{getDocumentationType(selectedProject)}</strong>
+                </div>
+                <div>
                   <span>Discipline</span>
                   <strong>{selectedProject.disciplines.join(" / ")}</strong>
                 </div>
@@ -287,6 +401,12 @@ export function PortfolioPage() {
                     <strong>{selectedProject.sector}</strong>
                   </div>
                 ) : null}
+                {selectedProject.sourceConfidence ? (
+                  <div>
+                    <span>Source confidence</span>
+                    <strong>{selectedProject.sourceConfidence}</strong>
+                  </div>
+                ) : null}
               </div>
 
               <div className="portfolio-detail__tags">
@@ -296,6 +416,21 @@ export function PortfolioPage() {
                   </span>
                 ))}
               </div>
+
+              {selectedProject.evidenceAssets?.length ? (
+                <div className="portfolio-evidence-strip">
+                  {selectedProject.evidenceAssets.map((asset) => (
+                    <article
+                      key={`${selectedProject.id}-${asset.path}`}
+                      className="portfolio-evidence-card"
+                    >
+                      <p className="contact-card__label">{asset.kind}</p>
+                      <strong>{asset.label}</strong>
+                      <code>{asset.path}</code>
+                    </article>
+                  ))}
+                </div>
+              ) : null}
 
               <div className="portfolio-detail__columns">
                 <div className="surface surface--soft">
@@ -336,54 +471,67 @@ export function PortfolioPage() {
 
       <Section
         eyebrow="Broader archive"
-        title="Grouped archive sections with clearer documentation cues."
-        intro="The remaining work is grouped by its primary published discipline so the archive reads as a professional record instead of an undifferentiated gallery."
+        title="Grouped project families with clearer documentation cues."
+        intro="Repeated studies, upgrade sets, and sheet-led records are grouped by project family so the archive reads as a professional record instead of an undifferentiated gallery."
       >
         {groupedArchive.length > 0 ? (
           <div className="archive-groups">
-            {groupedArchive.map((group) => (
-              <div key={group.discipline} className="archive-group">
-                <div className="archive-group__heading">
-                  <div>
-                    <p className="contact-card__label">Discipline group</p>
-                    <h3>{group.discipline}</h3>
-                  </div>
-                  <span>{group.items.length} surfaced item{group.items.length === 1 ? "" : "s"}</span>
-                </div>
+            {groupedArchive.map((group) => {
+              const groupDisciplines = Array.from(
+                new Set(
+                  group.items
+                    .map((project) => getPrimaryDiscipline(project.disciplines))
+                    .sort((left, right) => disciplineOrder.indexOf(left) - disciplineOrder.indexOf(right)),
+                ),
+              );
 
-                <div className="project-grid">
-                  {group.items.map((project) => (
-                    <button
-                      key={project.id}
-                      type="button"
-                      className={`project-card project-card--interactive${selectedProject?.id === project.id ? " project-card--selected" : ""}`}
-                      onClick={() => setSelectedProjectId(project.id)}
-                    >
-                      <img src={project.image} alt={project.title} loading="lazy" />
-                      <div className="project-card__body">
-                        <div className="project-card__header">
-                          <p className="project-card__meta">{project.client}</p>
-                          <span className="project-card__year">{project.year}</span>
+              return (
+                <div key={group.family} className="archive-group">
+                  <div className="archive-group__heading">
+                    <div>
+                      <p className="contact-card__label">Project family</p>
+                      <h3>{group.family}</h3>
+                    </div>
+                    <span>
+                      {group.items.length} surfaced item{group.items.length === 1 ? "" : "s"} /{" "}
+                      {groupDisciplines.join(" / ")}
+                    </span>
+                  </div>
+
+                  <div className="project-grid">
+                    {group.items.map((project) => (
+                      <button
+                        key={project.id}
+                        type="button"
+                        className={`project-card project-card--interactive${selectedProject?.id === project.id ? " project-card--selected" : ""}`}
+                        onClick={() => setSelectedProjectId(project.id)}
+                      >
+                        <img src={project.image} alt={project.title} loading="lazy" />
+                        <div className="project-card__body">
+                          <div className="project-card__header">
+                            <p className="project-card__meta">{project.client}</p>
+                            <span className="project-card__year">{project.year}</span>
+                          </div>
+                          <h3>{project.title}</h3>
+                          <p>{project.summary}</p>
+                          <div className="project-card__meta-list">
+                            <span>{getDocumentationType(project)}</span>
+                            <span>{project.studio.join(" / ")}</span>
+                          </div>
+                          <div className="tag-grid tag-grid--compact">
+                            {project.subtypes.slice(0, 3).map((item) => (
+                              <span key={`${project.id}-${item}`} className="tag tag--muted">
+                                {item}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <h3>{project.title}</h3>
-                        <p>{project.summary}</p>
-                        <div className="project-card__meta-list">
-                          <span>{project.software.join(" / ")}</span>
-                          <span>{project.studio.join(" / ")}</span>
-                        </div>
-                        <div className="tag-grid tag-grid--compact">
-                          {project.subtypes.slice(0, 3).map((item) => (
-                            <span key={`${project.id}-${item}`} className="tag tag--muted">
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="surface surface--soft archive-empty-state">

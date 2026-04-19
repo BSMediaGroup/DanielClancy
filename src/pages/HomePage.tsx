@@ -4,8 +4,8 @@ import { Seo } from "../components/Seo";
 import {
   experienceItems,
   featuredEmployers,
-  featuredProjects,
   focusAreas,
+  homeSpotlightProjects,
   homeMetrics,
   portfolioArchive,
   platformList,
@@ -14,7 +14,7 @@ import {
 } from "../content/siteContent";
 
 export function HomePage() {
-  const spotlightProjects = featuredProjects.slice(0, 3);
+  const spotlightProjects = homeSpotlightProjects;
   const recentExperience = experienceItems.slice(0, 4);
 
   return (
@@ -176,7 +176,7 @@ export function HomePage() {
       <Section
         eyebrow="Selected work"
         title="Curated project documentation rather than a generic gallery."
-        intro={`The live Wix portfolio is image-led and filter-driven. This home view keeps the strongest samples visible while handing ${portfolioArchive.length} curated archive entries into the portfolio page.`}
+        intro={`The live Wix portfolio is image-led and filter-driven. This home view keeps a deliberately mixed sample visible while handing ${portfolioArchive.length} curated archive entries into the portfolio page.`}
         className="section--deep"
       >
         <div className="project-grid project-grid--featured">

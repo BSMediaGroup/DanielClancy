@@ -1,4 +1,23 @@
-CURRENT VER= 0.1.2-alpha / PENDING VER= 0.1.3-alpha
+CURRENT VER= 0.1.3-alpha / PENDING VER= 0.1.4-alpha
+
+## 0.1.3-alpha
+
+### Technical
+
+- Audited the retained structural, ACCE, and unsorted Wix portfolio materials and added a tranche-specific migration note in `docs/portfolio-tranche-2-audit.md`.
+- Expanded the portfolio content model with optional project-family labels, documentation types, source-confidence markers, and evidence-asset arrays.
+- Promoted four additional source-verifiable archive entries from the retained ACCE, GHD, and unsorted sheet exports while keeping metadata conservative.
+- Reworked `/portfolio` to support project-family filtering, grouped archive sections by family, stronger detail metadata, and inline evidence-strip presentation.
+- Curated the home-page selected-work strip so it better represents the broader archive without overloading the landing page.
+- Reduced oversized shared title scaling and tightened responsive handling for archive controls, detail blocks, and evidence cards.
+- Copied tranche-2 verified sheet images into `public/media/portfolio/` for static hosting compatibility.
+- Bumped the package version to `0.1.3-alpha`.
+
+### Human-readable
+
+- The public portfolio now covers more of the retained structural and unsorted source material without slipping into guesswork.
+- Recruiters can see clearer project-family context, stronger metadata blocks, and sheet-level evidence for the newly promoted archive records.
+- Oversized page titles have been pulled back so the site reads more like a professional portfolio and less like a draft splash screen.
 
 ## 0.1.0-alpha
 

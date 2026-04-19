@@ -25,7 +25,7 @@ This repository holds the public website foundation for Daniel Clancy's professi
 | --- | --- | --- |
 | `/` | Employer-facing landing page with summary, capabilities, experience snapshot, and featured work. | Yes |
 | `/cv` | Downloadable CV access and employment timeline. | Yes |
-| `/portfolio` | Curated first-pass project showcase. | Yes |
+| `/portfolio` | Curated multi-tranche project archive with grouped evidence and restrained metadata. | Yes |
 | `/contact` | Direct contact details and form scaffold. | Yes |
 | `/watch` | Hidden utility/social-media scaffold for future channel integration. | No |
 | `/donate` | Hidden utility support-page scaffold for future Stripe/PayPal flows. | No |
@@ -99,7 +99,8 @@ DanielClancy/
 │     ├─ cv/
 │     └─ portfolio/
 ├─ docs/
-│  └─ migration-notes.md
+│  ├─ migration-notes.md
+│  └─ portfolio-tranche-2-audit.md
 ├─ public/
 │  ├─ assets/fonts/
 │  ├─ docs/Daniel_Clancy_CV_2026.pdf
@@ -131,6 +132,7 @@ DanielClancy/
 - Production-ready public scaffold for Cloudflare Pages
 - Shared theme tokens and layout system
 - First-pass home, CV, portfolio, and contact routes
+- Second tranche of source-verified portfolio archive material from structural and unsorted Wix exports
 - Hidden utility scaffolds for `/watch` and `/donate`
 - Local launcher scripts
 - Migration notes and bump notes
