@@ -43,16 +43,19 @@ export function SiteLayout() {
         <div className="container site-footer__inner">
           <div className="site-footer__primary">
             <p className="footer-label">Employer-facing public site</p>
+            <h2 className="site-footer__title">Drafting, documentation, and project evidence for review.</h2>
             <p className="footer-copy">
-              Refined public front end for CV review, portfolio assessment, and
-              direct hiring enquiries.
+              Recruiter-facing portfolio build for CV access, archive review, and direct contact.
             </p>
           </div>
 
-          <div className="footer-contact">
-            <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
-            <a href="tel:+61458747524">{siteMeta.contact.phone}</a>
-            <span>{siteMeta.contact.location}</span>
+          <div className="site-footer__contact">
+            <p className="footer-label">Direct routes</p>
+            <div className="footer-contact">
+              <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
+              <a href="tel:+61458747524">{siteMeta.contact.phone}</a>
+              <span>{siteMeta.contact.location}</span>
+            </div>
           </div>
         </div>
 
@@ -60,7 +63,7 @@ export function SiteLayout() {
           <div>
             <p className="footer-label">Secondary utility routes</p>
             <p className="footer-copy footer-copy--muted">
-              Kept outside the primary navigation and excluded from indexing.
+              Kept outside the main navigation and excluded from indexing.
             </p>
           </div>
 

@@ -10,6 +10,7 @@ This repository holds the public website foundation for Daniel Clancy's professi
 
 - Primary audience: recruiters, hiring managers, collaborators, and project reviewers.
 - Presentation goal: professional, restrained, dark, and credible rather than casual or social-first.
+- Current design direction: a more editorial, authored, premium composition language adapted from external portfolio inspiration while preserving Daniel Clancy's existing font system.
 - Content goal: truthful first-pass migration from the current live site and locally exported Wix source materials.
 
 ## Deployment target
@@ -100,6 +101,7 @@ DanielClancy/
 │     └─ portfolio/
 ├─ docs/
 │  ├─ migration-notes.md
+│  ├─ amajaying-inspired-overhaul-audit.md
 │  └─ portfolio-tranche-2-audit.md
 ├─ public/
 │  ├─ assets/fonts/
@@ -131,6 +133,7 @@ DanielClancy/
 
 - Production-ready public scaffold for Cloudflare Pages
 - Shared theme tokens and layout system
+- 2026-04-19 editorial/aesthetic overhaul audit and redesigned public presentation layer
 - First-pass home, CV, portfolio, and contact routes
 - Second tranche of source-verified portfolio archive material from structural and unsorted Wix exports
 - Hidden utility scaffolds for `/watch` and `/donate`

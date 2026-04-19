@@ -12,15 +12,15 @@ export function CvPage() {
         path="/cv"
       />
 
-      <section className="hero hero--subpage hero--document">
+      <section className="hero hero--subpage hero--document hero--casefile">
         <div className="container hero__grid hero__grid--document">
           <div className="hero__copy reveal">
-            <p className="hero__eyebrow">Curriculum vitae</p>
-            <h1>CV / 2026</h1>
+            <p className="hero__eyebrow">Curriculum vitae / 2026</p>
+            <h1>Digital CV casefile</h1>
             <p className="hero__summary">{siteMeta.heroSummary}</p>
             <p className="hero__support">
-              Structured for recruiter review with direct PDF access, concise
-              software framing, and a readable employment chronology.
+              Structured for recruiter review with a direct PDF route, a readable chronology, and a
+              clearer split between biography, software, and actions.
             </p>
 
             <div className="hero__actions">
@@ -32,55 +32,50 @@ export function CvPage() {
               >
                 Open PDF
               </a>
-              <a
-                className="button button--secondary"
-                href="/docs/Daniel_Clancy_CV_2026.pdf"
-                download
-              >
+              <a className="button button--secondary" href="/docs/Daniel_Clancy_CV_2026.pdf" download>
                 Download PDF
               </a>
             </div>
           </div>
 
-          <div className="download-panel reveal reveal--delay">
+          <aside className="download-panel reveal reveal--delay">
             <div className="download-panel__group">
-              <p className="download-panel__eyebrow">Document notes</p>
-              <h2>Daniel Clancy CV 2026</h2>
+              <p className="download-panel__eyebrow">Review notes</p>
+              <h2>Current public CV asset</h2>
               <p>
-                The public build currently ships the PDF asset already present in
-                the repo. A DOCX counterpart can be added later when a source file
-                is available.
+                The repo ships a PDF-first review flow for Cloudflare Pages compatibility. Any DOCX or
+                structured export can remain a later enhancement.
               </p>
             </div>
 
             <div className="download-panel__grid">
               <div>
-                <span>Primary review route</span>
+                <span>Review format</span>
                 <strong>PDF</strong>
               </div>
               <div>
-                <span>Supporting page</span>
+                <span>Archive route</span>
                 <strong>/portfolio</strong>
               </div>
               <div>
-                <span>Direct contact</span>
+                <span>Contact</span>
                 <strong>{siteMeta.contact.email}</strong>
               </div>
             </div>
-          </div>
+          </aside>
         </div>
       </section>
 
       <Section
-        eyebrow="Profile"
-        title="Software and documentation context."
-        intro="The live CV page is compact and direct. This version keeps the same information priorities but improves separation between summary, downloads, and chronology."
+        eyebrow="Review context"
+        title="Core tools and route discipline."
+        intro="The page keeps Daniel's résumé readable in seconds while making it easier to pivot into project evidence or direct contact."
         className="section--muted"
       >
         <div className="two-column-grid two-column-grid--offset">
-          <div className="surface surface--soft">
-            <p className="contact-card__label">Core software</p>
-            <h3>Production stack</h3>
+          <article className="surface surface--soft">
+            <p className="contact-card__label">Production stack</p>
+            <h3>Software in regular use</h3>
             <div className="tag-grid">
               {platformList.map((item) => (
                 <span key={item} className="tag">
@@ -88,31 +83,30 @@ export function CvPage() {
                 </span>
               ))}
             </div>
-          </div>
+          </article>
 
-          <div className="surface surface--soft">
-            <p className="contact-card__label">Supporting routes</p>
-            <h3>Recruiter-friendly review flow</h3>
+          <article className="surface surface--soft">
+            <p className="contact-card__label">Review path</p>
+            <h3>CV first, evidence second, contact third.</h3>
             <p>
-              Reviewers can move from this CV into the portfolio and contact pages
-              without leaving the core employer-facing section of the site.
+              The rebuild keeps the recruiter journey explicit instead of hiding it behind stylistic novelty.
             </p>
             <div className="hero__actions hero__actions--inline">
               <Link className="button button--secondary" to="/portfolio">
-                Review portfolio
+                Open portfolio
               </Link>
               <Link className="button button--secondary" to="/contact">
                 Contact Daniel
               </Link>
             </div>
-          </div>
+          </article>
         </div>
       </Section>
 
       <Section
         eyebrow="Employment chronology"
-        title="Employment history"
-        intro="Timeline entries below are seeded from the local Wix collection export and presented in a more legible recruiter-facing format."
+        title="Experience timeline"
+        intro="Presented as a cleaner digital dossier: readable on desktop, still scannable on mobile, and faithful to the locally retained employment record."
         className="section--deep"
       >
         <div className="timeline-list timeline-list--document">

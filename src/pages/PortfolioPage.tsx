@@ -149,19 +149,18 @@ export function PortfolioPage() {
         path="/portfolio"
       />
 
-      <section className="hero hero--subpage hero--portfolio">
+      <section className="hero hero--subpage hero--portfolio hero--casefile">
         <div className="container hero__grid hero__grid--portfolio">
           <div className="hero__copy reveal">
-            <p className="hero__eyebrow">Curated project archive</p>
-            <h1>Portfolio</h1>
+            <p className="hero__eyebrow">Portfolio archive</p>
+            <h1>Curated project record</h1>
             <p className="hero__summary">
-              A broader recruiter-facing archive drawn from retained Wix source folders,
-              with stronger structural and unsorted-sheet coverage, grouped project
-              families, and evidence shown as documentation rather than sales copy.
+              A recruiter-facing archive built from retained local source folders, with stronger
+              project-family framing and evidence shown as documentation rather than sales copy.
             </p>
             <p className="hero__support">
-              Metadata remains intentionally restrained. Where titleblock or table data is
-              incomplete, the archive stays neutral and sheet-led.
+              The goal is premium presentation without overclaiming missing metadata. Where the source
+              set is incomplete, the language stays conservative.
             </p>
 
             <div className="archive-stat-strip">
@@ -178,12 +177,12 @@ export function PortfolioPage() {
               <div>
                 <span>Featured evidence</span>
                 <strong>{featuredProjects.length}</strong>
-                <small>Kept prominent for faster review.</small>
+                <small>Held forward for faster review.</small>
               </div>
             </div>
           </div>
 
-          <div className="surface surface--soft reveal reveal--delay">
+          <aside className="surface surface--soft reveal reveal--delay">
             <p className="contact-card__label">Archive controls</p>
             <div className="filter-stack">
               <div>
@@ -278,16 +277,16 @@ export function PortfolioPage() {
 
             <div className="archive-filter-summary">
               <strong>{visibleProjects.length}</strong>
-              <span>matching archive entries currently visible.</span>
+              <span>matching archive entries in the current view.</span>
             </div>
-          </div>
+          </aside>
         </div>
       </section>
 
       <Section
         eyebrow="Disclosure"
-        title="Curated, not exhaustive."
-        intro="The archive remains documentation-forward and deliberately partial. Sensitive or protected sets are still withheld."
+        title="Curated, partial, and documentation-first."
+        intro="The archive is intentionally selective. Sensitive, classified, or protected sets remain withheld."
         className="section--muted"
       >
         <div className="surface surface--notice">
@@ -297,8 +296,8 @@ export function PortfolioPage() {
 
       <Section
         eyebrow="Featured evidence"
-        title="Projects carrying the strongest public review value."
-        intro="These entries stay prominent because they provide the clearest recruiter-facing overview of Daniel Clancy's documentation range."
+        title="Lead projects with the clearest public review value."
+        intro="Featured entries stay visually prominent, but the archive still behaves like a professional record rather than a moodboard."
       >
         {visibleFeatured.length > 0 ? (
           <div className="project-grid project-grid--showcase">
@@ -321,13 +320,6 @@ export function PortfolioPage() {
                     <span>{getProjectFamily(project)}</span>
                     <span>{getDocumentationType(project)}</span>
                   </div>
-                  <div className="tag-grid tag-grid--compact">
-                    {project.software.concat(project.subtypes.slice(0, 2)).map((item) => (
-                      <span key={`${project.id}-${item}`} className="tag tag--muted">
-                        {item}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               </button>
             ))}
@@ -336,15 +328,15 @@ export function PortfolioPage() {
           <div className="surface surface--soft archive-empty-state">
             <p className="contact-card__label">Featured set</p>
             <h3>No featured projects match the current filters.</h3>
-            <p>Reset the family, discipline, or software controls to restore the lead samples.</p>
+            <p>Reset one or more controls to restore the lead archive samples.</p>
           </div>
         )}
       </Section>
 
       <Section
-        eyebrow="Project detail"
-        title="Selected archive entry"
-        intro="Each card can be inspected as a documentation record without introducing a heavyweight route or CMS dependency."
+        eyebrow="Selected record"
+        title="Detailed archive panel"
+        intro="A focused project view sits inside the main portfolio page so the site stays static-friendly and quick to review."
         className="section--deep"
       >
         {selectedProject ? (
@@ -420,10 +412,7 @@ export function PortfolioPage() {
               {selectedProject.evidenceAssets?.length ? (
                 <div className="portfolio-evidence-strip">
                   {selectedProject.evidenceAssets.map((asset) => (
-                    <article
-                      key={`${selectedProject.id}-${asset.path}`}
-                      className="portfolio-evidence-card"
-                    >
+                    <article key={`${selectedProject.id}-${asset.path}`} className="portfolio-evidence-card">
                       <p className="contact-card__label">{asset.kind}</p>
                       <strong>{asset.label}</strong>
                       <code>{asset.path}</code>
@@ -464,15 +453,15 @@ export function PortfolioPage() {
           <div className="surface surface--soft archive-empty-state">
             <p className="contact-card__label">Archive detail</p>
             <h3>No projects match the current filter state.</h3>
-            <p>Clear one or more filters to restore the archive selection panel.</p>
+            <p>Clear one or more filters to restore the detail panel.</p>
           </div>
         )}
       </Section>
 
       <Section
         eyebrow="Broader archive"
-        title="Grouped project families with clearer documentation cues."
-        intro="Repeated studies, upgrade sets, and sheet-led records are grouped by project family so the archive reads as a professional record instead of an undifferentiated gallery."
+        title="Grouped families with clearer evidence framing."
+        intro="Repeated upgrade packages, concept studies, and sheet-led records are grouped so the archive reads as a curated professional body of work."
       >
         {groupedArchive.length > 0 ? (
           <div className="archive-groups">
