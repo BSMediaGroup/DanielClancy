@@ -1,22 +1,19 @@
-import { Link } from "react-router-dom";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
+import { shellAssets, socialIcons } from "../content/brandAssets";
 
-const socialBlocks = [
+const contentCards = [
   {
-    title: "YouTube",
-    status: "Placeholder",
-    body: "Reserved for later channel integration via YouTube Data API v3 using YOUTUBE_API_KEY_DANIEL.",
+    title: "Recent upload",
+    body: "Reserved for the latest recorded piece once YouTube hydration is enabled.",
   },
   {
-    title: "Rumble",
-    status: "Placeholder",
-    body: "Reserved for stream and channel references if personal video distribution becomes part of the site footprint.",
+    title: "Livestream replay",
+    body: "A future seam for live-session replay, summary copy, and outbound platform links.",
   },
   {
-    title: "Social updates",
-    status: "Placeholder",
-    body: "Reserved for short-form updates and outbound profile links once the public social direction is confirmed.",
+    title: "Archive pick",
+    body: "A rotating older release or standout conversation from the wider content library.",
   },
 ];
 
@@ -25,75 +22,72 @@ export function WatchPage() {
     <>
       <Seo
         title="Watch"
-        description="Private utility scaffold for Daniel Clancy media and social link aggregation."
+        description="Daniel Clancy channel page with a featured latest-video layout and future platform seams."
         path="/watch"
         noIndex
+        image={shellAssets.personalShare}
       />
 
-      <section className="hero hero--utility">
-        <div className="container hero__grid">
-          <div className="hero__copy reveal">
-            <p className="hero__eyebrow">Hidden utility route</p>
-            <h1>Watch</h1>
-            <p className="hero__summary">
-              This page is intentionally separate from the employer-facing public
-              experience. It is reserved for personal media, streaming, and social
-              link aggregation work that may arrive later.
-            </p>
-            <p className="hero__support">
-              It is visually aligned with the public-site system, but still kept
-              clearly outside the recruiter-facing flow.
-            </p>
-            <div className="hero__actions">
-              <Link className="button button--primary" to="/">
-                Return to main site
-              </Link>
+      <section className="hero hero--watch">
+        <div className="container watch-hero">
+          <div className="watch-player">
+            <div className="watch-player__screen">
+              <span className="status-pill">Latest video</span>
+              <div className="watch-player__playhead" />
             </div>
           </div>
 
-          <div className="utility-profile reveal reveal--delay">
-            <p className="utility-profile__label">Profile scaffold</p>
-            <h2>Daniel Clancy</h2>
-            <p>Creator / livestream / channel hub layer</p>
-            <span className="utility-badge">Noindex utility route</span>
+          <div className="watch-details">
+            <p className="kicker">Featured release</p>
+            <h1>Latest video block with room for embeds, metadata, and cross-platform routing.</h1>
+            <p>
+              The hero is now ready for a live embed or thumbnail takeover, with adjacent detail space
+              for title, release notes, runtime, and outbound watch actions.
+            </p>
+
+            <div className="info-list">
+              <div>
+                <span>Primary source</span>
+                <strong>YouTube first</strong>
+              </div>
+              <div>
+                <span>Secondary source</span>
+                <strong>Rumble-ready</strong>
+              </div>
+              <div>
+                <span>Future data</span>
+                <strong>Runtime, publish date, links</strong>
+              </div>
+            </div>
+
+            <div className="logo-row">
+              <span className="logo-pill">
+                <img alt="" src={socialIcons.youtube} />
+                <small>YouTube</small>
+              </span>
+              <span className="logo-pill">
+                <img alt="" src={socialIcons.rumble} />
+                <small>Rumble</small>
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
       <Section
-        eyebrow="Social blocks"
-        title="Placeholder seams for later platform wiring."
-        intro="No API integration is implemented in this milestone. The structure below is ready for later data-source wiring."
+        eyebrow="Channel rows"
+        title="A cleaner gallery for releases, replays, and archive picks."
+        intro="These blocks are designed to hydrate cleanly later without needing another visual rewrite."
       >
-        <div className="utility-grid">
-          {socialBlocks.map((item) => (
-            <article key={item.title} className="surface surface--soft utility-card">
-              <p className="utility-card__status">{item.status}</p>
+        <div className="project-grid">
+          {contentCards.map((item) => (
+            <article key={item.title} className="surface surface--compact">
+              <div className="placeholder-thumb" aria-hidden="true" />
+              <p className="kicker">{item.title}</p>
               <h3>{item.title}</h3>
               <p>{item.body}</p>
             </article>
           ))}
-        </div>
-      </Section>
-
-      <Section
-        eyebrow="Content gallery scaffold"
-        title="Latest content area"
-        intro="Future YouTube ingestion can hydrate these slots without changing the route structure."
-      >
-        <div className="utility-gallery">
-          {["Latest upload slot", "Recent livestream slot", "Archive highlight slot"].map(
-            (item) => (
-              <article key={item} className="surface surface--soft utility-gallery__item">
-                <span className="utility-badge">Placeholder</span>
-                <h3>{item}</h3>
-                <p>
-                  Reserved for thumbnail, title, publish time, and outbound watch
-                  URL once ingestion is enabled.
-                </p>
-              </article>
-            ),
-          )}
         </div>
       </Section>
     </>

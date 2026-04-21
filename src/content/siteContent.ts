@@ -67,7 +67,7 @@ export const siteMeta = {
   heroSummary:
     "With 17 years of drafting and design experience since 2008, Daniel Clancy has contributed to structural, architectural, urban, landscape, and infrastructure work for firms including GHD, Urbis, PLACE Laboratory, Richmond+Ross, and Meriton Group.",
   heroSupport:
-    "The current public build is focused on employer-facing review: CV access, selected project documentation, software fluency, and direct contact without the noise of a broader personal platform.",
+    "The site brings together CV review, selected project documentation, software fluency, and direct contact in a clearer premium presentation.",
 };
 
 export const homeMetrics: HighlightStat[] = [
@@ -411,7 +411,7 @@ export const portfolioArchive: PortfolioItem[] = [
     subtypes: ["UPSS", "Site layout", "Fuel system upgrade"],
     software: ["AutoCAD"],
     summary:
-      "Grafton is represented by a compact UPSS package in the local archive, suitable for recruiter-facing evidence without overclaiming project scope.",
+      "Grafton is represented by a compact UPSS package in the retained archive, presented conservatively without overclaiming project scope.",
     image: "/media/portfolio/upss-grafton.jpg",
     featured: false,
     sourceFolder: "cmsdata/wix/portfolio/cadset",
@@ -836,25 +836,25 @@ export const homeSpotlightProjects = homeSpotlightProjectIds
   .filter((project): project is PortfolioItem => Boolean(project));
 
 export const portfolioDisclaimer =
-  "Displayed materials represent selected work examples and may reflect different levels of completion. Sensitive, classified, or otherwise protected documents remain excluded for security and intellectual-property reasons.";
+  "Displayed materials represent selected work examples only. Sensitive, classified, or otherwise protected documents remain withheld.";
 
 export const contactUseCases = [
-  "Recruiter and hiring manager review",
-  "CV and employment-history follow-up",
-  "Project sample and drafting capability assessment",
+  "Professional introductions and hiring enquiries",
+  "Project sample and documentation follow-up",
+  "Collaboration, drafting, and design support conversations",
 ];
 
 export const migrationScope = {
   now: [
-    "Primary route structure and navigation for Home, CV, Portfolio, and Contact.",
-    "Refined visual system informed by the live Wix site's industrial dark composition and divider rhythm.",
-    "Truthful employment timeline and a broader portfolio archive seeded from Wix-exported source data.",
-    "Hidden /watch and /donate scaffolds isolated from primary SEO and navigation.",
+    "Separate professional and personal shells with route-specific headers, footers, and metadata.",
+    "Professional home, CV, portfolio, portfolio detail, and contact presentation updates.",
+    "Personal home, watch, and donate routes with dedicated noindex/share-preview handling.",
+    "Contact delivery prepared for Cloudflare Pages Functions with Resend.",
   ],
   later: [
-    "Optional deep-linked project routes or CMS-backed portfolio ingestion when the admin workflow is ready.",
-    "Contact form delivery wiring, analytics, and production CMS/admin tooling.",
-    "YouTube ingestion for /watch and payment integrations for /donate.",
-    "Final content QA against all PDF/image source sets and recruiter-facing copy polish.",
+    "Deployment, DNS cutover, and Cloudflare secret provisioning.",
+    "Live YouTube or Rumble ingestion for /watch.",
+    "Live Stripe and PayPal payment handling for /donate.",
+    "Admin-side content tooling and deeper archive QA.",
   ],
 };

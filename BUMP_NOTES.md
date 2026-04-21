@@ -1,4 +1,31 @@
-CURRENT VER= 0.1.4-alpha / PENDING VER= 0.1.5-alpha
+CURRENT VER= 0.2.0-alpha / PENDING VER= 0.2.1-alpha
+
+## 0.2.0-alpha
+
+### Technical
+
+- Added `docs/public-site-polish-audit-2026-04-22.md` to document the current layout issues, public-copy cleanup targets, shell split, and deferred integration items.
+- Replaced the old single shared shell with two explicit route shells:
+  - professional: `/`, `/cv`, `/portfolio`, `/portfolio/:slug`, `/contact`
+  - personal: `/home`, `/watch`, `/donate`
+- Added dedicated shell components, a shared brand component, a personal header member-widget UI, and a reusable media skeleton/shimmer component.
+- Reworked route metadata to support indexed professional pages and noindex-but-shareable personal pages with Open Graph and Twitter tags.
+- Rebuilt the professional home page, CV page, portfolio archive, dedicated portfolio detail page, and contact page around cleaner copy, stronger spacing, logo discipline, and clearer route hierarchy.
+- Rebuilt the personal home, watch, and donate routes so they read as intentional public pages rather than utility placeholders.
+- Moved project detail presentation from the portfolio gallery page into dedicated `/portfolio/:slug` routes and updated internal links accordingly.
+- Added Cloudflare Pages-compatible contact delivery in `functions/api/contact.js` using the existing Resend env contract, with validation, honeypot/timing checks, and explicit local preview fallback behavior.
+- Updated `public/_headers` and `public/robots.txt` to include `/home` in the noindex split.
+- Added typed asset-module declarations in `src/assets.d.ts`.
+- Removed the obsolete single-shell component `src/components/SiteLayout.tsx`.
+- Bumped the package version to `0.2.0-alpha`.
+
+### Human-readable
+
+- The public site is now cleaner, more intentional, and much less exposed to internal/dev-style language.
+- Professional pages stay fully focused on CV review, project evidence, and contact.
+- Personal pages now feel like a distinct content-facing surface with their own header, footer, navigation, and preview-ready metadata.
+- Portfolio browsing is easier to understand, and deeper project context now has dedicated detail pages instead of a crowded inline panel.
+- The contact page is prepared for real delivery on Cloudflare Pages instead of stopping at a local-only form shell.
 
 ## 0.1.4-alpha
 
@@ -16,83 +43,3 @@ CURRENT VER= 0.1.4-alpha / PENDING VER= 0.1.5-alpha
 - The public site now feels materially more premium, art-directed, and memorable instead of reading like a cleaner version of the previous dark scaffold.
 - The home page has a stronger identity-led first impression, the CV page reads more like a digital casefile, and the portfolio feels more curated and deliberate.
 - The redesign preserves Daniel's existing font identity while upgrading composition, hierarchy, spacing, and overall presentation quality.
-
-## 0.1.3-alpha
-
-### Technical
-
-- Audited the retained structural, ACCE, and unsorted Wix portfolio materials and added a tranche-specific migration note in `docs/portfolio-tranche-2-audit.md`.
-- Expanded the portfolio content model with optional project-family labels, documentation types, source-confidence markers, and evidence-asset arrays.
-- Promoted four additional source-verifiable archive entries from the retained ACCE, GHD, and unsorted sheet exports while keeping metadata conservative.
-- Reworked `/portfolio` to support project-family filtering, grouped archive sections by family, stronger detail metadata, and inline evidence-strip presentation.
-- Curated the home-page selected-work strip so it better represents the broader archive without overloading the landing page.
-- Reduced oversized shared title scaling and tightened responsive handling for archive controls, detail blocks, and evidence cards.
-- Copied tranche-2 verified sheet images into `public/media/portfolio/` for static hosting compatibility.
-- Bumped the package version to `0.1.3-alpha`.
-
-### Human-readable
-
-- The public portfolio now covers more of the retained structural and unsorted source material without slipping into guesswork.
-- Recruiters can see clearer project-family context, stronger metadata blocks, and sheet-level evidence for the newly promoted archive records.
-- Oversized page titles have been pulled back so the site reads more like a professional portfolio and less like a draft splash screen.
-
-## 0.1.0-alpha
-
-### Technical
-
-- Initialized a Cloudflare Pages-suitable `Vite + React + TypeScript` public site scaffold.
-- Added routed public pages for `/`, `/cv`, `/portfolio`, and `/contact`.
-- Added hidden utility routes for `/watch` and `/donate` with `noindex` handling via metadata, `robots.txt`, and Cloudflare `_headers`.
-- Wired local typography assets into the site styling foundation.
-- Seeded initial CV and portfolio content from local Wix-exported source materials.
-- Added local launcher scripts and static-hosting support files.
-- Added migration notes and a DanielClancy-specific README.
-
-### Human-readable
-
-- The old minimal placeholder repo is now a runnable first-pass public website foundation.
-- Employers can review a cleaner home page, CV page, portfolio sample set, and contact page.
-- Social and donation concepts now have isolated scaffolds without leaking into the hiring-facing experience.
-
-## 0.1.1-alpha
-
-### Technical
-
-- Performed a fresh MCP/browser rescan of the live Wix pages for `/`, `/cv`, `/portfolio`, and `/contact`.
-- Expanded `docs/migration-notes.md` with a refinement audit covering page order, separators, CTA patterns, density, portfolio filters, contact structure, and footer utility-link separation.
-- Reworked the shared visual system in `src/styles/global.css` to introduce stronger hero framing, tonal bands, refined panel treatments, upgraded buttons, clearer typography hierarchy, and more intentional footer/secondary-route handling.
-- Refined `HomePage`, `CvPage`, `PortfolioPage`, and `ContactPage` to better reflect the live site's structure and rhythm while remaining modernized and easier to maintain.
-- Lightly aligned `/watch` and `/donate` to the improved global system without changing their hidden utility role or adding integrations.
-- Bumped the package version to `0.1.1-alpha`.
-
-### Human-readable
-
-- The public site now feels materially closer to the live DanielClancy.net composition instead of a generic first-pass portfolio scaffold.
-- The home page places stronger emphasis on CV access, employment history, software framing, and curated work samples.
-- The CV page reads more like a polished recruiter-facing document hub.
-- The portfolio page now presents the work as a curated documentation set with deliberate static filter treatment and a clearer disclaimer boundary.
-- The contact page keeps the live site's directness while feeling more finished and premium.
-
-## 0.1.2-alpha
-
-### Technical
-
-- Expanded the portfolio content layer from a short featured list into a richer archive schema with IDs, studio metadata, subtype tags, sector/location fields, source references, source-file lists, and sensitivity notes.
-- Surfaced additional archive entries from the retained Wix materials, including more UPSS packages and separate Curtin Creative Quarter concept records.
-- Rebuilt `/portfolio` around client-side archive controls, filter chips, featured evidence cards, grouped archive sections, and an inline detail panel for project inspection.
-- Extended `src/styles/global.css` with archive-specific layout rules and responsive refinements affecting Home, Portfolio, CV, Contact, header navigation, filter wrapping, and footer balance.
-- Expanded `docs/migration-notes.md` with a portfolio-source audit covering source folders, grouping opportunities, repeated disciplines, promoted entries, and deferred archive material.
-- Bumped the package version to `0.1.2-alpha`.
-
-### Human-readable
-
-- The portfolio now reads as a broader professional archive instead of a small teaser gallery.
-- Recruiters can inspect more projects, see clearer metadata, and understand which materials come from drawing sets versus concept exports.
-- Mobile and tablet handling is tighter around archive filters, project cards, footer balance, and stacked call-to-action layouts.
-
-### Planned next
-
-- Add the next tranche of source-verified structural and unsorted archive material after a stricter metadata pass.
-- Add real contact-form delivery.
-- Consider lightweight deep-linked project routes only if they materially improve employer review.
-- Define the handoff boundary between this public site and the future admin/dashboard workflow.

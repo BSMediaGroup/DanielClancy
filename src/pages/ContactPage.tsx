@@ -1,41 +1,114 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
+import { shellAssets } from "../content/brandAssets";
 import { contactUseCases, siteMeta } from "../content/siteContent";
 
-export function ContactPage() {
-  const [submitted, setSubmitted] = useState(false);
+type ContactStatus = "idle" | "submitting" | "success" | "error";
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+const initialValues = {
+  name: "",
+  email: "",
+  company: "",
+  subject: "",
+  message: "",
+  website: "",
+};
+
+export function ContactPage() {
+  const [values, setValues] = useState(initialValues);
+  const [startedAt, setStartedAt] = useState("");
+  const [status, setStatus] = useState<ContactStatus>("idle");
+  const [statusMessage, setStatusMessage] = useState("");
+
+  useEffect(() => {
+    setStartedAt(String(Date.now()));
+  }, []);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
-  };
+
+    if (!values.name.trim() || !values.email.trim() || !values.message.trim()) {
+      setStatus("error");
+      setStatusMessage("Please complete your name, email, and message before sending.");
+      return;
+    }
+
+    setStatus("submitting");
+    setStatusMessage("Sending message…");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...values,
+          startedAt,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        mode?: string;
+      };
+
+      if (
+        response.status === 404 &&
+        (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
+      ) {
+        setStatus("success");
+        setStatusMessage(
+          "Local preview mode validated the form successfully. Delivery is ready for the deployed Pages Function.",
+        );
+        setValues(initialValues);
+        setStartedAt(String(Date.now()));
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(payload.message ?? "Unable to send your message right now.");
+      }
+
+      setStatus("success");
+      setStatusMessage(
+        payload.mode === "mock"
+          ? "Local preview mode validated the form successfully. Delivery is ready for the deployed Pages Function."
+          : payload.message ?? "Message sent successfully.",
+      );
+      setValues(initialValues);
+      setStartedAt(String(Date.now()));
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to send your message right now.";
+      setStatus("error");
+      setStatusMessage(message);
+    }
+  }
 
   return (
     <>
       <Seo
         title="Contact"
-        description="Contact details and enquiry scaffold for Daniel Clancy."
+        description="Professional contact details and enquiry form for Daniel Clancy."
         path="/contact"
+        image={shellAssets.professionalShare}
       />
 
-      <section className="hero hero--subpage hero--contact hero--casefile">
-        <div className="container hero__grid hero__grid--contact">
-          <div className="hero__copy reveal">
-            <p className="hero__eyebrow">Direct contact</p>
-            <h1>Contact Daniel Clancy</h1>
-            <p className="hero__summary">
-              Built for recruiter outreach, portfolio follow-up, and direct professional enquiry.
-            </p>
-            <p className="hero__support">
-              The page stays sparse on purpose: real contact details first, local-only enquiry scaffold
-              second, no unnecessary routing layer.
+      <section className="hero hero--subpage">
+        <div className="container hero-split hero-split--contact">
+          <div className="hero-copy">
+            <p className="kicker">Contact</p>
+            <h1>Direct contact for professional enquiries, project follow-up, and collaboration.</h1>
+            <p className="hero-copy__lead">
+              Use the form for introductions, project discussions, or role conversations. Messages are
+              delivered server-side for Cloudflare Pages deployment.
             </p>
           </div>
 
-          <aside className="surface surface--soft reveal reveal--delay">
-            <p className="contact-card__label">Primary details</p>
-            <h2>{siteMeta.name}</h2>
+          <aside className="surface">
+            <p className="kicker">Primary details</p>
             <div className="contact-stack">
               <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
               <a href="tel:+61458747524">{siteMeta.contact.phone}</a>
@@ -47,46 +120,94 @@ export function ContactPage() {
       </section>
 
       <Section
-        eyebrow="Professional enquiries"
-        title="Deliberate contact framing with a clean form shell."
-        intro="Email and phone remain the real contact routes. The form stays presentable and local-only until delivery wiring is intentionally added."
+        eyebrow="Send a message"
+        title="A polished contact form with safe first-pass delivery handling."
+        intro="The form validates required fields, uses a honeypot and timing check, and sends through a Pages Function when deployment wiring is available."
       >
         <div className="two-column-grid two-column-grid--contact">
-          <form className="surface form-shell form-shell--feature" onSubmit={handleSubmit}>
-            <label>
-              Name
-              <input name="name" type="text" placeholder="John Smith" />
+          <form className="surface form-shell" onSubmit={handleSubmit}>
+            <div className="form-grid">
+              <label>
+                Name
+                <input
+                  name="name"
+                  type="text"
+                  value={values.name}
+                  onChange={(event) => setValues((current) => ({ ...current, name: event.target.value }))}
+                  placeholder="Your name"
+                />
+              </label>
+              <label>
+                Email
+                <input
+                  name="email"
+                  type="email"
+                  value={values.email}
+                  onChange={(event) => setValues((current) => ({ ...current, email: event.target.value }))}
+                  placeholder="hello@example.com"
+                />
+              </label>
+            </div>
+
+            <div className="form-grid">
+              <label>
+                Company
+                <input
+                  name="company"
+                  type="text"
+                  value={values.company}
+                  onChange={(event) => setValues((current) => ({ ...current, company: event.target.value }))}
+                  placeholder="Company or studio"
+                />
+              </label>
+              <label>
+                Subject
+                <input
+                  name="subject"
+                  type="text"
+                  value={values.subject}
+                  onChange={(event) => setValues((current) => ({ ...current, subject: event.target.value }))}
+                  placeholder="Reason for contact"
+                />
+              </label>
+            </div>
+
+            <label className="form-field--hidden" aria-hidden="true">
+              Website
+              <input
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={values.website}
+                onChange={(event) => setValues((current) => ({ ...current, website: event.target.value }))}
+              />
             </label>
-            <label>
-              Email
-              <input name="email" type="email" placeholder="hello@example.com" />
-            </label>
-            <label>
-              Company
-              <input name="company" type="text" placeholder="Company name" />
-            </label>
+
+            <input name="startedAt" type="hidden" value={startedAt} readOnly />
+
             <label>
               Message
               <textarea
                 name="message"
-                rows={6}
-                placeholder="Project, role, or review context"
+                rows={8}
+                value={values.message}
+                onChange={(event) => setValues((current) => ({ ...current, message: event.target.value }))}
+                placeholder="Share the role, project, or context for your enquiry."
               />
             </label>
-            <button className="button button--primary" type="submit">
-              Submit enquiry scaffold
-            </button>
-            <p className="form-note">
-              {submitted
-                ? "Submission remains local-only in this milestone. Use email or phone for active contact."
-                : "Delivery wiring is intentionally deferred until the employer-facing foundation is settled."}
-            </p>
+
+            <div className="form-actions">
+              <button className="button button--primary" disabled={status === "submitting"} type="submit">
+                {status === "submitting" ? "Sending…" : "Send enquiry"}
+              </button>
+              <p className={`form-status form-status--${status}`}>{statusMessage}</p>
+            </div>
           </form>
 
-          <div className="contact-sidebar">
-            <article className="surface surface--soft">
-              <p className="contact-card__label">Best use cases</p>
-              <h3>How this contact route is intended to be used</h3>
+          <div className="surface-stack">
+            <article className="surface">
+              <p className="kicker">Best fit</p>
               <ul className="bullet-list">
                 {contactUseCases.map((item) => (
                   <li key={item}>{item}</li>
@@ -94,11 +215,11 @@ export function ContactPage() {
               </ul>
             </article>
 
-            <article className="surface surface--soft">
-              <p className="contact-card__label">Response path</p>
+            <article className="surface">
+              <p className="kicker">Delivery</p>
               <p>
-                The public build is designed for direct professional outreach rather than a CRM or
-                support-queue workflow.
+                Messages are addressed to <strong>mail@danielclancy.net</strong> with a courtesy copy to{" "}
+                <strong>daniel@brainstream.media</strong>. Reply handling stays server-side.
               </p>
             </article>
           </div>

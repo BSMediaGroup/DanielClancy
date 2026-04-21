@@ -1,42 +1,101 @@
 # DanielClancy
 
-Professional public-site repository for `DanielClancy.net`, rebuilt as a static-first Cloudflare Pages front end focused on CV review, portfolio assessment, and employer-facing presentation.
+Public-site repository for `DanielClancy.net`, built as a Cloudflare Pages-friendly Vite + React + TypeScript front end.
 
-## Project purpose
+## Purpose
 
-This repository holds the public website foundation for Daniel Clancy's professional drafting and design presence. The first milestone rebuilds the current Wix site into a cleaner and more maintainable front end without introducing the admin/dashboard layer yet.
+This repo holds the public-facing Daniel Clancy website only. It now uses a deliberate split between:
 
-## Audience and presentation goals
+- a professional shell for CV, portfolio, and contact review
+- a personal shell for content, support, and future member-facing utilities
 
-- Primary audience: recruiters, hiring managers, collaborators, and project reviewers.
-- Presentation goal: professional, restrained, dark, and credible rather than casual or social-first.
-- Current design direction: a more editorial, authored, premium composition language adapted from external portfolio inspiration while preserving Daniel Clancy's existing font system.
-- Content goal: truthful first-pass migration from the current live site and locally exported Wix source materials.
+The visual system keeps the existing DanielClancy font pairing while tightening hierarchy, spacing, route separation, and public copy quality.
 
-## Deployment target
+## Route architecture
 
-- Hosting target: Cloudflare Pages
-- Rendering model: static-friendly Vite SPA
-- Routing support: `public/_redirects`
-- SEO handling for hidden utility routes: `public/robots.txt` and `public/_headers`
-
-## Route map
+### Professional shell
 
 | Route | Purpose | Indexed |
 | --- | --- | --- |
-| `/` | Employer-facing landing page with summary, capabilities, experience snapshot, and featured work. | Yes |
-| `/cv` | Downloadable CV access and employment timeline. | Yes |
-| `/portfolio` | Curated multi-tranche project archive with grouped evidence and restrained metadata. | Yes |
-| `/contact` | Direct contact details and form scaffold. | Yes |
-| `/watch` | Hidden utility/social-media scaffold for future channel integration. | No |
-| `/donate` | Hidden utility support-page scaffold for future Stripe/PayPal flows. | No |
+| `/` | Professional landing page with selected work, software capability, and chronology preview | Yes |
+| `/cv` | PDF access and readable employment timeline | Yes |
+| `/portfolio` | Archive gallery and filtering surface | Yes |
+| `/portfolio/:slug` | Dedicated project detail route | Yes |
+| `/contact` | Professional contact page with live-ready form delivery | Yes |
 
-## Local run instructions
+### Personal shell
+
+| Route | Purpose | Indexed |
+| --- | --- | --- |
+| `/home` | Personal landing page for channels and supporter paths | No |
+| `/watch` | Featured video layout and future channel-ingestion seam | No |
+| `/donate` | Future-ready support page for hosted and direct payments | No |
+
+## SEO and metadata split
+
+- Professional routes use standard indexable metadata.
+- Personal routes use `noindex, nofollow, noarchive`.
+- Personal routes still render Open Graph and Twitter preview metadata for link sharing.
+- `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
+
+## Contact delivery
+
+- UI route: `/contact`
+- Server endpoint: `functions/api/contact.js`
+- Delivery target:
+  - To: `mail@danielclancy.net`
+  - CC: `daniel@brainstream.media`
+- Delivery provider: Resend via server-side env usage
+- Local preview behavior: explicit safe mock success if the Pages Function env/runtime is not mounted
+
+Environment keys already used:
+
+- `RESEND_API_KEY`
+- `MAIL_FROM`
+- `MAIL_REPLY_TO`
+
+## Fonts and assets
+
+- Display: `assets/fonts/Recharge-Bold.otf`
+- Body: `assets/fonts/SuiGeneris-Regular.otf`
+- Monospace UI: `assets/fonts/mono/SUSEMono-Variable.ttf`
+- Public CV: `public/docs/Daniel_Clancy_CV_2026.pdf`
+- Portfolio media: `public/media/portfolio/`
+- Logo/social/software/company marks: `assets/logos/` and `assets/icons/`
+
+## Key implementation files
+
+- Routing: `src/app/App.tsx`
+- Shells:
+  - `src/components/ProfessionalShell.tsx`
+  - `src/components/PersonalShell.tsx`
+- Shared brand/media helpers:
+  - `src/components/SiteBrand.tsx`
+  - `src/components/MediaFrame.tsx`
+  - `src/content/brandAssets.ts`
+  - `src/lib/portfolio.ts`
+- Pages:
+  - `src/pages/HomePage.tsx`
+  - `src/pages/CvPage.tsx`
+  - `src/pages/PortfolioPage.tsx`
+  - `src/pages/PortfolioDetailPage.tsx`
+  - `src/pages/ContactPage.tsx`
+  - `src/pages/PersonalHomePage.tsx`
+  - `src/pages/WatchPage.tsx`
+  - `src/pages/DonatePage.tsx`
+- Global styling: `src/styles/global.css`
+- Audit notes:
+  - `docs/public-site-polish-audit-2026-04-22.md`
+  - `docs/migration-notes.md`
+  - `docs/portfolio-tranche-2-audit.md`
+  - `docs/amajaying-inspired-overhaul-audit.md`
+
+## Local development
 
 ### Quick launch
 
-- Double-click `run-local.cmd`
-- Or run `.\run-local.ps1` from PowerShell
+- `run-local.cmd`
+- `.\run-local.ps1`
 
 ### Manual
 
@@ -45,67 +104,37 @@ npm install
 npm run dev -- --host
 ```
 
-### Build validation
+### Validation
 
 ```powershell
+npm run check
 npm run build
+npm run preview -- --host
 ```
-
-## Content and data sources
-
-- Live site reference:
-  - `https://www.danielclancy.net/`
-  - `https://www.danielclancy.net/cv`
-  - `https://www.danielclancy.net/portfolio`
-  - `https://www.danielclancy.net/contact`
-- Local Wix exports:
-  - `cmsdata/wix/collection-tables/Employment+History.csv`
-  - `cmsdata/wix/collection-tables/Design+Portfiolo.csv`
-  - `cmsdata/wix/cv/Daniel_Clancy_CV_2026.pdf`
-  - `cmsdata/wix/portfolio/`
-
-## Font and asset notes
-
-- Titles: `assets/fonts/Recharge-Bold.otf`
-- Body/subtitles: `assets/fonts/SuiGeneris-Regular.otf`
-- Monospace/data UI: `assets/fonts/mono/SUSEMono-Variable.ttf`
-- Build-wired public copies live in `public/assets/fonts/`
-- Selected portfolio source images are copied into `public/media/portfolio/` for static deployment compatibility
-
-## Hidden-route separation
-
-- `/watch` and `/donate` are intentionally excluded from the primary navigation.
-- They are scaffolded as separate-purpose utility pages rather than part of the employer-facing experience.
-- `robots.txt` disallows them.
-- `_headers` applies `X-Robots-Tag: noindex, nofollow, noarchive`.
-
-## Repo relationship to future admin work
-
-- This repository is the public website only.
-- Admin or CMS ownership should remain separate from the public front end.
-- The dashboard/admin implementation is expected to live in the separate admin repository and connect later through a controlled content workflow.
 
 ## Repository tree
 
 ```text
 DanielClancy/
 ├─ assets/
+│  ├─ backgrounds/
 │  ├─ fonts/
 │  ├─ icons/
-│  └─ logos/
+│  ├─ logos/
+│  └─ portraits/
 ├─ cmsdata/
-│  ├─ cmsdata-README.md
 │  └─ wix/
-│     ├─ collection-tables/
-│     ├─ cv/
-│     └─ portfolio/
 ├─ docs/
-│  ├─ migration-notes.md
 │  ├─ amajaying-inspired-overhaul-audit.md
-│  └─ portfolio-tranche-2-audit.md
+│  ├─ migration-notes.md
+│  ├─ portfolio-tranche-2-audit.md
+│  └─ public-site-polish-audit-2026-04-22.md
+├─ functions/
+│  └─ api/
+│     └─ contact.js
 ├─ public/
 │  ├─ assets/fonts/
-│  ├─ docs/Daniel_Clancy_CV_2026.pdf
+│  ├─ docs/
 │  ├─ media/portfolio/
 │  ├─ _headers
 │  ├─ _redirects
@@ -113,14 +142,14 @@ DanielClancy/
 │  └─ robots.txt
 ├─ src/
 │  ├─ app/App.tsx
+│  ├─ assets.d.ts
 │  ├─ components/
-│  ├─ content/siteContent.ts
+│  ├─ content/
+│  ├─ lib/
 │  ├─ pages/
 │  └─ styles/global.css
 ├─ .env.example
-├─ .gitignore
 ├─ BUMP_NOTES.md
-├─ index.html
 ├─ package.json
 ├─ run-local.cmd
 ├─ run-local.ps1
@@ -129,21 +158,10 @@ DanielClancy/
 └─ vite.config.ts
 ```
 
-## Current milestone scope
-
-- Production-ready public scaffold for Cloudflare Pages
-- Shared theme tokens and layout system
-- 2026-04-19 editorial/aesthetic overhaul audit and redesigned public presentation layer
-- First-pass home, CV, portfolio, and contact routes
-- Second tranche of source-verified portfolio archive material from structural and unsorted Wix exports
-- Hidden utility scaffolds for `/watch` and `/donate`
-- Local launcher scripts
-- Migration notes and bump notes
-
 ## Deferred items
 
-- Full portfolio migration and richer filtering
-- Contact form delivery logic
-- YouTube ingestion on `/watch`
-- Stripe and PayPal integration on `/donate`
-- Public/admin content workflow integration
+- Cloudflare deployment and DNS cutover
+- Live YouTube or Rumble ingestion
+- Live Stripe and PayPal payment processing
+- Admin-side content workflow integration
+- Further archive enrichment as more source material is verified

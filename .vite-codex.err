@@ -1,0 +1,13 @@
+node:internal/errors:496
+    ErrorCaptureStackTrace(err);
+    ^
+
+Error [ERR_SERVER_ALREADY_LISTEN]: Listen method has been called more than once without closing.
+    at new NodeError (node:internal/errors:405:5)
+    at Server.listen (node:net:1959:11)
+    at httpServer.listen (file:///Y:/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:63419:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  code: 'ERR_SERVER_ALREADY_LISTEN'
+}
+
+Node.js v20.5.1

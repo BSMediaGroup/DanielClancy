@@ -1,24 +1,33 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { SiteLayout } from "../components/SiteLayout";
+import { PersonalShell } from "../components/PersonalShell";
+import { ProfessionalShell } from "../components/ProfessionalShell";
 import { ContactPage } from "../pages/ContactPage";
 import { CvPage } from "../pages/CvPage";
 import { DonatePage } from "../pages/DonatePage";
 import { HomePage } from "../pages/HomePage";
+import { PersonalHomePage } from "../pages/PersonalHomePage";
+import { PortfolioDetailPage } from "../pages/PortfolioDetailPage";
 import { PortfolioPage } from "../pages/PortfolioPage";
 import { WatchPage } from "../pages/WatchPage";
 
 export default function App() {
   return (
     <Routes>
-      <Route element={<SiteLayout />}>
+      <Route element={<ProfessionalShell />}>
         <Route index element={<HomePage />} />
         <Route path="/cv" element={<CvPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
+        <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
         <Route path="/contact" element={<ContactPage />} />
+      </Route>
+
+      <Route element={<PersonalShell />}>
+        <Route path="/home" element={<PersonalHomePage />} />
         <Route path="/watch" element={<WatchPage />} />
         <Route path="/donate" element={<DonatePage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

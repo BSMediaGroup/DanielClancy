@@ -1,121 +1,138 @@
 import { Link } from "react-router-dom";
+import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
+import { getCompanyLogo, getSoftwareLogo, shellAssets } from "../content/brandAssets";
 import {
   experienceItems,
   featuredEmployers,
-  focusAreas,
-  homeSpotlightProjects,
   homeMetrics,
-  portfolioArchive,
+  homeSpotlightProjects,
   siteMeta,
-  softwareGroups,
 } from "../content/siteContent";
+import { getPortfolioSlug } from "../lib/portfolio";
 
-const portraitImage = new URL("../../assets/backgrounds/danielclancy-portrait.webp", import.meta.url)
-  .href;
+const softwareCapabilities = [
+  { name: "Autodesk Revit", score: 92, note: "Production documentation and coordination" },
+  { name: "Autodesk AutoCAD", score: 95, note: "Drawing packages, markups, and technical revisions" },
+  { name: "Adobe Creative Cloud", score: 84, note: "Presentation polish, layouts, and visual support" },
+  { name: "Microsoft Office", score: 88, note: "Reports, schedules, and review packs" },
+  { name: "Trimble SketchUp", score: 79, note: "Concept support and quick modelling" },
+  { name: "QGIS", score: 68, note: "Spatial context and mapping support" },
+];
 
 export function HomePage() {
   const spotlightProjects = homeSpotlightProjects;
-  const recentExperience = experienceItems.slice(0, 4);
   const leadProject = spotlightProjects[0];
+  const recentExperience = experienceItems.slice(0, 4);
 
   return (
     <>
       <Seo
         title="Daniel Clancy"
-        description="Professional drafting, design, CV, and portfolio presentation for Daniel Clancy."
+        description="Drafting, documentation, and project evidence for Daniel Clancy."
         path="/"
+        image={shellAssets.professionalShare}
       />
 
-      <section className="hero hero--home hero--poster">
-        <div className="hero__backdrop" aria-hidden="true" />
-        <div className="container hero__grid hero__grid--home">
-          <div className="hero__copy hero__copy--home reveal">
-            <p className="hero__eyebrow">Architecture / drafting / digital portfolio</p>
-            <h1>Daniel Clancy</h1>
-            <p className="hero__role">Design consultant with 17 years of production-focused documentation experience.</p>
-            <p className="hero__summary">{siteMeta.heroSummary}</p>
-            <p className="hero__support">{siteMeta.heroSupport}</p>
+      <section className="hero hero--professional-home">
+        <div className="hero__backdrop hero__backdrop--portrait" aria-hidden="true" />
+        <div className="container hero-split hero-split--home">
+          <div className="hero-copy">
+            <p className="kicker">Documentation-led design consultant</p>
+            <h1>Drafting depth, disciplined project records, and a cleaner professional review path.</h1>
+            <p className="hero-copy__lead">{siteMeta.heroSummary}</p>
+            <p className="hero-copy__support">{siteMeta.heroSupport}</p>
 
-            <div className="hero__actions">
-              <Link className="button button--primary" to="/cv">
-                Review CV
+            <div className="hero-actions">
+              <Link className="button button--primary" to="/portfolio">
+                Explore portfolio
               </Link>
-              <Link className="button button--secondary" to="/portfolio">
-                Open portfolio
+              <Link className="button button--secondary" to="/cv">
+                Review CV
               </Link>
             </div>
 
-            <div className="metric-strip metric-strip--hero">
+            <div className="metric-row">
               {homeMetrics.map((item) => (
-                <div key={item.label}>
+                <article key={item.label} className="metric-card">
                   <span>{item.label}</span>
                   <strong>{item.value}</strong>
-                  <small>{item.note}</small>
-                </div>
+                  <p>{item.note}</p>
+                </article>
               ))}
             </div>
           </div>
 
-          <aside className="hero-showcase reveal reveal--delay">
-            <div className="hero-portrait">
-              <div className="hero-portrait__frame">
-                <img
-                  src={portraitImage}
-                  alt="Portrait of Daniel Clancy."
+          <div className="hero-column">
+            <article className="portrait-panel">
+              <div className="portrait-panel__media">
+                <MediaFrame
+                  alt="Portrait of Daniel Clancy"
+                  loading="eager"
+                  src={shellAssets.heroPortrait}
                 />
               </div>
-
-              <div className="hero-portrait__note">
-                <p className="hero-panel__label">Current focus</p>
-                <strong>Recruiter-ready documentation archive</strong>
-                <span>Architecture, drafting, and technical design evidence presented with clearer editorial structure.</span>
+              <div className="portrait-panel__body">
+                <p className="kicker">Based in Sydney</p>
+                <h2>Available for design documentation, drafting support, and portfolio review conversations.</h2>
               </div>
-            </div>
+            </article>
 
             {leadProject ? (
-              <div className="hero-showcase__card hero-showcase__card--spotlight">
-                <p className="hero-panel__label">Selected evidence</p>
-                <h2>{leadProject.title}</h2>
-                <p>{leadProject.summary}</p>
-                <div className="tag-grid tag-grid--compact">
-                  {leadProject.software.concat(leadProject.disciplines).slice(0, 4).map((item) => (
-                    <span key={`${leadProject.id}-${item}`} className="tag tag--muted">
-                      {item}
-                    </span>
-                  ))}
+              <article className="feature-panel">
+                <p className="kicker">Selected work</p>
+                <div className="feature-panel__header">
+                  <div>
+                    <h2>{leadProject.title}</h2>
+                    <p>{leadProject.client}</p>
+                  </div>
+                  <span>{leadProject.year}</span>
                 </div>
-              </div>
+                <p>{leadProject.summary}</p>
+                <div className="logo-row logo-row--small">
+                  {leadProject.software.map((item) => {
+                    const logo = getSoftwareLogo(item);
+                    return logo ? (
+                      <span key={`${leadProject.id}-${item}`} className="logo-pill">
+                        <img alt="" src={logo} />
+                        <small>{item}</small>
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+                <Link className="button button--ghost" to={`/portfolio/${getPortfolioSlug(leadProject)}`}>
+                  Open project detail
+                </Link>
+              </article>
             ) : null}
-          </aside>
+          </div>
         </div>
       </section>
 
       <Section
-        eyebrow="Selected work"
-        title="Curated documentation, not generic portfolio filler."
-        intro={`The public site now opens with stronger composition, but the core hiring job stays the same: surface ${portfolioArchive.length} truthful archive records quickly and let featured work carry the first impression.`}
-        className="section--muted"
+        eyebrow="Selected projects"
+        title="A tighter first pass through representative work."
+        intro="The home page now moves directly from introduction to project evidence, software capability, and current chronology."
       >
         <div className="project-grid project-grid--featured">
-          {spotlightProjects.map((project, index) => (
-            <article
-              key={project.id}
-              className={`project-card project-card--featured project-card--offset-${index + 1}`}
-            >
-              <img src={project.image} alt={project.title} loading="lazy" />
+          {spotlightProjects.map((project) => (
+            <article key={project.id} className="project-card">
+              <MediaFrame alt={project.title} src={project.image} />
               <div className="project-card__body">
-                <div className="project-card__header">
-                  <p className="project-card__meta">{project.client}</p>
-                  <span className="project-card__year">{project.year}</span>
+                <div className="project-card__topline">
+                  <p>{project.client}</p>
+                  <span>{project.year}</span>
                 </div>
                 <h3>{project.title}</h3>
                 <p>{project.summary}</p>
-                <div className="project-card__meta-list">
+                <div className="project-card__meta">
                   <span>{project.studio.join(" / ")}</span>
-                  <span>{project.location ?? project.sector ?? "Archive entry"}</span>
+                  <span>{project.location ?? project.sector ?? "Project record"}</span>
                 </div>
+                <Link className="text-link" to={`/portfolio/${getPortfolioSlug(project)}`}>
+                  View detail
+                </Link>
               </div>
             </article>
           ))}
@@ -123,102 +140,104 @@ export function HomePage() {
       </Section>
 
       <Section
-        eyebrow="Professional profile"
-        title="Experience depth, software fluency, and a direct review path."
-        intro="The middle of the site now behaves more like an editorial dossier: large evidence moments on one side, denser review information on the other."
+        eyebrow="Software capability"
+        title="Core production tools with clear depth of use."
+        intro="The strongest value signal here is not software name-dropping, but consistent ability across production drafting, documentation, presentation, and review support."
+        className="section--muted"
       >
-        <div className="editorial-grid">
-          <article className="surface surface--feature">
-            <p className="contact-card__label">Recent chronology</p>
-            <div className="timeline-list timeline-list--compact">
-              {recentExperience.map((item) => (
-                <article key={`${item.company}-${item.period}`} className="timeline-item timeline-item--compact">
-                  <div className="timeline-item__meta">
-                    <p>{item.period}</p>
-                    <span>{item.location}</span>
-                  </div>
-                  <div className="timeline-item__body">
-                    <div className="timeline-item__heading">
-                      <h3>{item.company}</h3>
-                      <p className="timeline-item__role">{item.role}</p>
+        <div className="capability-grid">
+          <div className="capability-list">
+            {softwareCapabilities.map((item) => {
+              const logo = getSoftwareLogo(item.name);
+
+              return (
+                <article key={item.name} className="capability-row">
+                  <div className="capability-row__header">
+                    <div className="capability-row__title">
+                      {logo ? <img alt="" src={logo} /> : null}
+                      <div>
+                        <h3>{item.name}</h3>
+                        <p>{item.note}</p>
+                      </div>
                     </div>
-                    <p>{item.summary}</p>
+                    <strong>{item.score}%</strong>
+                  </div>
+                  <div className="capability-bar" aria-hidden="true">
+                    <span style={{ ["--capability" as string]: `${item.score}%` }} />
                   </div>
                 </article>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            <div className="section-actions">
-              <Link className="button button--secondary" to="/cv">
-                View full CV timeline
-              </Link>
-            </div>
-          </article>
-
-          <div className="editorial-grid__stack">
-            <article className="surface surface--soft">
-              <p className="contact-card__label">Studios and employers</p>
-              <div className="tag-grid">
-                {featuredEmployers.map((item) => (
-                  <span key={item} className="tag tag--muted">
-                    {item}
-                  </span>
-                ))}
+          <div className="surface-stack">
+            <article className="surface">
+              <p className="kicker">Studios and employers</p>
+              <div className="logo-grid">
+                {featuredEmployers.map((item) => {
+                  const logo = getCompanyLogo(item);
+                  return logo ? (
+                    <span key={item} className="logo-plate">
+                      <img alt="" src={logo} />
+                    </span>
+                  ) : (
+                    <span key={item} className="tag">
+                      {item}
+                    </span>
+                  );
+                })}
               </div>
             </article>
 
-            <article className="surface surface--soft">
-              <p className="contact-card__label">Working focus</p>
-              <div className="tag-grid">
-                {focusAreas.map((item) => (
-                  <span key={item} className="tag">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </article>
-
-            <article className="surface surface--soft">
-              <p className="contact-card__label">Software framing</p>
-              <div className="software-columns">
-                {softwareGroups.map((group) => (
-                  <div key={group.label}>
-                    <span className="filter-stack__label">{group.label}</span>
-                    <ul className="bullet-list bullet-list--compact">
-                      {group.items.map((item) => (
-                        <li key={`${group.label}-${item}`}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+            <article className="surface">
+              <p className="kicker">Current emphasis</p>
+              <h3>Readable drawing sets, restrained visual polish, and evidence that stands up to review.</h3>
+              <p>
+                The site keeps the tone calm and documentation-forward while still presenting the work
+                with more intention than a plain archive dump.
+              </p>
             </article>
           </div>
         </div>
       </Section>
 
       <Section
-        eyebrow="Contact"
-        title="Prepared for CV review, project follow-up, and direct hiring conversation."
-        intro="The employer-facing routes stay explicit: review the CV, inspect the archive, or contact Daniel directly."
-        className="section--deep"
+        eyebrow="Recent chronology"
+        title="Recent roles and studio context."
+        intro="A short timeline here keeps the home page useful without making it compete with the full CV."
       >
-        <div className="cta-panel cta-panel--contact">
-          <div>
-            <p className="cta-panel__eyebrow">Primary contact</p>
-            <h3>{siteMeta.contact.email}</h3>
-            <p>{siteMeta.contact.phone}</p>
-            <p>{siteMeta.contact.location}</p>
-          </div>
+        <div className="timeline-list">
+          {recentExperience.map((item) => {
+            const logo = getCompanyLogo(item.company);
 
-          <div className="cta-panel__actions">
-            <Link className="button button--primary" to="/contact">
-              Contact Daniel
-            </Link>
-            <Link className="button button--secondary" to="/portfolio">
-              Browse archive
-            </Link>
-          </div>
+            return (
+              <article key={`${item.company}-${item.period}`} className="timeline-card">
+                <div className="timeline-card__meta">
+                  <span>{item.period}</span>
+                  <small>{item.location}</small>
+                </div>
+                <div className="timeline-card__body">
+                  <div className="timeline-card__heading">
+                    {logo ? <img alt="" src={logo} /> : null}
+                    <div>
+                      <h3>{item.company}</h3>
+                      <p>{item.role}</p>
+                    </div>
+                  </div>
+                  <p>{item.summary}</p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className="section-actions">
+          <Link className="button button--secondary" to="/cv">
+            View full CV
+          </Link>
+          <Link className="button button--ghost" to="/contact">
+            Make contact
+          </Link>
         </div>
       </Section>
     </>

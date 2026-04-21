@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /home
 Disallow: /watch
 Disallow: /donate
