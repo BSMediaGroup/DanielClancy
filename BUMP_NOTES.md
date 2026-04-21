@@ -1,4 +1,24 @@
-CURRENT VER= 0.2.0-alpha / PENDING VER= 0.2.1-alpha
+CURRENT VER= 0.3.0-alpha / PENDING VER= 0.3.1-alpha
+
+## 0.3.0-alpha
+
+### Technical
+
+- Rebuilt the portfolio/archive data flow around `cmsdata/wix/collection-tables/WorkSet.csv` as the canonical public-project source.
+- Replaced the obsolete hard-coded portfolio array in `src/content/siteContent.ts` with a smaller content module plus a new `src/content/workSetPortfolio.ts` parser/normaliser.
+- Added WorkSet-driven gallery media, local asset resolution, supporting PDF links, and slug generation for `/portfolio/:slug`.
+- Upgraded the project detail route with a contained media viewport, inline gallery controls, pagination dots, lightbox mode, collapsible details panel, previous/next project navigation, and back-to-gallery handling.
+- Added `CompanyLogoMark`, `CapabilityMeter`, `ContactMap`, and `PortfolioMediaGallery` components.
+- Added `leaflet` plus `@types/leaflet` for the static-host-friendly dark Sydney contact map.
+- Updated shell/header layout logic, account-widget structure, logo handling, competence-bar animation, and route styling in `src/styles/global.css`.
+- Bumped the package version to `0.3.0-alpha`.
+
+### Human-readable
+
+- The site is now wider, calmer, and more deliberate without changing the established Daniel Clancy font identity.
+- The personal header/account area now aligns correctly and feels closer to an intentional dashboard control instead of a loose placeholder.
+- Portfolio browsing and detail-page review are materially stronger, with the media/documentation now carrying the experience.
+- The contact page now has an integrated dark Sydney map rather than stopping at text-only location details.
 
 ## 0.2.0-alpha
 

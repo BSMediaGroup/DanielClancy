@@ -4,13 +4,13 @@ export function PersonalHeaderAccount() {
   return (
     <details className="account-menu">
       <summary className="account-menu__trigger">
-        <span className="account-menu__bell" aria-hidden="true">
-          •
-        </span>
         <span className="account-menu__avatar">
           <img alt="" src={shellAssets.profileAvatar} />
         </span>
-        <span className="account-menu__label">Daniel Clancy</span>
+        <span className="account-menu__copy">
+          <span className="account-menu__eyebrow">Member access</span>
+          <span className="account-menu__label">Daniel Clancy</span>
+        </span>
         <span className="account-menu__caret" aria-hidden="true">
           ▾
         </span>

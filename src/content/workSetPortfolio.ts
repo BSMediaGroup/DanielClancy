@@ -1,0 +1,397 @@
+import workSetCsv from "../../cmsdata/wix/collection-tables/WorkSet.csv?raw";
+import type { PortfolioItem, PortfolioMediaItem } from "./siteContent";
+
+const assetModules = import.meta.glob("../../cmsdata/wix/portfolio/**/*.{png,jpg,jpeg,webp,pdf}", {
+  eager: true,
+  import: "default",
+});
+
+const assetUrlByFileName = Object.fromEntries(
+  Object.entries(assetModules).map(([path, assetUrl]) => [
+    getFileName(path).toLowerCase(),
+    String(assetUrl),
+  ]),
+);
+
+const preferredFeaturedTitles = [
+  "Redevelopment of Highway Service Center Pheasants Nest",
+  "Wungong Urban Water Master Plan",
+  "Lake Joondalup Baptist College",
+  "Cottesloe Beach House - Landscape Design",
+  "Curtin Creative Quarter",
+  "Cockburn Coast Streetscapes",
+];
+
+const preferredSpotlightTitles = [
+  "Redevelopment of Highway Service Center Pheasants Nest",
+  "Wungong Urban Water Master Plan",
+  "Lake Joondalup Baptist College",
+];
+
+type WorkSetRow = Record<string, string>;
+
+type WorkSetGalleryItem = {
+  description?: string;
+  fileName?: string;
+  alt?: string;
+  src?: string;
+  title?: string;
+  type?: string;
+  settings?: {
+    width?: number;
+    height?: number;
+  };
+};
+
+const workSetRows = parseCsv(workSetCsv)
+  .map(normalizeWorkSetRow)
+  .filter((row) => row.Status === "PUBLISHED");
+
+export const portfolioArchive: PortfolioItem[] = workSetRows
+  .map(createPortfolioItem)
+  .sort((left, right) => left.sortOrder - right.sortOrder);
+
+export const featuredProjects = portfolioArchive.filter((project) => project.featured);
+
+export const homeSpotlightProjects = preferredSpotlightTitles
+  .map((title) => portfolioArchive.find((project) => project.title.includes(title)))
+  .filter((project): project is PortfolioItem => Boolean(project));
+
+function createPortfolioItem(row: WorkSetRow): PortfolioItem {
+  const title = row.projectTitle.trim();
+  const disciplines = parseJsonArray(row.discipline);
+  const studio = parseJsonArray(row.company);
+  const software = parseJsonArray(row.softwarePlatform);
+  const gallery = parseJsonArray<WorkSetGalleryItem>(row.imageGallery);
+  const location = parseLocation(row.projectLocation);
+  const slug = createSlug(row["Project Page (Item)"] || title);
+  const primaryStudio = studio[0] ?? "Independent";
+  const description = tidySentence(row.technicalDescription);
+  const summary = createSummary(description);
+  const projectDate = row.projectDate;
+  const year = projectDate ? new Date(projectDate).getFullYear().toString() : "Undated";
+  const documentationUrl = resolveDocumentUrl(row.singleDoc);
+  const media = createMediaItems({ title, gallery, singleImage: row.singleImage });
+  const primaryImage = media[0]?.src ?? "";
+  const constructionType = tidySentence(row.constructionType);
+  const tags = [constructionType, ...disciplines].filter(Boolean);
+  const references = [
+    row.companyUrl ? { label: `${primaryStudio} website`, path: row.companyUrl } : null,
+    row.clientUrl ? { label: `${row.client || "Client"} website`, path: row.clientUrl } : null,
+    documentationUrl ? { label: "Documentation PDF", path: documentationUrl } : null,
+  ].filter((item): item is { label: string; path: string } => Boolean(item));
+
+  return {
+    id: slug,
+    slug,
+    sortOrder: Number(row.globalSort || row.itemSort || Number.MAX_SAFE_INTEGER),
+    title,
+    client: row.client.trim() || primaryStudio,
+    year,
+    dateLabel: formatProjectDate(projectDate),
+    location,
+    sector: constructionType,
+    color: row.Color.trim(),
+    studio,
+    disciplines,
+    subtypes: tags,
+    software,
+    summary,
+    description,
+    image: primaryImage,
+    media,
+    featured: preferredFeaturedTitles.some((item) => title.includes(item)),
+    sourceFolder: "cmsdata/wix/collection-tables/WorkSet.csv",
+    sourceFiles: media.map((item) => item.fileName).filter(Boolean),
+    references,
+    detailNotes: [
+      `${disciplines.join(" / ")} documentation record drawn from the canonical WorkSet export.`,
+      constructionType ? `Project type: ${constructionType}.` : null,
+      location ? `Recorded location: ${location}.` : null,
+      documentationUrl ? "Supporting PDF set retained for document-style review." : null,
+    ].filter((item): item is string => Boolean(item)),
+    projectFamily: primaryStudio,
+    documentationType: constructionType || disciplines[0] || "Project documentation",
+    sourceConfidence: "High",
+    evidenceAssets: media.slice(0, 4).map((item) => ({
+      label: item.title || item.fileName || projectLabelFromIndex(title, item.index),
+      path: item.src,
+      kind: "image" as const,
+    })),
+    internalSourceNote:
+      "Canonical portfolio data now derives from WorkSet.csv, with prior wording only retained where consistent with the CSV record.",
+    sensitivityNote: "Public-facing summary only. Protected or withheld documentation remains excluded.",
+    documentationUrl,
+    constructionType,
+  };
+}
+
+function createMediaItems({
+  title,
+  gallery,
+  singleImage,
+}: {
+  title: string;
+  gallery: WorkSetGalleryItem[];
+  singleImage: string;
+}): PortfolioMediaItem[] {
+  const galleryItems = gallery.reduce<PortfolioMediaItem[]>((items, item, index) => {
+    if ((item.type || "image") !== "image") {
+      return items;
+    }
+
+      const fileName = item.fileName?.trim() || `${title}-${index + 1}.jpg`;
+      const localUrl = resolveLocalAsset(fileName);
+      const src = localUrl ?? resolveWixImageUrl(item.src || singleImage);
+      const width = Number(item.settings?.width || 0) || undefined;
+      const height = Number(item.settings?.height || 0) || undefined;
+
+      if (!src) {
+        return items;
+      }
+
+      items.push({
+        id: `${slugify(fileName)}-${index}`,
+        index,
+        fileName,
+        src,
+        alt: item.alt?.trim() || item.title?.trim() || title,
+        title: item.title?.trim() || projectLabelFromIndex(title, index),
+        description:
+          tidySentence(item.description ?? "") || `Documentation view ${index + 1} for ${title}.`,
+        width,
+        height,
+        aspectRatio: width && height ? width / height : 16 / 9,
+      });
+
+      return items;
+    }, []);
+
+  if (galleryItems.length) {
+    return galleryItems;
+  }
+
+  const fallbackImage = resolveWixImageUrl(singleImage);
+
+  if (!fallbackImage) {
+    return [];
+  }
+
+  return [
+    {
+      id: `${slugify(title)}-0`,
+      index: 0,
+      fileName: getFileName(singleImage) || `${slugify(title)}.jpg`,
+      src: fallbackImage,
+      alt: title,
+      title,
+      description: `Documentation view for ${title}.`,
+      aspectRatio: 16 / 9,
+    },
+  ];
+}
+
+function parseCsv(input: string): WorkSetRow[] {
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentField = "";
+  let index = 0;
+  let inQuotes = false;
+
+  while (index < input.length) {
+    const character = input[index];
+
+    if (inQuotes) {
+      if (character === "\"") {
+        if (input[index + 1] === "\"") {
+          currentField += "\"";
+          index += 2;
+          continue;
+        }
+
+        inQuotes = false;
+        index += 1;
+        continue;
+      }
+
+      currentField += character;
+      index += 1;
+      continue;
+    }
+
+    if (character === "\"") {
+      inQuotes = true;
+      index += 1;
+      continue;
+    }
+
+    if (character === ",") {
+      currentRow.push(currentField);
+      currentField = "";
+      index += 1;
+      continue;
+    }
+
+    if (character === "\r") {
+      index += 1;
+      continue;
+    }
+
+    if (character === "\n") {
+      currentRow.push(currentField);
+      rows.push(currentRow);
+      currentRow = [];
+      currentField = "";
+      index += 1;
+      continue;
+    }
+
+    currentField += character;
+    index += 1;
+  }
+
+  if (currentField.length || currentRow.length) {
+    currentRow.push(currentField);
+    rows.push(currentRow);
+  }
+
+  const [headerRow, ...bodyRows] = rows;
+  const headers = (headerRow ?? []).map((header, headerIndex) =>
+    headerIndex === 0 ? header.replace(/^\uFEFF/, "") : header,
+  );
+
+  return bodyRows.map((row) =>
+    Object.fromEntries(headers.map((header, headerIndex) => [header, row[headerIndex] ?? ""])),
+  );
+}
+
+function normalizeWorkSetRow(row: WorkSetRow) {
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [key.replace(/^\uFEFF/, ""), value]),
+  );
+}
+
+function parseJsonArray<T = string>(value: string) {
+  if (!value.trim()) {
+    return [] as T[];
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as T[]) : [];
+  } catch {
+    return [] as T[];
+  }
+}
+
+function parseLocation(rawLocation: string) {
+  if (!rawLocation.trim()) {
+    return "";
+  }
+
+  try {
+    const parsed = JSON.parse(rawLocation) as {
+      formatted?: string;
+      city?: string;
+      subdivision?: string;
+    };
+
+    return parsed.formatted || [parsed.city, parsed.subdivision].filter(Boolean).join(", ");
+  } catch {
+    return "";
+  }
+}
+
+function resolveLocalAsset(fileName: string) {
+  return assetUrlByFileName[fileName.toLowerCase()];
+}
+
+function resolveWixImageUrl(value: string) {
+  if (!value.trim()) {
+    return "";
+  }
+
+  const directFile = resolveLocalAsset(getFileName(value));
+
+  if (directFile) {
+    return directFile;
+  }
+
+  const match = value.match(/^wix:image:\/\/v1\/([^/]+)\//);
+  return match ? `https://static.wixstatic.com/media/${match[1]}` : value;
+}
+
+function resolveDocumentUrl(value: string) {
+  if (!value.trim()) {
+    return "";
+  }
+
+  const directFile = resolveLocalAsset(getFileName(value));
+
+  if (directFile) {
+    return directFile;
+  }
+
+  const match = value.match(/^wix:document:\/\/v1\/ugd\/([^/]+)\/(.+)$/);
+
+  if (!match) {
+    return value;
+  }
+
+  return `https://static.wixstatic.com/ugd/${match[1]}/${decodeURIComponent(match[2])}`;
+}
+
+function formatProjectDate(value: string) {
+  if (!value.trim()) {
+    return "Undated";
+  }
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return "Undated";
+  }
+
+  return new Intl.DateTimeFormat("en-AU", {
+    month: "long",
+    year: "numeric",
+  }).format(parsed);
+}
+
+function createSummary(description: string) {
+  const words = description.split(/\s+/).filter(Boolean);
+
+  if (words.length <= 26) {
+    return description;
+  }
+
+  return `${words.slice(0, 26).join(" ")}…`;
+}
+
+function createSlug(value: string) {
+  const normalized = decodeURIComponent(value)
+    .replace(/^\/workset\//, "")
+    .replace(/[()]/g, "")
+    .replace(/&/g, " and ");
+
+  return slugify(normalized);
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function tidySentence(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function getFileName(value: string) {
+  return decodeURIComponent((value.split("/").pop() ?? "").split("#")[0].split("?")[0]);
+}
+
+function projectLabelFromIndex(title: string, index: number) {
+  return `${title} ${index + 1}`;
+}

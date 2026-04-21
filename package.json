@@ -1,7 +1,7 @@
 {
   "name": "daniel-clancy-public-site",
   "private": true,
-  "version": "0.2.0-alpha",
+  "version": "0.3.0-alpha",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,12 +10,14 @@
     "check": "tsc --noEmit"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
     "react-router-dom": "^6.30.1"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.7.0",

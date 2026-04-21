@@ -17,20 +17,22 @@ export function ProfessionalShell() {
         <div className="container site-header__inner">
           <SiteBrand homeTo="/" subtitle="Design Consultant" theme="professional" />
 
-          <nav aria-label="Professional navigation" className="site-nav">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `site-nav__link${isActive ? " site-nav__link--active" : ""}`
-                }
-                end={item.to === "/"}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+          <div className="site-header__actions">
+            <nav aria-label="Professional navigation" className="site-nav">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `site-nav__link${isActive ? " site-nav__link--active" : ""}`
+                  }
+                  end={item.to === "/"}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
         </div>
       </header>
 

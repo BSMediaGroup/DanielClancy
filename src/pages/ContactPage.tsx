@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { ContactMap } from "../components/ContactMap";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { shellAssets } from "../content/brandAssets";
@@ -103,7 +104,8 @@ export function ContactPage() {
             <h1>Direct contact for professional enquiries, project follow-up, and collaboration.</h1>
             <p className="hero-copy__lead">
               Use the form for introductions, project discussions, or role conversations. Messages are
-              delivered server-side for Cloudflare Pages deployment.
+              delivered server-side for Cloudflare Pages deployment, and the page now includes a Sydney
+              location map for fast spatial context.
             </p>
           </div>
 
@@ -118,6 +120,42 @@ export function ContactPage() {
           </aside>
         </div>
       </section>
+
+      <Section
+        eyebrow="Location"
+        title="Sydney-based with a map surface that matches the site."
+        intro="The map stays static-host friendly while using a dark presentation, a custom studio marker, and a restrained hover tooltip."
+        className="section--muted"
+      >
+        <div className="two-column-grid two-column-grid--contact">
+          <article className="surface surface--map">
+            <ContactMap />
+          </article>
+
+          <article className="surface">
+            <p className="kicker">Base</p>
+            <h3>Sydney CBD context</h3>
+            <p>
+              Daniel Clancy is based in Sydney, New South Wales, with the professional contact surface
+              anchored to the CBD for quick geographic reference.
+            </p>
+            <div className="info-list">
+              <div>
+                <span>City</span>
+                <strong>Sydney</strong>
+              </div>
+              <div>
+                <span>Region</span>
+                <strong>New South Wales</strong>
+              </div>
+              <div>
+                <span>Postal</span>
+                <strong>{siteMeta.contact.postal}</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+      </Section>
 
       <Section
         eyebrow="Send a message"

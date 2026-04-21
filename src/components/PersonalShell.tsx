@@ -13,9 +13,11 @@ export function PersonalShell() {
     <div className="site-shell site-shell--personal">
       <header className="site-header site-header--personal">
         <div className="container personal-header">
-          <div className="personal-header__main">
+          <div className="personal-header__brand">
             <SiteBrand homeTo="/home" subtitle="Studio Journal" theme="personal" />
+          </div>
 
+          <div className="personal-header__actions">
             <nav aria-label="Personal navigation" className="site-nav site-nav--personal">
               {navItems.map((item) => (
                 <NavLink
@@ -30,10 +32,10 @@ export function PersonalShell() {
                 </NavLink>
               ))}
             </nav>
-          </div>
 
-          <div className="personal-header__account">
-            <PersonalHeaderAccount />
+            <div className="personal-header__account">
+              <PersonalHeaderAccount />
+            </div>
           </div>
         </div>
       </header>

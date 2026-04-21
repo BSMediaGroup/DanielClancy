@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { CapabilityMeter } from "../components/CapabilityMeter";
+import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { getCompanyLogo, getSoftwareLogo, shellAssets } from "../content/brandAssets";
+import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
 import {
   experienceItems,
   featuredEmployers,
@@ -70,6 +72,7 @@ export function HomePage() {
                 <MediaFrame
                   alt="Portrait of Daniel Clancy"
                   loading="eager"
+                  aspectRatio={0.92}
                   src={shellAssets.heroPortrait}
                 />
               </div>
@@ -87,7 +90,7 @@ export function HomePage() {
                     <h2>{leadProject.title}</h2>
                     <p>{leadProject.client}</p>
                   </div>
-                  <span>{leadProject.year}</span>
+                  <span>{leadProject.dateLabel}</span>
                 </div>
                 <p>{leadProject.summary}</p>
                 <div className="logo-row logo-row--small">
@@ -151,21 +154,7 @@ export function HomePage() {
               const logo = getSoftwareLogo(item.name);
 
               return (
-                <article key={item.name} className="capability-row">
-                  <div className="capability-row__header">
-                    <div className="capability-row__title">
-                      {logo ? <img alt="" src={logo} /> : null}
-                      <div>
-                        <h3>{item.name}</h3>
-                        <p>{item.note}</p>
-                      </div>
-                    </div>
-                    <strong>{item.score}%</strong>
-                  </div>
-                  <div className="capability-bar" aria-hidden="true">
-                    <span style={{ ["--capability" as string]: `${item.score}%` }} />
-                  </div>
-                </article>
+                <CapabilityMeter key={item.name} logo={logo} name={item.name} note={item.note} score={item.score} />
               );
             })}
           </div>
@@ -173,16 +162,11 @@ export function HomePage() {
           <div className="surface-stack">
             <article className="surface">
               <p className="kicker">Studios and employers</p>
-              <div className="logo-grid">
+              <div className="logo-grid logo-grid--employers">
                 {featuredEmployers.map((item) => {
-                  const logo = getCompanyLogo(item);
-                  return logo ? (
-                    <span key={item} className="logo-plate">
-                      <img alt="" src={logo} />
-                    </span>
-                  ) : (
-                    <span key={item} className="tag">
-                      {item}
+                  return (
+                    <span key={item} className="logo-plate logo-plate--square">
+                      <CompanyLogoMark company={item} variant="monochrome" />
                     </span>
                   );
                 })}
@@ -208,8 +192,6 @@ export function HomePage() {
       >
         <div className="timeline-list">
           {recentExperience.map((item) => {
-            const logo = getCompanyLogo(item.company);
-
             return (
               <article key={`${item.company}-${item.period}`} className="timeline-card">
                 <div className="timeline-card__meta">
@@ -218,13 +200,15 @@ export function HomePage() {
                 </div>
                 <div className="timeline-card__body">
                   <div className="timeline-card__heading">
-                    {logo ? <img alt="" src={logo} /> : null}
                     <div>
                       <h3>{item.company}</h3>
                       <p>{item.role}</p>
                     </div>
                   </div>
                   <p>{item.summary}</p>
+                  <div className="timeline-card__logo">
+                    <CompanyLogoMark company={item.company} />
+                  </div>
                 </div>
               </article>
             );

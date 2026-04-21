@@ -5,6 +5,8 @@ type MediaFrameProps = {
   alt: string;
   className?: string;
   loading?: "eager" | "lazy";
+  fit?: "cover" | "contain";
+  aspectRatio?: number;
 };
 
 export function MediaFrame({
@@ -12,6 +14,8 @@ export function MediaFrame({
   alt,
   className = "",
   loading = "lazy",
+  fit = "cover",
+  aspectRatio,
 }: MediaFrameProps) {
   const [loaded, setLoaded] = useState(false);
 
@@ -20,7 +24,10 @@ export function MediaFrame({
   }, [src]);
 
   return (
-    <div className={`media-frame${loaded ? " media-frame--loaded" : ""} ${className}`.trim()}>
+    <div
+      className={`media-frame media-frame--${fit}${loaded ? " media-frame--loaded" : ""} ${className}`.trim()}
+      style={aspectRatio ? { aspectRatio: `${aspectRatio}` } : undefined}
+    >
       {!loaded ? <div aria-hidden="true" className="media-frame__skeleton" /> : null}
       <img alt={alt} loading={loading} src={src} onLoad={() => setLoaded(true)} />
     </div>

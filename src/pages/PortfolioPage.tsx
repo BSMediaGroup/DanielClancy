@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { getCompanyLogo, getSoftwareLogo, shellAssets } from "../content/brandAssets";
-import { featuredProjects, portfolioArchive, portfolioDisclaimer } from "../content/siteContent";
+import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
+import { portfolioArchive, portfolioDisclaimer } from "../content/siteContent";
 import {
   getDocumentationType,
   getPortfolioFamily,
@@ -70,10 +71,10 @@ export function PortfolioPage() {
         <div className="container hero-split hero-split--portfolio">
           <div className="hero-copy">
             <p className="kicker">Portfolio archive</p>
-            <h1>Project record first, detail page where it matters.</h1>
+            <h1>Canonical project records with cleaner browsing and stronger detail pages.</h1>
             <p className="hero-copy__lead">
-              The archive acts as the overall gallery and review index, while each promoted project now
-              has its own dedicated detail route for fuller context.
+              The gallery now follows the canonical WorkSet archive, while each project detail page
+              prioritises the drawing set, image sequence, and supporting context.
             </p>
             <div className="archive-summary">
               <article>
@@ -195,15 +196,17 @@ export function PortfolioPage() {
       <Section
         eyebrow="Featured projects"
         title="Lead entries surfaced with a faster reading pattern."
-        intro="The top of the archive stays selective so the first scan is cleaner, with dedicated detail pages handling the heavier documentation."
+        intro="Featured work stays selective, while the archive grid remains fully browseable and every card now opens its own project route."
       >
         <div className="project-grid project-grid--featured">
           {leadProjects.map((project) => {
-            const companyLogo = getCompanyLogo(project.studio[0]);
-
             return (
-              <article key={project.id} className="project-card project-card--feature">
-                <MediaFrame alt={project.title} src={project.image} />
+              <Link
+                key={project.id}
+                className="project-card project-card--feature project-card--clickable"
+                to={`/portfolio/${getPortfolioSlug(project)}`}
+              >
+                <MediaFrame alt={project.title} aspectRatio={1.58} src={project.image} />
                 <div className="project-card__body">
                   <div className="project-card__topline">
                     <p>{project.client}</p>
@@ -216,12 +219,10 @@ export function PortfolioPage() {
                     <span>{getDocumentationType(project)}</span>
                   </div>
                   <div className="logo-row logo-row--small">
-                    {companyLogo ? (
-                      <span className="logo-pill">
-                        <img alt="" src={companyLogo} />
-                        <small>{project.studio[0]}</small>
-                      </span>
-                    ) : null}
+                    <span className="logo-pill">
+                      <CompanyLogoMark company={project.studio[0]} />
+                      <small>{project.studio[0]}</small>
+                    </span>
                     {project.software.slice(0, 2).map((item) => {
                       const logo = getSoftwareLogo(item);
                       return logo ? (
@@ -232,11 +233,9 @@ export function PortfolioPage() {
                       ) : null;
                     })}
                   </div>
-                  <Link className="text-link" to={`/portfolio/${getPortfolioSlug(project)}`}>
-                    Open project detail
-                  </Link>
+                  <span className="text-link">Open project detail</span>
                 </div>
-              </article>
+              </Link>
             );
           })}
         </div>
@@ -250,11 +249,13 @@ export function PortfolioPage() {
       >
         <div className="project-grid">
           {visibleProjects.map((project) => {
-            const companyLogo = getCompanyLogo(project.studio[0]);
-
             return (
-              <article key={project.id} className="project-card">
-                <MediaFrame alt={project.title} src={project.image} />
+              <Link
+                key={project.id}
+                className="project-card project-card--clickable"
+                to={`/portfolio/${getPortfolioSlug(project)}`}
+              >
+                <MediaFrame alt={project.title} aspectRatio={1.6} src={project.image} />
                 <div className="project-card__body">
                   <div className="project-card__topline">
                     <p>{project.client}</p>
@@ -267,12 +268,10 @@ export function PortfolioPage() {
                     <span>{project.location ?? project.sector ?? "Project record"}</span>
                   </div>
                   <div className="logo-row logo-row--small">
-                    {companyLogo ? (
-                      <span className="logo-pill">
-                        <img alt="" src={companyLogo} />
-                        <small>{project.studio[0]}</small>
-                      </span>
-                    ) : null}
+                    <span className="logo-pill">
+                      <CompanyLogoMark company={project.studio[0]} />
+                      <small>{project.studio[0]}</small>
+                    </span>
                     {project.software.slice(0, 2).map((item) => {
                       const logo = getSoftwareLogo(item);
                       return logo ? (
@@ -283,11 +282,9 @@ export function PortfolioPage() {
                       ) : null;
                     })}
                   </div>
-                  <Link className="text-link" to={`/portfolio/${getPortfolioSlug(project)}`}>
-                    View detail page
-                  </Link>
+                  <span className="text-link">View detail page</span>
                 </div>
-              </article>
+              </Link>
             );
           })}
         </div>

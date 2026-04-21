@@ -1,115 +1,77 @@
-# DanielClancy Public-Site Polish Audit
+# DanielClancy Public-Site Refinement Audit
 
 Date: 2026-04-22
 
 ## Inspection basis
 
-- Current local Vite build reviewed at `http://127.0.0.1:4177/`
-- Current route/content/style implementation reviewed in `src/`
-- Current local logos, software marks, portraits, and share-image assets reviewed in `assets/` and `public/`
-- StreamSuites dashboard reviewed as read-only reference for the personal-header user widget pattern in `G:\StreamSuites-Dashboard\docs\assets\css\ss-profile-hovercard.css` and related profile-card markup
-- User-provided problem statement for layout dead space, archive confusion, public-copy cleanup, and professional/personal surface leakage treated as the active screenshot-note equivalent for this milestone
+- DanielClancy repo state reviewed locally before edits.
+- Canonical project source reviewed in `cmsdata/wix/collection-tables/WorkSet.csv`.
+- The user task brief and screenshot-markup notes were treated as the active markup-reference source for this pass.
+- Existing portfolio gallery/detail implementation, local logo assets, and shell/header/widget components were reviewed in `src/` and `assets/`.
+- StreamSuites dashboard remained reference-only for the compact personal-header account pattern and subtle glass-chip subtitle treatment.
 
-## Problems being corrected now
+## Final issues fixed in this pass
 
-### Public copy and messaging
+### Global layout and typography
 
-- Professional routes still expose internal implementation language such as:
-  - "recruiter-facing"
-  - "employer-facing"
-  - "intentionally isolated"
-  - "future foundation"
-  - "public build"
-  - "scaffold" / "placeholder" style copy
-- `/watch`, `/donate`, and `/contact` currently describe implementation state rather than presenting a real public-facing experience
-- README and bump notes currently describe the site too much as a workshop build instead of an authored DanielClancy public site
+- Increased the shared max-width target to 1600px.
+- Reduced oversized display headings and tightened section-title scale.
+- Trimmed dead space in the professional home composition without changing the established font system.
 
-### Shell and navigation leakage
+### Header and shell refinement
 
-- The app currently uses one shared `SiteLayout` for professional and personal routes
-- The shared footer leaks `/watch` and `/donate` into the professional shell
-- Professional footer messaging currently reads like internal segmentation notes rather than public site content
-- Personal routes inherit professional shell chrome instead of using a distinct content-facing shell
+- Added a restrained dark glass subtitle chip to both shell headers.
+- Rebuilt the personal header so the brand sits left, navigation sits to its right, and the compact account widget stays on the far right.
+- Removed the decorative dot/bell artifact from the personal account widget trigger.
+- Preserved the two-shell separation already established in the repo.
 
-### Layout and composition
+### Homepage and CV polish
 
-- Professional home hero leaves large dead space and underuses the first viewport
-- Home page section rhythm drops too sharply from hero into archive, software, and contact blocks
-- CV page presents true information, but some framing copy is still internal and the chronology could read more clearly
-- Portfolio archive uses a dense control cluster and an inline detail panel that makes the page feel heavy and confusing
-- Watch and donate pages read as unfinished utility placeholders instead of production-ready personal surfaces
+- Reworked competence bars so they animate from zero on load, replay on hover, and add a restrained shine/glow effect.
+- Converted the studios/employers preview to square logo cards using the `-0.svg` monochrome logo set for that section only.
+- Moved employment-history logos on home and CV cards into a stable bottom-left placement with per-logo shape handling.
+- Preserved the premium dark direction while tightening spacing and card rhythm.
 
-### Missing functionality
+### Portfolio rebuild
 
-- No dedicated `/portfolio/:slug` detail route yet
-- Contact form is not wired to send mail
-- Personal-route metadata is noindex-only but needs cleaner share-preview handling
-- Gallery/detail media loading needs a polished placeholder treatment
+- Replaced the prior hand-maintained portfolio archive implementation with a canonical WorkSet-driven data module.
+- Normalised project slugs, ordering, metadata, media lists, supporting PDF links, and studio/discipline/software filters from `WorkSet.csv`.
+- Preserved existing richer wording only where it stayed consistent with the WorkSet record.
+- Removed the obsolete hard-coded portfolio array from `src/content/siteContent.ts`; that file is now intentionally much shorter because the stale archive source was retired.
 
-## Publicly inappropriate/internal copy targeted for removal or replacement
+## WorkSet.csv source-of-truth rules now implemented
 
-- "This route is intentionally isolated..."
-- "The public site now opens with stronger composition..."
-- "employer-facing"
-- "recruiter-focused" / "recruiter-facing"
-- "future foundation"
-- "delivery wiring is intentionally deferred..."
-- "hidden utility route"
-- similar public text that explains the build process rather than Daniel Clancy's site
+- `cmsdata/wix/collection-tables/WorkSet.csv` is the active public portfolio source.
+- Project cards, project detail routes, ordering, and supporting metadata now derive from that canonical CSV.
+- Prior enriched wording was retained only when it did not contradict title, discipline, studio, location, date, or technical-description data in the CSV.
+- No stale legacy project facts remain in the active public-site data flow.
 
-## Split-shell architecture
+## Portfolio UX upgrades added
 
-### Professional shell
+- Entire gallery cards are now clickable.
+- Gallery cards now use a restrained hover glow.
+- Individual project pages remain on `/portfolio/:slug`.
+- Project detail pages now prioritise media/documentation viewing instead of a text-heavy split.
+- Added:
+  - collapsible details panel
+  - inline prev/next gallery controls
+  - pagination dots
+  - lightbox mode with prev/next controls
+  - previous/next project navigation
+  - discreet back-to-gallery action
+- Media frames now support contain-mode viewing with stable aspect-ratio handling and retained shimmer loading.
 
-- Routes:
-  - `/`
-  - `/cv`
-  - `/portfolio`
-  - `/portfolio/:slug`
-  - `/contact`
-- Own header and footer
-- SEO-indexed
-- No links or explanatory references to `/home`, `/watch`, or `/donate`
-- Positioning: professional review, CV, selected work, and contact
+## Contact-map addition
 
-### Personal shell
+- Added a dark Sydney CBD map surface suitable for static hosting.
+- Used a branded custom marker based on `assets/logos/company-dcdesignstudio.svg`.
+- Added a dark custom tooltip treatment for hover state.
 
-- Routes:
-  - `/home`
-  - `/watch`
-  - `/donate`
-- Own header and footer
-- Own subtitle, navigation, and title-link target
-- Noindex / nofollow treatment retained
-- Open Graph and Twitter preview metadata still present for link sharing
-- Includes a non-functional but intentional login/member widget pattern inspired by the StreamSuites dashboard profile-card treatment
+## Deferred to later Cloudflare/deployment/integration stage
 
-## Isolation rules
-
-- Professional pages do not advertise or expose the personal routes
-- Personal pages may acknowledge Daniel's wider studio/professional presence in a restrained way, but they remain visually and structurally separate from the professional shell
-- The two shells can share the same font system and premium dark design language, but they should not share copy blocks, nav items, footer utility lists, or route explanations
-
-## Implement now
-
-- Public-copy cleanup across all affected routes
-- Two-shell routing and layout split
-- Professional header/footer and personal header/footer implementations
-- `/home` personal landing page
-- Professional home/CV/portfolio/contact redesign pass
-- Dedicated `/portfolio/:slug` detail routes
-- Gallery/detail image skeleton and shimmer loading treatment
-- Watch and donate redesign with future-integration seams
-- Contact form delivery via Cloudflare Pages Functions using server-side Resend
-- Metadata split for SEO vs noindex/share-preview handling
-- README and milestone-note updates
-
-## Defer to later deployment/integration phase
-
-- Cloudflare deployment and DNS cutover
-- Provisioning real Cloudflare dashboard secrets
-- Live Stripe / PayPal payment wiring
-- Live YouTube / Rumble ingestion
-- Admin CMS integration
-- Final production analytics/observability pass
-- Hard abuse/rate-limiting beyond a sensible first-pass contact guardrail
+- Cloudflare deployment and domain cutover.
+- Cloudflare secrets provisioning and production email env configuration.
+- Live Stripe / PayPal wiring.
+- Live YouTube / Rumble ingestion.
+- Admin-side CMS wiring.
+- Any later asset/performance optimisation pass if the full local project-media bundle proves too heavy for the production rollout target.

@@ -11,6 +11,8 @@ This repo holds the public-facing Daniel Clancy website only. It now uses a deli
 
 The visual system keeps the existing DanielClancy font pairing while tightening hierarchy, spacing, route separation, and public copy quality.
 
+The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collection-tables/WorkSet.csv` export instead of the previous hand-maintained project array.
+
 ## Route architecture
 
 ### Professional shell
@@ -19,8 +21,8 @@ The visual system keeps the existing DanielClancy font pairing while tightening 
 | --- | --- | --- |
 | `/` | Professional landing page with selected work, software capability, and chronology preview | Yes |
 | `/cv` | PDF access and readable employment timeline | Yes |
-| `/portfolio` | Archive gallery and filtering surface | Yes |
-| `/portfolio/:slug` | Dedicated project detail route | Yes |
+| `/portfolio` | WorkSet-driven archive gallery and filtering surface | Yes |
+| `/portfolio/:slug` | Dedicated project detail route with gallery, lightbox, and prev/next navigation | Yes |
 | `/contact` | Professional contact page with live-ready form delivery | Yes |
 
 ### Personal shell
@@ -61,6 +63,7 @@ Environment keys already used:
 - Monospace UI: `assets/fonts/mono/SUSEMono-Variable.ttf`
 - Public CV: `public/docs/Daniel_Clancy_CV_2026.pdf`
 - Portfolio media: `public/media/portfolio/`
+- Canonical portfolio source: `cmsdata/wix/collection-tables/WorkSet.csv`
 - Logo/social/software/company marks: `assets/logos/` and `assets/icons/`
 
 ## Key implementation files
@@ -72,7 +75,12 @@ Environment keys already used:
 - Shared brand/media helpers:
   - `src/components/SiteBrand.tsx`
   - `src/components/MediaFrame.tsx`
+  - `src/components/CapabilityMeter.tsx`
+  - `src/components/CompanyLogoMark.tsx`
+  - `src/components/ContactMap.tsx`
+  - `src/components/PortfolioMediaGallery.tsx`
   - `src/content/brandAssets.ts`
+  - `src/content/workSetPortfolio.ts`
   - `src/lib/portfolio.ts`
 - Pages:
   - `src/pages/HomePage.tsx`
@@ -143,6 +151,7 @@ DanielClancy/
 ├─ src/
 │  ├─ app/App.tsx
 │  ├─ assets.d.ts
+│  ├─ vite-env.d.ts
 │  ├─ components/
 │  ├─ content/
 │  ├─ lib/
@@ -165,3 +174,4 @@ DanielClancy/
 - Live Stripe and PayPal payment processing
 - Admin-side content workflow integration
 - Further archive enrichment as more source material is verified
+- Potential media-bundle optimisation if the full local WorkSet asset set proves too heavy for final deployment targets

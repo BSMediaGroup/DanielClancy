@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
+import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { getCompanyLogo, getSoftwareLogo, shellAssets } from "../content/brandAssets";
+import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
 import { experienceItems, platformList, siteMeta } from "../content/siteContent";
 
 export function CvPage() {
@@ -88,8 +89,6 @@ export function CvPage() {
       >
         <div className="timeline-list timeline-list--document">
           {experienceItems.map((item) => {
-            const logo = getCompanyLogo(item.company);
-
             return (
               <article key={`${item.company}-${item.period}`} className="timeline-card timeline-card--document">
                 <div className="timeline-card__meta">
@@ -99,7 +98,6 @@ export function CvPage() {
 
                 <div className="timeline-card__body">
                   <div className="timeline-card__heading">
-                    {logo ? <img alt="" src={logo} /> : null}
                     <div>
                       <h3>{item.company}</h3>
                       <p>{item.role}</p>
@@ -109,6 +107,9 @@ export function CvPage() {
                   <a className="text-link" href={item.url} target="_blank" rel="noreferrer">
                     {item.url.replace("https://", "").replace(/\/$/, "")}
                   </a>
+                  <div className="timeline-card__logo">
+                    <CompanyLogoMark company={item.company} />
+                  </div>
                 </div>
               </article>
             );

@@ -1,10 +1,13 @@
 import { Link, Navigate, useParams } from "react-router-dom";
+import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
+import { PortfolioMediaGallery } from "../components/PortfolioMediaGallery";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { getCompanyLogo, getSoftwareLogo, shellAssets } from "../content/brandAssets";
+import { getSoftwareLogo } from "../content/brandAssets";
 import { portfolioArchive } from "../content/siteContent";
 import {
+  getAdjacentPortfolioProjects,
   getDocumentationType,
   getPortfolioFamily,
   getPortfolioProjectBySlug,
@@ -19,13 +22,12 @@ export function PortfolioDetailPage() {
     return <Navigate replace to="/portfolio" />;
   }
 
+  const { previousProject, nextProject } = getAdjacentPortfolioProjects(project);
   const relatedProjects = portfolioArchive
     .filter(
       (item) => item.id !== project.id && getPortfolioFamily(item) === getPortfolioFamily(project),
     )
     .slice(0, 3);
-
-  const companyLogo = getCompanyLogo(project.studio[0]);
 
   return (
     <>
@@ -40,21 +42,23 @@ export function PortfolioDetailPage() {
       <section className="hero hero--subpage hero--detail">
         <div className="container detail-hero">
           <div className="detail-hero__media">
-            <MediaFrame alt={project.title} loading="eager" src={project.image} />
+            <PortfolioMediaGallery
+              documentationUrl={project.documentationUrl}
+              media={project.media}
+              projectTitle={project.title}
+            />
           </div>
 
           <div className="detail-hero__body">
             <p className="kicker">Project detail</p>
             <h1>{project.title}</h1>
-            <p className="detail-hero__summary">{project.summary}</p>
+            <p className="detail-hero__summary">{project.description}</p>
 
             <div className="logo-row">
-              {companyLogo ? (
-                <span className="logo-pill">
-                  <img alt="" src={companyLogo} />
-                  <small>{project.studio[0]}</small>
-                </span>
-              ) : null}
+              <span className="logo-pill">
+                <CompanyLogoMark company={project.studio[0]} />
+                <small>{project.studio[0]}</small>
+              </span>
               {project.software.map((item) => {
                 const logo = getSoftwareLogo(item);
                 return logo ? (
@@ -66,46 +70,66 @@ export function PortfolioDetailPage() {
               })}
             </div>
 
-            <div className="detail-meta-grid">
-              <div>
-                <span>Client</span>
-                <strong>{project.client}</strong>
-              </div>
-              <div>
-                <span>Year</span>
-                <strong>{project.year}</strong>
-              </div>
-              <div>
-                <span>Project family</span>
-                <strong>{getPortfolioFamily(project)}</strong>
-              </div>
-              <div>
-                <span>Documentation type</span>
-                <strong>{getDocumentationType(project)}</strong>
-              </div>
-              {project.location ? (
+            <details className="detail-panel" open>
+              <summary className="detail-panel__summary">
+                <span>Project details</span>
+                <span>Toggle</span>
+              </summary>
+
+              <div className="detail-meta-grid">
                 <div>
-                  <span>Location</span>
-                  <strong>{project.location}</strong>
+                  <span>Client</span>
+                  <strong>{project.client}</strong>
                 </div>
-              ) : null}
-              {project.sector ? (
                 <div>
-                  <span>Sector</span>
-                  <strong>{project.sector}</strong>
+                  <span>Date</span>
+                  <strong>{project.dateLabel}</strong>
                 </div>
-              ) : null}
-              {project.sourceConfidence ? (
                 <div>
-                  <span>Source confidence</span>
-                  <strong>{project.sourceConfidence}</strong>
+                  <span>Studio</span>
+                  <strong>{getPortfolioFamily(project)}</strong>
                 </div>
-              ) : null}
-            </div>
+                <div>
+                  <span>Project type</span>
+                  <strong>{getDocumentationType(project)}</strong>
+                </div>
+                {project.location ? (
+                  <div>
+                    <span>Location</span>
+                    <strong>{project.location}</strong>
+                  </div>
+                ) : null}
+                {project.sector ? (
+                  <div>
+                    <span>Construction</span>
+                    <strong>{project.sector}</strong>
+                  </div>
+                ) : null}
+                {project.sourceConfidence ? (
+                  <div>
+                    <span>Source confidence</span>
+                    <strong>{project.sourceConfidence}</strong>
+                  </div>
+                ) : null}
+                <div>
+                  <span>Media count</span>
+                  <strong>{project.media.length}</strong>
+                </div>
+              </div>
+
+              <div className="detail-panel__notes surface surface--compact">
+                <p className="kicker">Archive notes</p>
+                <ul className="bullet-list">
+                  {project.detailNotes.map((note) => (
+                    <li key={`${project.id}-${note}`}>{note}</li>
+                  ))}
+                </ul>
+              </div>
+            </details>
 
             <div className="hero-actions">
               <Link className="button button--secondary" to="/portfolio">
-                Back to archive
+                Back to gallery
               </Link>
               <Link className="button button--ghost" to="/contact">
                 Discuss this work
@@ -118,7 +142,7 @@ export function PortfolioDetailPage() {
       <Section
         eyebrow="Documentation notes"
         title="Context retained with disciplined metadata."
-        intro="The detail page keeps the tone factual and readable rather than over-claiming beyond the retained material."
+        intro="The detail page now gives the project media most of the space, while supporting facts stay collapsible and readable."
       >
         <div className="two-column-grid">
           <article className="surface">
@@ -133,16 +157,17 @@ export function PortfolioDetailPage() {
           </article>
 
           <article className="surface">
-            <p className="kicker">Archive notes</p>
-            <ul className="bullet-list">
-              {project.detailNotes.map((note) => (
-                <li key={`${project.id}-${note}`}>{note}</li>
-              ))}
-            </ul>
+            <p className="kicker">Project summary</p>
+            <p>{project.description}</p>
             <p className="surface-note">
               {project.sourceFiles.length} retained source file
               {project.sourceFiles.length === 1 ? "" : "s"} support this public summary.
             </p>
+            {project.documentationUrl ? (
+              <a className="text-link" href={project.documentationUrl} target="_blank" rel="noreferrer">
+                Open supporting PDF
+              </a>
+            ) : null}
           </article>
         </div>
       </Section>
@@ -169,6 +194,45 @@ export function PortfolioDetailPage() {
         </Section>
       ) : null}
 
+      {(previousProject || nextProject) ? (
+        <Section
+          eyebrow="Project navigation"
+          title="Move through the archive"
+          intro="Detail routes now connect sequentially so the archive can be reviewed like a documented set instead of isolated pages."
+          className="section--muted"
+        >
+          <div className="feature-duo">
+            {previousProject ? (
+              <Link className="surface surface--compact nav-card" to={`/portfolio/${getPortfolioSlug(previousProject)}`}>
+                <p className="kicker">Previous project</p>
+                <h3>{previousProject.title}</h3>
+                <p>{previousProject.summary}</p>
+              </Link>
+            ) : (
+              <div className="surface surface--compact nav-card nav-card--empty">
+                <p className="kicker">Previous project</p>
+                <h3>Start of archive</h3>
+                <p>The current project is the first item in the ordered archive.</p>
+              </div>
+            )}
+
+            {nextProject ? (
+              <Link className="surface surface--compact nav-card" to={`/portfolio/${getPortfolioSlug(nextProject)}`}>
+                <p className="kicker">Next project</p>
+                <h3>{nextProject.title}</h3>
+                <p>{nextProject.summary}</p>
+              </Link>
+            ) : (
+              <div className="surface surface--compact nav-card nav-card--empty">
+                <p className="kicker">Next project</p>
+                <h3>End of archive</h3>
+                <p>The current project is the last item in the ordered archive.</p>
+              </div>
+            )}
+          </div>
+        </Section>
+      ) : null}
+
       {relatedProjects.length ? (
         <Section
           eyebrow="Related archive"
@@ -177,8 +241,12 @@ export function PortfolioDetailPage() {
         >
           <div className="project-grid">
             {relatedProjects.map((item) => (
-              <article key={item.id} className="project-card">
-                <MediaFrame alt={item.title} src={item.image} />
+              <Link
+                key={item.id}
+                className="project-card project-card--clickable"
+                to={`/portfolio/${getPortfolioSlug(item)}`}
+              >
+                <MediaFrame alt={item.title} aspectRatio={1.58} src={item.image} />
                 <div className="project-card__body">
                   <div className="project-card__topline">
                     <p>{item.client}</p>
@@ -186,11 +254,9 @@ export function PortfolioDetailPage() {
                   </div>
                   <h3>{item.title}</h3>
                   <p>{item.summary}</p>
-                  <Link className="text-link" to={`/portfolio/${getPortfolioSlug(item)}`}>
-                    Open detail
-                  </Link>
+                  <span className="text-link">Open detail</span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </Section>
