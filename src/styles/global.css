@@ -2647,10 +2647,6 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .brand__copy {
-    display: none;
-  }
-
   .brand__mark {
     width: 3rem;
     height: 3rem;
