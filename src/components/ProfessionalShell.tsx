@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { shellAssets } from "../content/brandAssets";
 import { siteMeta } from "../content/siteContent";
 import { SiteBrand } from "./SiteBrand";
@@ -11,9 +12,63 @@ const navItems = [
 ];
 
 export function ProfessionalShell() {
+  const location = useLocation();
+  const headerRef = useRef<HTMLElement>(null);
+  const isHomeRoute = location.pathname === "/";
+  const [homeHeaderProgress, setHomeHeaderProgress] = useState(isHomeRoute ? 0 : 1);
+  const [homeHeaderOffset, setHomeHeaderOffset] = useState(isHomeRoute ? 76 : 0);
+
+  useEffect(() => {
+    if (!isHomeRoute) {
+      setHomeHeaderProgress(1);
+      setHomeHeaderOffset(0);
+      return;
+    }
+
+    let frame = 0;
+
+    const updateHeaderState = () => {
+      const headerHeight = headerRef.current?.offsetHeight ?? 0;
+      const hero = document.querySelector<HTMLElement>(".hero--professional-home");
+      const fadeDistance = hero ? Math.min(Math.max(hero.offsetHeight * 0.38, 140), 340) : 220;
+      const nextProgress = Math.min(window.scrollY / fadeDistance, 1);
+
+      setHomeHeaderOffset((current) => (current === headerHeight ? current : headerHeight));
+      setHomeHeaderProgress((current) => (Math.abs(current - nextProgress) < 0.01 ? current : nextProgress));
+    };
+
+    const requestUpdate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateHeaderState);
+    };
+
+    updateHeaderState();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
+  }, [isHomeRoute]);
+
+  const homeShellStyle = isHomeRoute
+    ? ({
+        "--home-header-offset": `${homeHeaderOffset}px`,
+        "--home-header-progress": homeHeaderProgress,
+      } as CSSProperties)
+    : undefined;
+
   return (
-    <div className="site-shell site-shell--professional">
-      <header className="site-header">
+    <div
+      className={`site-shell site-shell--professional${isHomeRoute ? " site-shell--home" : ""}`}
+      style={homeShellStyle}
+    >
+      <header
+        ref={headerRef}
+        className={`site-header${isHomeRoute ? " site-header--home" : ""}`}
+      >
         <div className="container site-header__inner">
           <SiteBrand homeTo="/" subtitle="Design Consultant" theme="professional" />
 

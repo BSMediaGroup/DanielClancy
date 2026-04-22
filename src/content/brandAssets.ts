@@ -10,6 +10,7 @@ import appleIcon from "../../assets/icons/apple.svg";
 import googleIcon from "../../assets/icons/google.svg";
 import paymentIcon from "../../assets/icons/ui/payments.svg";
 import profileAvatar from "../../assets/portraits/profileavatar.webp";
+import professionalHeroBanner from "../../assets/backgrounds/banner-stripesgeneral.webp";
 import heroPortrait from "../../assets/backgrounds/danielclancy-portrait.webp";
 import professionalShare from "../../assets/backgrounds/seothumb-pro.jpg";
 import personalShare from "../../assets/backgrounds/seothumb.webp";
@@ -43,6 +44,7 @@ export const shellAssets = {
   linkedinIcon,
   heroPortrait,
   profileAvatar,
+  professionalHeroBanner,
   professionalShare,
   personalShare,
 };

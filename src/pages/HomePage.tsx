@@ -8,7 +8,6 @@ import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
 import {
   experienceItems,
   featuredEmployers,
-  homeMetrics,
   homeSpotlightProjects,
   siteMeta,
 } from "../content/siteContent";
@@ -23,9 +22,13 @@ const softwareCapabilities = [
   { name: "QGIS", score: 68, note: "Spatial context and mapping support" },
 ];
 
+const homeHeroDetails = ["Sydney, Australia", "17 years since 2008", "Revit / AutoCAD / Adobe CC"];
+
+const homeHeroSummary =
+  "Documentation-led design review, drafting depth, and project evidence shaped across structural, architectural, urban, landscape, and infrastructure work.";
+
 export function HomePage() {
   const spotlightProjects = homeSpotlightProjects;
-  const leadProject = spotlightProjects[0];
   const recentExperience = experienceItems.slice(0, 4);
 
   return (
@@ -38,77 +41,46 @@ export function HomePage() {
       />
 
       <section className="hero hero--professional-home">
-        <div className="hero__backdrop hero__backdrop--portrait" aria-hidden="true" />
-        <div className="container hero-split hero-split--home">
-          <div className="hero-copy">
-            <p className="kicker">Documentation-led design consultant</p>
-            <h1>Drafting depth, disciplined project records, and a cleaner professional review path.</h1>
-            <p className="hero-copy__lead">{siteMeta.heroSummary}</p>
-            <p className="hero-copy__support">{siteMeta.heroSupport}</p>
-
-            <div className="hero-actions">
-              <Link className="button button--primary" to="/portfolio">
-                Explore portfolio
-              </Link>
-              <Link className="button button--secondary" to="/cv">
-                Review CV
-              </Link>
+        <div
+          className="hero-home__backdrop"
+          aria-hidden="true"
+          style={{ backgroundImage: `url(${shellAssets.professionalHeroBanner})` }}
+        />
+        <div className="container hero-home__content">
+          <div className="hero-home__inner">
+            <div className="hero-home__portrait-shell">
+              <img
+                alt="Portrait of Daniel Clancy"
+                className="hero-home__portrait"
+                loading="eager"
+                src={shellAssets.profileAvatar}
+              />
             </div>
 
-            <div className="metric-row">
-              {homeMetrics.map((item) => (
-                <article key={item.label} className="metric-card">
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                  <p>{item.note}</p>
-                </article>
-              ))}
-            </div>
-          </div>
+            <div className="hero-home__identity">
+              <p className="kicker">Professional home</p>
+              <h1>Daniel Clancy</h1>
+              <p className="hero-home__role">{siteMeta.role}</p>
+              <div className="hero-home__divider" aria-hidden="true" />
+              <p className="hero-home__summary">{homeHeroSummary}</p>
 
-          <div className="hero-column">
-            <article className="portrait-panel">
-              <div className="portrait-panel__media">
-                <MediaFrame
-                  alt="Portrait of Daniel Clancy"
-                  loading="eager"
-                  aspectRatio={0.92}
-                  src={shellAssets.heroPortrait}
-                />
+              <div aria-label="Professional overview" className="hero-home__details">
+                {homeHeroDetails.map((item) => (
+                  <span key={item} className="hero-home__detail">
+                    {item}
+                  </span>
+                ))}
               </div>
-              <div className="portrait-panel__body">
-                <p className="kicker">Based in Sydney</p>
-                <h2>Available for design documentation, drafting support, and portfolio review conversations.</h2>
-              </div>
-            </article>
 
-            {leadProject ? (
-              <article className="feature-panel">
-                <p className="kicker">Selected work</p>
-                <div className="feature-panel__header">
-                  <div>
-                    <h2>{leadProject.title}</h2>
-                    <p>{leadProject.client}</p>
-                  </div>
-                  <span>{leadProject.dateLabel}</span>
-                </div>
-                <p>{leadProject.summary}</p>
-                <div className="logo-row logo-row--small">
-                  {leadProject.software.map((item) => {
-                    const logo = getSoftwareLogo(item);
-                    return logo ? (
-                      <span key={`${leadProject.id}-${item}`} className="logo-pill">
-                        <img alt="" src={logo} />
-                        <small>{item}</small>
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-                <Link className="button button--ghost" to={`/portfolio/${getPortfolioSlug(leadProject)}`}>
-                  Open project detail
+              <div className="hero-home__links">
+                <Link className="text-link" to="/portfolio">
+                  Explore portfolio
                 </Link>
-              </article>
-            ) : null}
+                <Link className="text-link" to="/cv">
+                  Review CV
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

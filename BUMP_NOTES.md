@@ -1,4 +1,20 @@
-CURRENT VER= 0.3.0-alpha / PENDING VER= 0.3.1-alpha
+CURRENT VER= 0.3.1-alpha / PENDING VER= 0.3.2-alpha
+
+## 0.3.1-alpha
+
+### Technical
+
+- Replaced the professional homepage split hero with a single full-bleed banner composition driven by the existing striped texture asset and the required `assets/portraits/profileavatar.webp` circular portrait treatment.
+- Added homepage-only sticky-header state logic in `src/components/ProfessionalShell.tsx` so `/` overlays the header on the hero and fades the header surface back in on scroll without changing `/cv`, `/portfolio`, `/portfolio/:slug`, or `/contact`.
+- Added scoped hero/header polish styles and responsive rules in `src/styles/global.css` without redesigning lower homepage sections or the personal shell.
+- Appended the hero-pass implementation note to `docs/public-site-polish-audit-2026-04-22.md`.
+- Bumped the package version to `0.3.1-alpha`.
+
+### Human-readable
+
+- The homepage now opens with a cleaner, more premium banner-led first impression instead of a busy two-column hero stack.
+- Daniel's identity, portrait, and role read more clearly at first glance, while deeper detail is deferred to the existing sections below.
+- The professional header now feels more intentional on the homepage by staying visible over the hero before easing back into the usual dark sticky surface on scroll.
 
 ## 0.3.0-alpha
 

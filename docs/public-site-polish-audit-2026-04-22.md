@@ -67,6 +67,12 @@ Date: 2026-04-22
 - Used a branded custom marker based on `assets/logos/company-dcdesignstudio.svg`.
 - Added a dark custom tooltip treatment for hover state.
 
+## Homepage hero polish note
+
+- Replaced the original split hero on `/` with a single full-width banner treatment using the existing striped background texture plus the required circular `assets/portraits/profileavatar.webp` portrait, refined identity stack, restrained overview line, and lighter text-link actions.
+- Intentionally left everything below the hero unchanged in structure and purpose: the selected-projects section, software capability section, chronology section, footer, and all non-homepage routes still use the existing post-hero layout.
+- The professional header now keeps its normal sticky structure everywhere, but on `/` only it is visually overlaid on the hero with a transparent shell at the top of the page and a scroll-driven fade back to the standard dark glass surface as the hero scroll state clears.
+
 ## Deferred to later Cloudflare/deployment/integration stage
 
 - Cloudflare deployment and domain cutover.
