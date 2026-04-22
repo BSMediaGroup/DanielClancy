@@ -1,25 +1,43 @@
 import { shellAssets } from "../content/brandAssets";
 
+type AccountState =
+  | {
+      isLoggedIn: false;
+    }
+  | {
+      isLoggedIn: true;
+      username: string;
+      avatarSrc?: string | null;
+    };
+
+function getAccountState(): AccountState {
+  return { isLoggedIn: false };
+}
+
 export function PersonalHeaderAccount() {
+  const account = getAccountState();
+  const usesIconAvatar = !account.isLoggedIn || !account.avatarSrc;
+  const avatarSrc = account.isLoggedIn
+    ? account.avatarSrc || shellAssets.profileIcon
+    : shellAssets.keyIcon;
+
   return (
     <details className="account-menu">
       <summary className="account-menu__trigger">
         <span className="account-menu__avatar">
-          <img alt="" src={shellAssets.profileAvatar} />
+          <img
+            alt=""
+            className={usesIconAvatar ? "account-menu__avatar-image account-menu__avatar-image--icon" : "account-menu__avatar-image"}
+            src={avatarSrc}
+          />
         </span>
-        <span className="account-menu__copy">
-          <span className="account-menu__eyebrow">Member access</span>
-          <span className="account-menu__label">Daniel Clancy</span>
-        </span>
-        <span className="account-menu__caret" aria-hidden="true">
-          ▾
-        </span>
+        {account.isLoggedIn ? <span className="account-menu__label">{account.username}</span> : null}
       </summary>
 
       <div className="account-menu__panel">
         <div className="account-menu__meta">
-          <span>Member access</span>
-          <strong>Studio journal preview</strong>
+          <span>{account.isLoggedIn ? "Account" : "Account preview"}</span>
+          <strong>{account.isLoggedIn ? account.username : "Studio journal access"}</strong>
         </div>
         <div className="account-menu__actions">
           <button className="button button--secondary" type="button">

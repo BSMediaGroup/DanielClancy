@@ -10,6 +10,8 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Technical
 
+- Simplified the personal-shell header account trigger to a logged-out-by-default icon state, removed the old `Member access` trigger label, and kept a structural logged-in username/avatar fallback seam without introducing auth logic.
+- Added a shared slim external social-link row component for `/home` and `/watch`, reusing existing repo icons and keeping the personal-shell visual language intact on desktop and mobile.
 - Rebuilt the `/donate` hero into a full-width slideshow using only the existing `assets/backgrounds/heroslides/*` assets, with restrained fade transitions, stronger overlay control, and cleaner alignment against the personal header.
 - Reduced the donate hero title scale materially, tightened the supporting copy width, removed the public-facing `Accepted range` summary language, and kept the amount/payment runtime logic intact.
 - Replaced the donate payment-method wordmarks with icon variants already present in `assets/icons/`, and added an explicit manual white treatment for the black `assets/icons/ui/payments.svg` asset in the Stripe provider row.
@@ -18,6 +20,8 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Human-readable
 
+- The personal header account control is now cleaner and quieter by default, showing only the circular key icon until real sign-in state exists.
+- `/home` and `/watch` now include a slim social link strip for Daniel's public channels without adding a bulky toolbar feel.
 - `/donate` now opens with a calmer, more premium full-bleed slideshow hero instead of the oversized heading-heavy banner.
 - The page reads cleaner in the payment-method areas, and the working Stripe/PayPal flow stays intact while the presentation is tightened for desktop and mobile.
 

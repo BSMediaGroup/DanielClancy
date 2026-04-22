@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { SocialLinkRow } from "../components/SocialLinkRow";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { shellAssets, socialIcons } from "../content/brandAssets";
+import { shellAssets } from "../content/brandAssets";
 import { formatWatchDate, type WatchFeedResponse } from "../lib/watchFeed";
 
 type FeedStatus = "loading" | "ready" | "empty" | "error";
@@ -137,17 +138,7 @@ export function WatchPage() {
                 </a>
               ) : null}
             </div>
-
-            <div className="logo-row">
-              <span className="logo-pill">
-                <img alt="" src={socialIcons.youtube} />
-                <small>YouTube</small>
-              </span>
-              <span className="logo-pill">
-                <img alt="" src={socialIcons.rumble} />
-                <small>Rumble</small>
-              </span>
-            </div>
+            <SocialLinkRow />
 
             {status !== "ready" ? <p className="surface-note">{feed?.message || FALLBACK_MESSAGE}</p> : null}
           </div>

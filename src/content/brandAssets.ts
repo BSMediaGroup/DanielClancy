@@ -2,6 +2,8 @@ import danielLogo from "../../assets/logos/logo-danielclancy.svg";
 import linkedinIcon from "../../assets/icons/linkedin-0.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
 import rumbleIcon from "../../assets/icons/rumble.svg";
+import githubIcon from "../../assets/icons/github.svg";
+import xIcon from "../../assets/icons/x.svg";
 import patreonIcon from "../../assets/icons/patreon.svg";
 import kofiIcon from "../../assets/icons/kofi.svg";
 import localsIcon from "../../assets/icons/locals.svg";
@@ -9,6 +11,9 @@ import telegramIcon from "../../assets/icons/telegram.svg";
 import appleIcon from "../../assets/icons/apple.svg";
 import googleIcon from "../../assets/icons/google.svg";
 import paymentIcon from "../../assets/icons/ui/payments.svg";
+import keyIcon from "../../assets/icons/ui/key.svg";
+import profileIcon from "../../assets/icons/ui/profile.svg";
+import streamSuitesIcon from "../../assets/icons/ui/streamsuitesicon.svg";
 import profileAvatar from "../../assets/portraits/profileavatar.webp";
 import professionalHeroBanner from "../../assets/backgrounds/banner-stripesgeneral.webp";
 import heroPortrait from "../../assets/backgrounds/danielclancy-portrait.webp";
@@ -44,6 +49,8 @@ export const shellAssets = {
   linkedinIcon,
   heroPortrait,
   profileAvatar,
+  keyIcon,
+  profileIcon,
   professionalHeroBanner,
   professionalShare,
   personalShare,
@@ -52,6 +59,9 @@ export const shellAssets = {
 export const socialIcons = {
   youtube: youtubeIcon,
   rumble: rumbleIcon,
+  github: githubIcon,
+  x: xIcon,
+  streamSuites: streamSuitesIcon,
   patreon: patreonIcon,
   kofi: kofiIcon,
   locals: localsIcon,

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { PersonalProfileWidget } from "../components/PersonalProfileWidget";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
+import { SocialLinkRow } from "../components/SocialLinkRow";
 import { shellAssets, socialIcons } from "../content/brandAssets";
 
 const channelHighlights = [
@@ -45,6 +46,7 @@ export function PersonalHomePage() {
                 Support the work
               </Link>
             </div>
+            <SocialLinkRow className="social-link-row--hero" />
           </div>
 
           <div className="surface-stack">
