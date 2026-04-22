@@ -1,4 +1,20 @@
-CURRENT VER= 0.3.3-alpha / PENDING VER= 0.3.4-alpha
+CURRENT VER= 0.3.4-alpha / PENDING VER= 0.3.5-alpha
+
+## 0.3.5-alpha
+
+### Technical
+
+- Added a new Cloudflare Pages Function at `functions/api/watch-feed.js` to fetch and normalize Daniel's YouTube uploads server-side using the existing `YOUTUBE_API_KEY_DANIEL` and `YOUTUBE_CHANNEL_ID_DANIEL` env contract.
+- Rebuilt `src/pages/WatchPage.tsx` around live feed hydration with an embedded featured video, recent uploads gallery, and restrained public-facing loading/empty/error states.
+- Added `src/lib/watchFeed.ts` to keep the client-side feed contract and date formatting separate from the React page implementation.
+- Extended `src/styles/global.css` with watch-page embed, card, and fallback-state styling while preserving the current personal-shell language.
+- Updated `README.md` and `docs/public-site-polish-audit-2026-04-22.md` to record the server-side YouTube-first phase, the channel-ID env seam, and fallback behavior.
+- Bumped the package version to `0.3.5-alpha`.
+
+### Human-readable
+
+- `/watch` now shows Daniel's latest YouTube release from a server-side feed instead of a static scaffold.
+- The page stays presentable when the live feed cannot be loaded, and the browser bundle no longer needs direct YouTube API access.
 
 ## 0.3.4-alpha
 

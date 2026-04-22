@@ -7,7 +7,7 @@ import { shellAssets, socialIcons } from "../content/brandAssets";
 const channelHighlights = [
   {
     title: "Watch",
-    body: "Featured video layout, recent uploads, and a future ingestion seam for YouTube first and Rumble later.",
+    body: "Featured video layout, server-hydrated YouTube releases, and a clean seam for a later Rumble migration.",
     to: "/watch",
   },
   {

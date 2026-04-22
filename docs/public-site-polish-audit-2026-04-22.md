@@ -95,11 +95,20 @@ Date: 2026-04-22
 - This is an interim pre-admin / pre-individual-cloud-link solution only; exact per-project cloud document links still need a later data/admin pass.
 - The CV PDF remains outside this cleanup and continues to use its existing public path unchanged.
 
+## Watch feed hydration note
+
+- `/watch` now hydrates through a server-side Cloudflare Pages Function at `functions/api/watch-feed.js`.
+- The current provider phase is YouTube-first, with the API key kept server-side through `YOUTUBE_API_KEY_DANIEL`.
+- The channel identifier used for Daniel in this phase is the stable `YOUTUBE_CHANNEL_ID_DANIEL` env value rather than a scraped handle or client-side heuristic.
+- No new non-secret env key was required for this milestone because the channel-ID seam already existed in the repo contract.
+- If YouTube data is unavailable, `/watch` falls back to a polished non-broken hero and gallery state with public-safe wording, while static share metadata and personal-shell noindex handling remain intact.
+- This remains the current YouTube-first implementation phase ahead of a later Rumble migration.
+
 ## Deferred to later Cloudflare/deployment/integration stage
 
 - Cloudflare deployment and domain cutover.
 - Cloudflare secrets provisioning and production email env configuration.
 - Live Stripe / PayPal wiring.
-- Live YouTube / Rumble ingestion.
+- Later provider migration from the current YouTube-backed watch feed to Rumble when ready.
 - Admin-side CMS wiring.
 - Any later asset/performance optimisation pass if the full local project-media bundle proves too heavy for the production rollout target.

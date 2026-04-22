@@ -30,7 +30,7 @@ The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collect
 | Route | Purpose | Indexed |
 | --- | --- | --- |
 | `/home` | Personal landing page for channels and supporter paths | No |
-| `/watch` | Featured video layout and future channel-ingestion seam | No |
+| `/watch` | Featured latest-video page hydrated from a server-side YouTube feed, with a clean provider seam for later migration | No |
 | `/donate` | Future-ready support page for hosted and direct payments | No |
 
 ## SEO and metadata split
@@ -55,6 +55,17 @@ Environment keys already used:
 - `RESEND_API_KEY`
 - `MAIL_FROM`
 - `MAIL_REPLY_TO`
+
+## Watch feed delivery
+
+- UI route: `/watch`
+- Server endpoint: `functions/api/watch-feed.js`
+- Provider phase: YouTube first, with a normalized response shape ready for a later Rumble-backed swap
+- Server-only env usage:
+  - `YOUTUBE_API_KEY_DANIEL`
+  - `YOUTUBE_CHANNEL_ID_DANIEL`
+- Channel identifier used now: the stable channel ID from `YOUTUBE_CHANNEL_ID_DANIEL`
+- Fallback behavior: if env/runtime or the upstream API is unavailable, `/watch` keeps its static share metadata, shows a polished fallback hero/state, and avoids exposing any secret in the client bundle
 
 ## Fonts and assets
 
@@ -85,6 +96,7 @@ Project detail document actions temporarily route to a shared OneDrive folder un
   - `src/components/PortfolioMediaGallery.tsx`
   - `src/content/brandAssets.ts`
   - `src/content/workSetPortfolio.ts`
+  - `src/lib/watchFeed.ts`
   - `src/lib/portfolio.ts`
 - Pages:
   - `src/pages/HomePage.tsx`
@@ -143,7 +155,8 @@ DanielClancy/
 │  └─ public-site-polish-audit-2026-04-22.md
 ├─ functions/
 │  └─ api/
-│     └─ contact.js
+│     ├─ contact.js
+│     └─ watch-feed.js
 ├─ public/
 │  ├─ assets/fonts/
 │  ├─ docs/
@@ -159,6 +172,8 @@ DanielClancy/
 │  ├─ components/
 │  ├─ content/
 │  ├─ lib/
+│  │  ├─ portfolio.ts
+│  │  └─ watchFeed.ts
 │  ├─ pages/
 │  └─ styles/global.css
 ├─ .env.example
@@ -174,7 +189,7 @@ DanielClancy/
 ## Deferred items
 
 - Cloudflare deployment and DNS cutover
-- Live YouTube or Rumble ingestion
+- Later provider migration for the current YouTube-backed `/watch` feed
 - Live Stripe and PayPal payment processing
 - Admin-side content workflow integration
 - Further archive enrichment as more source material is verified

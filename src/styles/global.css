@@ -1437,6 +1437,57 @@ select:focus {
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06), transparent 0 28%);
 }
 
+.watch-player__frame {
+  position: relative;
+  overflow: hidden;
+  min-height: 30rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, rgba(10, 13, 15, 0.84), rgba(8, 10, 12, 0.95)),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06), transparent 0 28%);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.34);
+}
+
+.watch-player__embed {
+  width: 100%;
+  min-height: 30rem;
+  border: 0;
+  background: #000;
+}
+
+.watch-player__status {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1;
+}
+
+.watch-player__screen--fallback {
+  display: grid;
+  align-content: space-between;
+  gap: 1.25rem;
+  padding: 1rem;
+}
+
+.watch-player__fallback-copy {
+  display: grid;
+  gap: 0.6rem;
+  width: min(100%, 26rem);
+  margin-top: auto;
+}
+
+.watch-player__fallback-copy strong {
+  font-family: "Recharge", sans-serif;
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  line-height: 1.02;
+}
+
+.watch-player__fallback-copy p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
 .watch-player__playhead {
   position: absolute;
   left: 1.2rem;
@@ -1637,9 +1688,42 @@ select:focus {
   gap: 1rem;
 }
 
+.watch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .placeholder-thumb {
   min-height: 11rem;
   border-radius: calc(var(--radius-sm) - 2px);
+}
+
+.watch-card {
+  align-content: start;
+}
+
+.watch-card__thumb-link {
+  display: block;
+}
+
+.watch-card__thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: calc(var(--radius-sm) - 2px);
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.watch-card--loading .watch-card__thumb {
+  visibility: hidden;
+}
+
+.watch-empty-state {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 42rem);
 }
 
 .profile-widget {
@@ -2093,6 +2177,8 @@ select:focus {
 
   .portrait-panel__media .media-frame,
   .detail-hero__media .media-frame,
+  .watch-player__frame,
+  .watch-player__embed,
   .watch-player__screen {
     min-height: 20rem;
   }
