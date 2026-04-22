@@ -68,6 +68,10 @@ export type PortfolioItem = {
   internalSourceNote?: string;
   sensitivityNote?: string;
   documentationUrl?: string;
+  documentationFileName?: string;
+  documentationAvailable?: boolean;
+  documentationStatus?: "available" | "detached";
+  documentationStatusNote?: string;
   constructionType?: string;
 };
 

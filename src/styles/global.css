@@ -626,6 +626,18 @@ h3 {
   color: var(--text-muted);
 }
 
+.button--disabled,
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.button--disabled:hover,
+.button:disabled:hover {
+  transform: none;
+}
+
 .surface,
 .metric-card,
 .project-card,
@@ -889,6 +901,16 @@ h3 {
 
 .text-link:hover {
   text-decoration: underline;
+}
+
+.text-link--disabled {
+  color: var(--text-soft);
+  cursor: default;
+  opacity: 0.72;
+}
+
+.text-link--disabled:hover {
+  text-decoration: none;
 }
 
 .logo-row {
@@ -1461,6 +1483,14 @@ select:focus {
 .portfolio-gallery__caption p {
   margin: 0;
   color: var(--text-muted);
+}
+
+.portfolio-gallery__status-note {
+  margin-top: 0.45rem;
+  max-width: 28rem;
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  line-height: 1.5;
 }
 
 .portfolio-gallery__caption span {

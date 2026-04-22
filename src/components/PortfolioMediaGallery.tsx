@@ -6,12 +6,16 @@ type PortfolioMediaGalleryProps = {
   projectTitle: string;
   media: PortfolioMediaItem[];
   documentationUrl?: string;
+  documentationAvailable?: boolean;
+  documentationStatusNote?: string;
 };
 
 export function PortfolioMediaGallery({
   projectTitle,
   media,
   documentationUrl,
+  documentationAvailable = Boolean(documentationUrl),
+  documentationStatusNote,
 }: PortfolioMediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -66,6 +70,16 @@ export function PortfolioMediaGallery({
                 >
                   Open PDF
                 </a>
+              ) : documentationStatusNote ? (
+                <button
+                  aria-disabled="true"
+                  className="button button--secondary button--disabled"
+                  disabled
+                  title={documentationStatusNote}
+                  type="button"
+                >
+                  PDF unavailable
+                </button>
               ) : null}
             </div>
           </div>
@@ -74,6 +88,9 @@ export function PortfolioMediaGallery({
             <div>
               <strong>{projectTitle}</strong>
               <p>No matching local Wix-exported image was found for this public record.</p>
+              {!documentationAvailable && documentationStatusNote ? (
+                <p className="portfolio-gallery__status-note">{documentationStatusNote}</p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -97,6 +114,16 @@ export function PortfolioMediaGallery({
                 >
                   Open PDF
                 </a>
+              ) : documentationStatusNote ? (
+                <button
+                  aria-disabled="true"
+                  className="button button--secondary button--disabled"
+                  disabled
+                  title={documentationStatusNote}
+                  type="button"
+                >
+                  PDF unavailable
+                </button>
               ) : null}
               {activeMedia ? (
                 <button className="button button--ghost" type="button" onClick={() => setLightboxOpen(true)}>
@@ -141,6 +168,9 @@ export function PortfolioMediaGallery({
             <div>
               <strong>{activeMedia.title || projectTitle}</strong>
               <p>{activeMedia.description || `Documentation view for ${projectTitle}.`}</p>
+              {!documentationAvailable && documentationStatusNote ? (
+                <p className="portfolio-gallery__status-note">{documentationStatusNote}</p>
+              ) : null}
             </div>
             <span>
               {activeIndex + 1} / {media.length}

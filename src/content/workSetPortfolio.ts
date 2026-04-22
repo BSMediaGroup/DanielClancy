@@ -1,12 +1,32 @@
 import workSetCsv from "../../cmsdata/wix/collection-tables/WorkSet.csv?raw";
 import type { PortfolioItem, PortfolioMediaItem } from "./siteContent";
 
-const assetModules = import.meta.glob("../../cmsdata/wix/portfolio/**/*.{png,jpg,jpeg,webp,pdf}", {
+const assetModules = import.meta.glob("../../cmsdata/wix/portfolio/**/*.{png,jpg,jpeg,webp}", {
   eager: true,
   import: "default",
 });
 
-const assetIndex = createAssetIndex(assetModules);
+const documentModules = import.meta.glob(
+  [
+    "../../cmsdata/wix/portfolio/**/*.pdf",
+    "!../../cmsdata/wix/portfolio/bimset/PNN_AR_DA.pdf",
+    "!../../cmsdata/wix/portfolio/general/GENERAL - UNSORTED.pdf",
+  ],
+  {
+    eager: true,
+    import: "default",
+  },
+);
+
+const DETACHED_DOCUMENT_NOTE =
+  "The full drawing set is temporarily unavailable online while document hosting is being upgraded.";
+const detachedDocumentFileNames = new Set(["pnn_ar_da.pdf", "general - unsorted.pdf"]);
+const documentFileNameAliases: Record<string, string> = {
+  "pns_ar_da.pdf": "PNN_AR_DA.pdf",
+};
+
+const imageAssetIndex = createAssetIndex(assetModules);
+const documentAssetIndex = createAssetIndex(documentModules);
 
 const previewFallbackBySlug: Record<string, string> = {
   "cue-roadhouse": "/media/portfolio/cue-roadhouse.jpg",
@@ -57,6 +77,14 @@ type ResolvedAsset = {
   matchedFileName: string;
 };
 
+type ResolvedDocument = {
+  fileName: string;
+  src: string;
+  available: boolean;
+  status: "available" | "detached";
+  statusNote?: string;
+};
+
 type MediaResolution = {
   items: PortfolioMediaItem[];
   missingFileNames: string[];
@@ -90,7 +118,8 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
   const summary = createSummary(description);
   const projectDate = row.projectDate;
   const year = projectDate ? new Date(projectDate).getFullYear().toString() : "Undated";
-  const documentationUrl = resolveDocumentUrl(row.singleDoc);
+  const resolvedDocument = resolveDocumentUrl(row.singleDoc);
+  const documentationUrl = resolvedDocument?.available ? resolvedDocument.src : "";
   const mediaResolution = createMediaItems({
     title,
     slug,
@@ -134,7 +163,8 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
       `${disciplines.join(" / ")} documentation record drawn from the canonical WorkSet export.`,
       constructionType ? `Project type: ${constructionType}.` : null,
       location ? `Recorded location: ${location}.` : null,
-      documentationUrl ? "Supporting PDF set retained for document-style review." : null,
+      resolvedDocument?.status === "available" ? "Supporting PDF set retained for document-style review." : null,
+      resolvedDocument?.status === "detached" ? resolvedDocument.statusNote : null,
       mediaResolution.usingPreviewFallback
         ? "No matching Wix-exported image files were found for this WorkSet row, so the public view falls back to an existing local preview image."
         : null,
@@ -157,6 +187,10 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
       "Canonical portfolio data now derives from WorkSet.csv, with prior wording only retained where consistent with the CSV record.",
     sensitivityNote: "Public-facing summary only. Protected or withheld documentation remains excluded.",
     documentationUrl,
+    documentationFileName: resolvedDocument?.fileName,
+    documentationAvailable: resolvedDocument?.available ?? false,
+    documentationStatus: resolvedDocument?.status,
+    documentationStatusNote: resolvedDocument?.statusNote,
     constructionType,
   };
 }
@@ -375,7 +409,7 @@ function parseLocation(rawLocation: string) {
 }
 
 function resolveLocalAsset(fileName: string) {
-  const assetUrl = assetIndex.byFileName[fileName.toLowerCase()];
+  const assetUrl = imageAssetIndex.byFileName[fileName.toLowerCase()];
 
   return assetUrl
     ? {
@@ -406,10 +440,34 @@ function resolveImageAsset(index: number, canonicalFileName: string, rawSrc: str
 
 function resolveDocumentUrl(value: string) {
   if (!value.trim()) {
-    return "";
+    return null;
   }
 
-  return resolveLocalAsset(getFileName(value))?.src ?? "";
+  const requestedFileName = getFileName(value);
+  const fileName = documentFileNameAliases[requestedFileName.toLowerCase()] ?? requestedFileName;
+
+  if (detachedDocumentFileNames.has(fileName.toLowerCase())) {
+    return {
+      fileName,
+      src: "",
+      available: false,
+      status: "detached" as const,
+      statusNote: DETACHED_DOCUMENT_NOTE,
+    };
+  }
+
+  const assetUrl = documentAssetIndex.byFileName[fileName.toLowerCase()];
+
+  if (!assetUrl) {
+    return null;
+  }
+
+  return {
+    fileName,
+    src: assetUrl,
+    available: true,
+    status: "available" as const,
+  };
 }
 
 function formatProjectDate(value: string) {

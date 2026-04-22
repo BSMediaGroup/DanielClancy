@@ -44,6 +44,8 @@ export function PortfolioDetailPage() {
           <div className="detail-hero__media">
             <PortfolioMediaGallery
               documentationUrl={project.documentationUrl}
+              documentationAvailable={project.documentationAvailable}
+              documentationStatusNote={project.documentationStatusNote}
               media={project.media}
               projectTitle={project.title}
             />
@@ -148,7 +150,7 @@ export function PortfolioDetailPage() {
           <article className="surface">
             <p className="kicker">Scope and disciplines</p>
             <div className="tag-grid">
-              {project.disciplines.concat(project.subtypes).map((item) => (
+              {Array.from(new Set(project.disciplines.concat(project.subtypes))).map((item) => (
                 <span key={`${project.id}-${item}`} className="tag">
                   {item}
                 </span>
@@ -167,6 +169,10 @@ export function PortfolioDetailPage() {
               <a className="text-link" href={project.documentationUrl} target="_blank" rel="noreferrer">
                 Open supporting PDF
               </a>
+            ) : project.documentationStatusNote ? (
+              <span className="text-link text-link--disabled" title={project.documentationStatusNote}>
+                PDF temporarily unavailable
+              </span>
             ) : null}
           </article>
         </div>
@@ -180,8 +186,8 @@ export function PortfolioDetailPage() {
           className="section--muted"
         >
           <div className="evidence-grid">
-            {project.evidenceAssets.map((asset) => (
-              <article key={`${project.id}-${asset.label}`} className="surface surface--compact">
+            {project.evidenceAssets.map((asset, index) => (
+              <article key={`${project.id}-${asset.label}-${index}`} className="surface surface--compact">
                 <p className="kicker">{asset.kind}</p>
                 <h3>{asset.label}</h3>
                 <p>

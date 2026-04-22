@@ -1,5 +1,21 @@
 CURRENT VER= 0.3.2-alpha / PENDING VER= 0.3.3-alpha
 
+## 0.3.3-alpha
+
+### Technical
+
+- Detached oversized local portfolio PDFs from the Vite bundle by splitting WorkSet image and document resolution and excluding the temporary Cloudflare-blocking files from the imported PDF set.
+- Added explicit document availability metadata to portfolio items so affected project detail routes can show a disabled PDF action without breaking the rest of the WorkSet-driven media flow.
+- Updated `src/components/PortfolioMediaGallery.tsx`, `src/pages/PortfolioDetailPage.tsx`, and `src/styles/global.css` so disabled PDF actions remain visible, greyed out, and paired with brief professional microcopy.
+- Appended a temporary pre-R2 oversized-PDF mitigation note to `docs/public-site-polish-audit-2026-04-22.md`.
+- Added targeted `.gitignore` entries for the detached local source PDFs and prepared the repo for untracking those files while preserving them on disk.
+- Bumped the package version to `0.3.3-alpha`.
+
+### Human-readable
+
+- Cloudflare Pages should no longer receive the oversized local portfolio PDFs in the deploy bundle.
+- The affected project detail page now keeps its PDF button visible but disabled until dedicated large-file hosting is introduced.
+
 ## 0.3.2-alpha
 
 ### Technical

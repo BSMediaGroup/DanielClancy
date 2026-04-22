@@ -86,6 +86,15 @@ Date: 2026-04-22
   - existing `public/media/portfolio/` previews are used only for some rows where no matched local export image exists
   - no Wix CDN media/document URL fallback remains in the runtime resolver
 
+## Temporary Cloudflare Pages PDF detachment note
+
+- Added a temporary pre-R2 Cloudflare Pages mitigation for oversized local project PDFs exceeding a 15 MB deployment threshold.
+- Detached oversized local PDFs from the deployable site bundle while leaving the source files in place under `cmsdata/wix/portfolio/`:
+  - `cmsdata/wix/portfolio/bimset/PNN_AR_DA.pdf` (`Redevelopment of Highway Service Center Pheasants Nest (M31) North & South`)
+  - `cmsdata/wix/portfolio/general/GENERAL - UNSORTED.pdf` (unpublished/local archive material only)
+- The affected public project detail page now keeps its PDF action visible but intentionally disabled until large-file hosting is introduced in a later R2 or equivalent phase.
+- This mitigation is deployment-focused only; gallery imagery and other non-PDF project evidence remain active.
+
 ## Deferred to later Cloudflare/deployment/integration stage
 
 - Cloudflare deployment and domain cutover.
