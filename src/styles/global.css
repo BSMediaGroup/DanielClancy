@@ -1727,11 +1727,46 @@ select:focus {
 }
 
 .hero--donate-upgraded {
-  padding-bottom: var(--space-2xl);
+  position: relative;
+  overflow: clip;
+  padding: clamp(3rem, 7vw, 5.5rem) 0 var(--space-2xl);
+  isolation: isolate;
+  background: linear-gradient(180deg, rgba(5, 7, 10, 0.98), rgba(7, 8, 10, 1));
+}
+
+.donate-hero-slideshow,
+.donate-hero-scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.donate-hero-slideshow {
+  z-index: -3;
+}
+
+.donate-hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-position: center;
+  background-size: cover;
+  transform: scale(1.02);
+  transition:
+    opacity 1400ms ease,
+    transform 6s ease;
+}
+
+.donate-hero-slide--active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.donate-hero-scrim {
+  z-index: -2;
   background:
-    radial-gradient(circle at 8% 12%, rgba(219, 201, 166, 0.14), transparent 0 22%),
-    radial-gradient(circle at 92% 4%, rgba(125, 153, 177, 0.16), transparent 0 20%),
-    linear-gradient(180deg, rgba(18, 20, 24, 0.98), rgba(7, 8, 10, 0.98));
+    radial-gradient(circle at 72% 24%, rgba(214, 227, 241, 0.16), transparent 0 22%),
+    linear-gradient(90deg, rgba(4, 6, 9, 0.9) 0%, rgba(6, 9, 12, 0.62) 46%, rgba(5, 7, 9, 0.82) 100%),
+    linear-gradient(180deg, rgba(6, 8, 11, 0.38) 0%, rgba(5, 7, 10, 0.84) 82%, rgba(7, 8, 10, 1) 100%);
 }
 
 .donate-hero-shell,
@@ -1749,47 +1784,60 @@ select:focus {
 }
 
 .donate-hero-shell {
-  grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
-  gap: clamp(1.35rem, 3vw, 2.4rem);
+  position: relative;
+  z-index: 1;
+  grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.84fr);
+  gap: clamp(1.4rem, 3vw, 2.8rem);
   align-items: start;
 }
 
 .donate-hero-copy {
-  gap: 1.15rem;
-  padding: clamp(0.35rem, 0.9vw, 0.75rem) 0;
+  gap: 1rem;
+  width: min(100%, 37rem);
+  padding: clamp(0.8rem, 1vw, 1.1rem) 0;
 }
 
 .donate-hero-copy h1 {
-  max-width: 16ch;
-  font-size: clamp(2.15rem, 5vw, 4.3rem);
-  line-height: 0.92;
+  max-width: 10ch;
+  font-size: clamp(1.75rem, 2.8vw, 2.7rem);
+  line-height: 0.96;
+  text-wrap: balance;
+}
+
+.donate-hero-copy .hero-copy__lead {
+  width: min(100%, 34rem);
+  font-size: clamp(1rem, 1.35vw, 1.14rem);
+  line-height: 1.72;
+  color: rgba(234, 240, 245, 0.84);
+  text-wrap: pretty;
 }
 
 .donate-method-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .donate-method-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
-  min-height: 2.6rem;
-  padding: 0.55rem 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  gap: 0.8rem;
+  min-height: 3rem;
+  padding: 0.65rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 999px;
   background:
-    linear-gradient(180deg, rgba(19, 23, 27, 0.92), rgba(12, 15, 18, 0.9)),
+    linear-gradient(180deg, rgba(18, 24, 30, 0.82), rgba(10, 13, 17, 0.76)),
     rgba(255, 255, 255, 0.04);
   color: var(--text-muted);
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(14px);
 }
 
 .donate-method-pill img {
   width: auto;
-  max-width: 4.75rem;
-  max-height: 1.1rem;
+  max-width: 1.55rem;
+  max-height: 1.55rem;
   object-fit: contain;
 }
 
@@ -1804,16 +1852,18 @@ select:focus {
 .donate-trust-rail {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.85rem;
+  margin-top: 0.35rem;
 }
 
 .donate-trust-rail article,
 .donate-console__summary article {
   padding: 1rem 1.05rem;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
   background:
-    linear-gradient(180deg, rgba(22, 26, 31, 0.92), rgba(13, 16, 20, 0.9)),
+    linear-gradient(180deg, rgba(16, 20, 24, 0.82), rgba(11, 14, 18, 0.76)),
     rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
 }
 
 .donate-trust-rail span,
@@ -1841,11 +1891,12 @@ select:focus {
   width: min(100%, 38rem);
   padding: 1.1rem 1.15rem;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   background:
-    linear-gradient(180deg, rgba(15, 18, 22, 0.94), rgba(10, 12, 15, 0.92)),
+    linear-gradient(180deg, rgba(14, 17, 20, 0.82), rgba(9, 11, 14, 0.8)),
     rgba(255, 255, 255, 0.04);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
 }
 
 .donate-banner--success {
@@ -1871,11 +1922,14 @@ select:focus {
 
 .donate-console {
   gap: 1rem;
-  padding: clamp(1.1rem, 2vw, 1.45rem);
+  padding: clamp(1.15rem, 2vw, 1.5rem);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 34px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(129, 167, 197, 0.16), transparent 0 34%),
-    linear-gradient(180deg, rgba(18, 22, 26, 0.98), rgba(11, 14, 17, 0.96));
+    radial-gradient(circle at 100% 0%, rgba(129, 167, 197, 0.18), transparent 0 34%),
+    linear-gradient(180deg, rgba(16, 20, 25, 0.86), rgba(10, 13, 17, 0.84));
+  box-shadow: 0 34px 80px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(20px);
 }
 
 .donate-console__header {
@@ -1987,9 +2041,14 @@ select:focus {
 .donate-provider-icons img {
   width: auto;
   max-width: 4rem;
-  max-height: 1rem;
+  max-height: 1.15rem;
   object-fit: contain;
   opacity: 0.94;
+}
+
+.donate-provider-icon--manual-white {
+  filter: brightness(0) invert(1);
+  opacity: 0.98;
 }
 
 .donate-provider-button {
@@ -2495,8 +2554,12 @@ select:focus {
   }
 
   .donate-hero-copy h1 {
-    font-size: clamp(1.8rem, 12vw, 2.8rem);
+    font-size: clamp(1.65rem, 8.4vw, 2.15rem);
     max-width: none;
+  }
+
+  .donate-hero-copy .hero-copy__lead {
+    width: 100%;
   }
 
   .donate-trust-rail,
@@ -2515,7 +2578,7 @@ select:focus {
 
   .donate-method-pill {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 }
 .footer-copy {

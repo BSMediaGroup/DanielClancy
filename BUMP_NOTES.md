@@ -1,19 +1,25 @@
-CURRENT VER= 0.3.6-alpha / PENDING VER= 0.3.7-alpha
+CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
-## 0.3.7-alpha
+## Released series through 0.3.6-alpha
+
+- `v0.3.6-alpha` is the last publicly issued release in the current alpha series.
+- The live Stripe and PayPal donation runtime, its Cloudflare Pages Function payment routes, and the first production-safe `/donate` rebuild belong to that already-issued public release line.
+- The earlier local `0.3.7-alpha` placeholder has been retired so future notes do not imply an unreleased extra alpha cut.
+
+## 0.4.0-beta
 
 ### Technical
 
-- Added a new live payment runtime under `functions/api/payments/*` covering public provider config, Stripe Checkout Session creation, Stripe webhook verification, PayPal order creation, PayPal capture, and PayPal webhook verification for `/donate`.
-- Reduced the legacy `functions/api/donate/session.js` and `functions/api/donate/webhook.js` files to compatibility shims so the old Stripe-only route surface does not break while the site moves to the new `/api/payments/*` structure.
-- Rebuilt `src/pages/DonatePage.tsx` into a polished production donation surface with working preset amounts, validated custom amount entry, provider-specific CTAs, live PayPal hydration, and short user-facing return/error states.
-- Expanded `src/lib/donate.ts`, added `src/types/paypal-sdk.d.ts`, and replaced the earlier donate styling in `src/styles/global.css` with a stronger premium layout, clearer provider presentation, and responsive payment controls.
-- Updated `README.md`, `docs/donate-stripe-runtime-note-2026-04-22.md`, `docs/public-site-polish-audit-2026-04-22.md`, and `src/content/siteContent.ts` to reflect that `/donate` now ships with live Stripe and PayPal flows while keeping all secrets server-side only.
+- Rebuilt the `/donate` hero into a full-width slideshow using only the existing `assets/backgrounds/heroslides/*` assets, with restrained fade transitions, stronger overlay control, and cleaner alignment against the personal header.
+- Reduced the donate hero title scale materially, tightened the supporting copy width, removed the public-facing `Accepted range` summary language, and kept the amount/payment runtime logic intact.
+- Replaced the donate payment-method wordmarks with icon variants already present in `assets/icons/`, and added an explicit manual white treatment for the black `assets/icons/ui/payments.svg` asset in the Stripe provider row.
+- Updated `docs/donate-stripe-runtime-note-2026-04-22.md` to record this final donation-page polish pass, the slideshow-asset constraint, and the post-`v0.3.6-alpha` version-note realignment.
+- Realigned `package.json` to `0.4.0-beta` so local versioning matches the next public milestone direction instead of continuing an unreconciled alpha increment.
 
 ### Human-readable
 
-- `/donate` now presents a real working donation experience instead of a broken mockup.
-- Stripe and PayPal are both wired, the amount controls actually work, and the page stays professional when a provider is unavailable.
+- `/donate` now opens with a calmer, more premium full-bleed slideshow hero instead of the oversized heading-heavy banner.
+- The page reads cleaner in the payment-method areas, and the working Stripe/PayPal flow stays intact while the presentation is tightened for desktop and mobile.
 
 ## 0.3.5-alpha
 

@@ -1,14 +1,16 @@
 import { startTransition, useEffect, useId, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import donationsSlideOne from "../../assets/backgrounds/heroslides/donations1.webp";
+import donationsSlideTwo from "../../assets/backgrounds/heroslides/donations2.webp";
+import donationsSlideThree from "../../assets/backgrounds/heroslides/donations3.webp";
+import donationsSlideFour from "../../assets/backgrounds/heroslides/donations4.webp";
 import appleIcon from "../../assets/icons/apple.svg";
 import debitCardIcon from "../../assets/icons/debitcard.svg";
 import googleIcon from "../../assets/icons/google.svg";
-import mastercardWordmark from "../../assets/icons/mastercardwordmark.svg";
+import mastercardIcon from "../../assets/icons/mastercard.svg";
 import paypalIcon from "../../assets/icons/paypal.svg";
-import paypalWordmark from "../../assets/icons/paypalwordmark.svg";
 import stripeIcon from "../../assets/icons/stripeicon.svg";
-import stripeWordmark from "../../assets/icons/stripetitle.svg";
-import visaWordmark from "../../assets/icons/visa.svg";
+import visaIcon from "../../assets/icons/visacon.svg";
 import paymentsIcon from "../../assets/icons/ui/payments.svg";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
@@ -40,6 +42,12 @@ type DonateBanner = {
 };
 
 const DEFAULT_AMOUNT = DONATION_PRESETS[2];
+const DONATE_HERO_SLIDES = [
+  donationsSlideOne,
+  donationsSlideTwo,
+  donationsSlideThree,
+  donationsSlideFour,
+] as const;
 const GENERIC_STRIPE_ERROR =
   "Secure card checkout could not be opened right now. Please try again in a moment.";
 const GENERIC_PAYPAL_ERROR =
@@ -184,6 +192,7 @@ export function DonatePage() {
   const [stripeError, setStripeError] = useState("");
   const [payPalState, setPayPalState] = useState<PayPalState>("idle");
   const [payPalError, setPayPalError] = useState("");
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
 
   const banner = readDonationBanner(location.search);
   const amountValue = amountKind === "custom" ? Number(customAmount) : selectedAmount;
@@ -261,6 +270,24 @@ export function DonatePage() {
       cancelled = true;
     };
   }, [config.currency, config.paypal.available, config.paypal.clientId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (reducedMotionQuery.matches) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveHeroSlide((currentSlide) => (currentSlide + 1) % DONATE_HERO_SLIDES.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   useEffect(() => {
     const container = paypalContainerRef.current;
@@ -433,31 +460,43 @@ export function DonatePage() {
       />
 
       <section className="hero hero--donate hero--donate-upgraded">
+        <div className="donate-hero-slideshow" aria-hidden="true">
+          {DONATE_HERO_SLIDES.map((slide, index) => (
+            <div
+              key={slide}
+              className={`donate-hero-slide ${
+                index === activeHeroSlide ? "donate-hero-slide--active" : ""
+              }`}
+              style={{ backgroundImage: `url(${slide})` }}
+            />
+          ))}
+        </div>
+        <div className="donate-hero-scrim" aria-hidden="true" />
         <div className="container donate-hero-shell">
           <div className="donate-hero-copy">
             <p className="kicker">Support Daniel Clancy</p>
-            <h1>Direct, secure support for independent publishing, commentary, and design work.</h1>
+            <h1>Support Daniel Clancy&rsquo;s independent publishing and commentary.</h1>
             <p className="hero-copy__lead">
-              Choose a one-time amount and complete the donation through live Stripe Checkout or
-              PayPal. Card details and provider secrets stay server-side and never pass through the
-              public site.
+              Choose a one-time amount, then complete the handoff through live Stripe Checkout or
+              PayPal. The public page stays polished while payment details and provider secrets
+              remain server-side only.
             </p>
 
             <div className="donate-method-strip" aria-label="Supported payment methods">
               <span className="donate-method-pill">
-                <img alt="" src={stripeWordmark} />
-                <small>Hosted card checkout</small>
+                <img alt="" src={stripeIcon} />
+                <small>Stripe</small>
               </span>
               <span className="donate-method-pill">
-                <img alt="" src={paypalWordmark} />
-                <small>PayPal smart checkout</small>
+                <img alt="" src={paypalIcon} />
+                <small>PayPal</small>
               </span>
               <span className="donate-method-pill">
-                <img alt="" src={visaWordmark} />
+                <img alt="" src={visaIcon} />
                 <small>Visa</small>
               </span>
               <span className="donate-method-pill">
-                <img alt="" src={mastercardWordmark} />
+                <img alt="" src={mastercardIcon} />
                 <small>Mastercard</small>
               </span>
             </div>
@@ -575,10 +614,8 @@ export function DonatePage() {
                 <strong>{amountLabel}</strong>
               </article>
               <article>
-                <span>Accepted range</span>
-                <strong>
-                  {formatDonationAmount(config.minAmount)} to {formatDonationAmount(config.maxAmount)}
-                </strong>
+                <span>Availability</span>
+                <strong>{pageReady ? "Stripe and PayPal status checked live." : "Checking providers."}</strong>
               </article>
               <article>
                 <span>Settlement</span>
@@ -587,10 +624,7 @@ export function DonatePage() {
             </div>
 
             {amountKind === "custom" && customAmountTouched && !amountValid ? (
-              <p className="form-status form-status--error">
-                Choose a whole-dollar amount between {formatDonationAmount(config.minAmount)} and{" "}
-                {formatDonationAmount(config.maxAmount)}.
-              </p>
+              <p className="form-status form-status--error">Choose a valid whole-dollar amount to continue.</p>
             ) : null}
 
             <section className="donate-provider-block">
@@ -602,7 +636,11 @@ export function DonatePage() {
                 <p>{config.stripe.message}</p>
                 <p className="form-status">{config.stripe.walletMessage}</p>
                 <div className="donate-provider-icons" aria-hidden="true">
-                  <img alt="" src={paymentsIcon} />
+                  <img
+                    alt=""
+                    className="donate-provider-icon donate-provider-icon--manual-white"
+                    src={paymentsIcon}
+                  />
                   <img alt="" src={appleIcon} />
                   <img alt="" src={googleIcon} />
                   <img alt="" src={debitCardIcon} />

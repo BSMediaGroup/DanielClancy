@@ -3,6 +3,10 @@
 Date: 2026-04-22
 
 - `/donate` now uses a live dual-provider donation runtime through Cloudflare Pages Functions.
+- 2026-04-23 final polish pass:
+  - this pass is a final donation-page polish pass after live payment wiring
+  - the rebuilt donate hero uses only the existing repo slideshow assets under `assets/backgrounds/heroslides/`
+  - version-note handling is being reset after the public `v0.3.6-alpha` release so new work now rolls under `0.4.0-beta`
 - Public config route:
   - `/api/payments/config`
 - Stripe runtime routes:
