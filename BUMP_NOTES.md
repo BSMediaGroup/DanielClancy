@@ -10,6 +10,8 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Technical
 
+- Replaced the personal-shell header subtitle with `Personal Studio`, added a shared animated mobile-menu toggle component, and split both shell headers into desktop/mobile navigation treatments without merging route logic.
+- Updated header-responsive styling in `src/styles/global.css` so mobile shows only the logo mark, collapses nav into a themed burger menu, and keeps the personal account trigger avatar-only while preserving desktop/tablet behavior.
 - Simplified the personal-shell header account trigger to a logged-out-by-default icon state, removed the old `Member access` trigger label, and kept a structural logged-in username/avatar fallback seam without introducing auth logic.
 - Added a shared slim external social-link row component for `/home` and `/watch`, reusing existing repo icons and keeping the personal-shell visual language intact on desktop and mobile.
 - Rebuilt the `/donate` hero into a full-width slideshow using only the existing `assets/backgrounds/heroslides/*` assets, with restrained fade transitions, stronger overlay control, and cleaner alignment against the personal header.
@@ -20,6 +22,7 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Human-readable
 
+- Both site headers now behave cleanly on mobile: the full wordmark/subtitle hides, the logo mark stays visible, navigation collapses into a compact animated menu, and the personal shell subtitle now reads `Personal Studio`.
 - The personal header account control is now cleaner and quieter by default, showing only the circular key icon until real sign-in state exists.
 - `/home` and `/watch` now include a slim social link strip for Daniel's public channels without adding a bulky toolbar feel.
 - `/donate` now opens with a calmer, more premium full-bleed slideshow hero instead of the oversized heading-heavy banner.

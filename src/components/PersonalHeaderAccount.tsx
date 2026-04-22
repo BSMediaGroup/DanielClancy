@@ -23,7 +23,10 @@ export function PersonalHeaderAccount() {
 
   return (
     <details className="account-menu">
-      <summary className="account-menu__trigger">
+      <summary
+        aria-label={account.isLoggedIn ? `Open account menu for ${account.username}` : "Open personal studio account menu"}
+        className="account-menu__trigger"
+      >
         <span className="account-menu__avatar">
           <img
             alt=""
@@ -37,7 +40,7 @@ export function PersonalHeaderAccount() {
       <div className="account-menu__panel">
         <div className="account-menu__meta">
           <span>{account.isLoggedIn ? "Account" : "Account preview"}</span>
-          <strong>{account.isLoggedIn ? account.username : "Studio journal access"}</strong>
+          <strong>{account.isLoggedIn ? account.username : "Personal studio access"}</strong>
         </div>
         <div className="account-menu__actions">
           <button className="button button--secondary" type="button">

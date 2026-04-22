@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { shellAssets } from "../content/brandAssets";
 import { siteMeta } from "../content/siteContent";
+import { HeaderMenuButton } from "./HeaderMenuButton";
 import { SiteBrand } from "./SiteBrand";
 
 const navItems = [
@@ -14,9 +15,37 @@ const navItems = [
 export function ProfessionalShell() {
   const location = useLocation();
   const headerRef = useRef<HTMLElement>(null);
+  const mobileNavId = useId();
   const isHomeRoute = location.pathname === "/";
   const [homeHeaderProgress, setHomeHeaderProgress] = useState(isHomeRoute ? 0 : 1);
   const [homeHeaderOffset, setHomeHeaderOffset] = useState(isHomeRoute ? 76 : 0);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const closeOnDesktop = () => {
+      if (window.innerWidth > 760) {
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", closeOnDesktop);
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("resize", closeOnDesktop);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isHomeRoute) {
@@ -51,7 +80,7 @@ export function ProfessionalShell() {
       window.removeEventListener("scroll", requestUpdate);
       window.removeEventListener("resize", requestUpdate);
     };
-  }, [isHomeRoute]);
+  }, [isHomeRoute, isMobileNavOpen]);
 
   const homeShellStyle = isHomeRoute
     ? ({
@@ -73,7 +102,7 @@ export function ProfessionalShell() {
           <SiteBrand homeTo="/" subtitle="Design Consultant" theme="professional" />
 
           <div className="site-header__actions">
-            <nav aria-label="Professional navigation" className="site-nav">
+            <nav aria-label="Professional navigation" className="site-nav site-nav--desktop">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -87,7 +116,34 @@ export function ProfessionalShell() {
                 </NavLink>
               ))}
             </nav>
+
+            <HeaderMenuButton
+              controls={mobileNavId}
+              isOpen={isMobileNavOpen}
+              onToggle={() => setIsMobileNavOpen((current) => !current)}
+            />
           </div>
+        </div>
+
+        <div className={`container mobile-nav-shell${isMobileNavOpen ? " mobile-nav-shell--open" : ""}`}>
+          <nav
+            id={mobileNavId}
+            aria-label="Professional mobile navigation"
+            className="site-nav site-nav--mobile"
+          >
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `site-nav__link${isActive ? " site-nav__link--active" : ""}`
+                }
+                end={item.to === "/"}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
       </header>
 

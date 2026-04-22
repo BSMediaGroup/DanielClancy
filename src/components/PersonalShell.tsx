@@ -1,4 +1,6 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useId, useState } from "react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { HeaderMenuButton } from "./HeaderMenuButton";
 import { PersonalHeaderAccount } from "./PersonalHeaderAccount";
 import { SiteBrand } from "./SiteBrand";
 
@@ -9,16 +11,46 @@ const navItems = [
 ];
 
 export function PersonalShell() {
+  const location = useLocation();
+  const mobileNavId = useId();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const closeOnDesktop = () => {
+      if (window.innerWidth > 760) {
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", closeOnDesktop);
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("resize", closeOnDesktop);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
   return (
     <div className="site-shell site-shell--personal">
       <header className="site-header site-header--personal">
         <div className="container personal-header">
           <div className="personal-header__brand">
-            <SiteBrand homeTo="/home" subtitle="Studio Journal" theme="personal" />
+            <SiteBrand homeTo="/home" subtitle="Personal Studio" theme="personal" />
           </div>
 
           <div className="personal-header__actions">
-            <nav aria-label="Personal navigation" className="site-nav site-nav--personal">
+            <nav aria-label="Personal navigation" className="site-nav site-nav--desktop site-nav--personal">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -33,10 +65,37 @@ export function PersonalShell() {
               ))}
             </nav>
 
+            <HeaderMenuButton
+              controls={mobileNavId}
+              isOpen={isMobileNavOpen}
+              onToggle={() => setIsMobileNavOpen((current) => !current)}
+            />
+
             <div className="personal-header__account">
               <PersonalHeaderAccount />
             </div>
           </div>
+        </div>
+
+        <div className={`container mobile-nav-shell${isMobileNavOpen ? " mobile-nav-shell--open" : ""}`}>
+          <nav
+            id={mobileNavId}
+            aria-label="Personal mobile navigation"
+            className="site-nav site-nav--mobile site-nav--personal"
+          >
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `site-nav__link${isActive ? " site-nav__link--active" : ""}`
+                }
+                end
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
       </header>
 

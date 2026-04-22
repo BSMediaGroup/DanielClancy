@@ -13,7 +13,7 @@ import googleIcon from "../../assets/icons/google.svg";
 import paymentIcon from "../../assets/icons/ui/payments.svg";
 import keyIcon from "../../assets/icons/ui/key.svg";
 import profileIcon from "../../assets/icons/ui/profile.svg";
-import streamSuitesIcon from "../../assets/icons/ui/streamsuitesicon.svg";
+import streamSuitesIcon from "../../assets/icons/streamsuites.svg";
 import profileAvatar from "../../assets/portraits/profileavatar.webp";
 import professionalHeroBanner from "../../assets/backgrounds/banner-stripesgeneral.webp";
 import heroPortrait from "../../assets/backgrounds/danielclancy-portrait.webp";
