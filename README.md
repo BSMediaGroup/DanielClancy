@@ -31,7 +31,7 @@ The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collect
 | --- | --- | --- |
 | `/home` | Personal landing page for channels and supporter paths | No |
 | `/watch` | Featured latest-video page hydrated from a server-side YouTube feed, with a clean provider seam for later migration | No |
-| `/donate` | Future-ready support page for hosted and direct payments | No |
+| `/donate` | Stripe-backed support page with hosted checkout and graceful fallback handling | No |
 
 ## SEO and metadata split
 
@@ -66,6 +66,21 @@ Environment keys already used:
   - `YOUTUBE_CHANNEL_ID_DANIEL`
 - Channel identifier used now: the stable channel ID from `YOUTUBE_CHANNEL_ID_DANIEL`
 - Fallback behavior: if env/runtime or the upstream API is unavailable, `/watch` keeps its static share metadata, shows a polished fallback hero/state, and avoids exposing any secret in the client bundle
+
+## Donation checkout
+
+- UI route: `/donate`
+- Server endpoints:
+  - `functions/api/donate/session.js`
+  - `functions/api/donate/webhook.js`
+- Active payment phase: one-time Stripe Checkout donation flow
+- Server-only Stripe env contract:
+  - `STRIPE_SECRET_KEY`
+  - `STRIPE_WEBHOOK_SECRET`
+  - `STRIPE_PUBLISHABLE_KEY`
+  - `STRIPE_LIVE_ENABLED`
+- Fallback behavior: if the Stripe env contract is incomplete or unavailable, `/donate` keeps the public support layout, disables checkout cleanly, and avoids exposing runtime detail in the browser
+- Deferred payment path: PayPal remains intentionally deferred until credentials and final product requirements are ready
 
 ## Fonts and assets
 
@@ -107,12 +122,14 @@ Project detail document actions temporarily route to a shared OneDrive folder un
   - `src/pages/PersonalHomePage.tsx`
   - `src/pages/WatchPage.tsx`
   - `src/pages/DonatePage.tsx`
+  - `src/lib/donate.ts`
 - Global styling: `src/styles/global.css`
 - Audit notes:
   - `docs/public-site-polish-audit-2026-04-22.md`
   - `docs/migration-notes.md`
   - `docs/portfolio-tranche-2-audit.md`
   - `docs/amajaying-inspired-overhaul-audit.md`
+  - `docs/donate-stripe-runtime-note-2026-04-22.md`
 
 ## Local development
 
@@ -150,12 +167,16 @@ DanielClancy/
 │  └─ wix/
 ├─ docs/
 │  ├─ amajaying-inspired-overhaul-audit.md
+│  ├─ donate-stripe-runtime-note-2026-04-22.md
 │  ├─ migration-notes.md
 │  ├─ portfolio-tranche-2-audit.md
 │  └─ public-site-polish-audit-2026-04-22.md
 ├─ functions/
 │  └─ api/
 │     ├─ contact.js
+│     ├─ donate/
+│     │  ├─ session.js
+│     │  └─ webhook.js
 │     └─ watch-feed.js
 ├─ public/
 │  ├─ assets/fonts/
@@ -172,6 +193,7 @@ DanielClancy/
 │  ├─ components/
 │  ├─ content/
 │  ├─ lib/
+│  │  ├─ donate.ts
 │  │  ├─ portfolio.ts
 │  │  └─ watchFeed.ts
 │  ├─ pages/
@@ -190,7 +212,7 @@ DanielClancy/
 
 - Cloudflare deployment and DNS cutover
 - Later provider migration for the current YouTube-backed `/watch` feed
-- Live Stripe and PayPal payment processing
+- PayPal support for `/donate`
 - Admin-side content workflow integration
 - Further archive enrichment as more source material is verified
 - Potential media-bundle optimisation if the full local WorkSet asset set proves too heavy for final deployment targets

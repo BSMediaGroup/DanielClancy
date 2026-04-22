@@ -1726,6 +1726,51 @@ select:focus {
   width: min(100%, 42rem);
 }
 
+.donate-panel,
+.donate-custom-field,
+.donate-fallback-grid {
+  display: grid;
+}
+
+.donate-panel {
+  gap: 1rem;
+}
+
+.donate-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.donate-amount-chip {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.donate-custom-field {
+  gap: 0.45rem;
+}
+
+.donate-custom-field span {
+  color: var(--text-soft);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.donate-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.donate-detail-grid {
+  align-items: stretch;
+}
+
+.donate-fallback-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
 .profile-widget {
   position: relative;
   overflow: hidden;

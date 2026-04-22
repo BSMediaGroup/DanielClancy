@@ -1,4 +1,20 @@
-CURRENT VER= 0.3.4-alpha / PENDING VER= 0.3.5-alpha
+CURRENT VER= 0.3.5-alpha / PENDING VER= 0.3.6-alpha
+
+## 0.3.6-alpha
+
+### Technical
+
+- Added `functions/api/donate/session.js` to create one-time Stripe Checkout Sessions server-side from the existing Cloudflare env contract and to expose a public-safe readiness payload for `/donate`.
+- Added `functions/api/donate/webhook.js` with Stripe signature verification against `STRIPE_WEBHOOK_SECRET` and production-safe event handling seams for completed, failed, and expired checkout sessions.
+- Rebuilt `src/pages/DonatePage.tsx` around live amount selection, custom donation entry, hosted-checkout CTA wiring, and clean success, cancel, loading, unavailable, and failure states.
+- Added `src/lib/donate.ts` for the shared public donation contract and formatting helpers, then extended `src/styles/global.css` with donate-specific layout and amount-picker styling.
+- Updated `README.md` and added `docs/donate-stripe-runtime-note-2026-04-22.md` to record the live Stripe Checkout milestone, required env names, fallback behavior, and deferred PayPal seam.
+- Updated `docs/public-site-polish-audit-2026-04-22.md`, `src/content/siteContent.ts`, and bumped the package version to `0.3.6-alpha`.
+
+### Human-readable
+
+- `/donate` now opens a real Stripe-hosted donation checkout instead of stopping at a static future-ready payment shell.
+- The page still degrades cleanly when Stripe is unavailable, and PayPal remains deferred instead of being shown as a fake working option.
 
 ## 0.3.5-alpha
 

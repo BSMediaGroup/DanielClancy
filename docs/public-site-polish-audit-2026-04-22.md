@@ -104,11 +104,23 @@ Date: 2026-04-22
 - If YouTube data is unavailable, `/watch` falls back to a polished non-broken hero and gallery state with public-safe wording, while static share metadata and personal-shell noindex handling remain intact.
 - This remains the current YouTube-first implementation phase ahead of a later Rumble migration.
 
+## Donate Stripe runtime note
+
+- `/donate` now creates one-time Stripe Checkout Sessions through Cloudflare Pages Functions at `functions/api/donate/session.js`.
+- The current Stripe env contract for this route is:
+  - `STRIPE_SECRET_KEY`
+  - `STRIPE_WEBHOOK_SECRET`
+  - `STRIPE_PUBLISHABLE_KEY`
+  - `STRIPE_LIVE_ENABLED`
+- Stripe webhook verification is now wired at `functions/api/donate/webhook.js` with signature validation using `STRIPE_WEBHOOK_SECRET`.
+- The live payment path in this milestone is Stripe-hosted card checkout only; PayPal remains intentionally deferred.
+- If the Stripe runtime contract is incomplete or unavailable, `/donate` stays presentable, disables checkout cleanly, and shows public-safe fallback wording instead of exposing runtime details.
+
 ## Deferred to later Cloudflare/deployment/integration stage
 
 - Cloudflare deployment and domain cutover.
 - Cloudflare secrets provisioning and production email env configuration.
-- Live Stripe / PayPal wiring.
+- PayPal wiring and any broader donation ledger/admin flow.
 - Later provider migration from the current YouTube-backed watch feed to Rumble when ready.
 - Admin-side CMS wiring.
 - Any later asset/performance optimisation pass if the full local project-media bundle proves too heavy for the production rollout target.
