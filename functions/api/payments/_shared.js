@@ -29,6 +29,20 @@ export function parseBoolean(value) {
   return sanitizeEnv(value, 16).toLowerCase() === "true";
 }
 
+export function getRuntimeModeFlag(value) {
+  const normalized = sanitizeEnv(value, 24).toLowerCase();
+
+  if (["true", "1", "yes", "on", "live", "production", "prod"].includes(normalized)) {
+    return "live";
+  }
+
+  if (["false", "0", "no", "off", "test", "sandbox", "preview"].includes(normalized)) {
+    return "test";
+  }
+
+  return "test";
+}
+
 export function buildOrigin(request) {
   const url = new URL(request.url);
   const forwardedProto = sanitizeEnv(request.headers.get("X-Forwarded-Proto"), 10);
@@ -132,7 +146,7 @@ export function getPayPalAvailability(env) {
   const clientId = sanitizeEnv(env?.PAYPAL_CLIENT_ID, 200);
   const clientSecret = sanitizeEnv(env?.PAYPAL_CLIENT_SECRET, 200);
   const appName = sanitizeEnv(env?.PAYPAL_APP_NAME, 120) || "DanielClancyNet";
-  const liveEnabled = parseBoolean(env?.PAYPAL_LIVE_ENABLED);
+  const mode = getRuntimeModeFlag(env?.PAYPAL_LIVE_ENABLED);
 
   if (!clientId || !clientSecret) {
     return {
@@ -145,10 +159,11 @@ export function getPayPalAvailability(env) {
 
   return {
     available: true,
-    mode: liveEnabled ? "live" : "test",
-    message: liveEnabled
-      ? "Live PayPal checkout is available now."
-      : "PayPal checkout is available in preview mode.",
+    mode,
+    message:
+      mode === "live"
+        ? "PayPal checkout is available."
+        : "PayPal checkout is available for this runtime.",
     methods: ["PayPal"],
     clientId,
     appName,
@@ -167,7 +182,7 @@ export function getPaymentAvailability(env) {
 }
 
 export function getPayPalApiBase(env) {
-  return parseBoolean(env?.PAYPAL_LIVE_ENABLED)
+  return getPayPalAvailability(env).mode === "live"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
 }

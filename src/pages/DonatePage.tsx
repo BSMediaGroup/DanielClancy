@@ -30,7 +30,15 @@ import {
 } from "../lib/donate";
 
 type StripeCheckoutState = "idle" | "submitting" | "error";
-type PayPalState = "idle" | "loading" | "rendering" | "creating" | "capturing" | "ready" | "error";
+type PayPalState =
+  | "idle"
+  | "loading"
+  | "rendering"
+  | "creating"
+  | "capturing"
+  | "ready"
+  | "unavailable"
+  | "error";
 type BannerTone = "success" | "neutral" | "error";
 
 type DonateBanner = {
@@ -52,6 +60,8 @@ const GENERIC_STRIPE_ERROR =
   "Secure card checkout could not be opened right now. Please try again in a moment.";
 const GENERIC_PAYPAL_ERROR =
   "PayPal could not complete the donation right now. Please try again or choose card checkout.";
+const PAYPAL_UNAVAILABLE_COPY =
+  "PayPal checkout is unavailable in this browser right now. You can try again or use secure card checkout.";
 
 const FALLBACK_AVAILABILITY: DonateAvailabilityResponse = {
   currency: "USD",
@@ -75,6 +85,7 @@ const FALLBACK_AVAILABILITY: DonateAvailabilityResponse = {
 };
 
 let paypalSdkPromise: Promise<void> | null = null;
+let paypalSdkSrc = "";
 
 function readDonationBanner(search: string): DonateBanner | null {
   const params = new URLSearchParams(search);
@@ -123,18 +134,20 @@ function loadPayPalSdk(clientId: string, currency: string) {
     return Promise.reject(new Error("PayPal SDK requires a browser environment."));
   }
 
-  if (window.paypal?.Buttons) {
-    return Promise.resolve();
-  }
-
   const existingScript = document.getElementById("paypal-js-sdk") as HTMLScriptElement | null;
   const expectedSrc = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(
     currency,
-  )}&intent=capture&components=buttons&commit=true`;
+  )}&intent=capture&components=buttons,funding-eligibility&commit=true`;
+
+  if (window.paypal?.Buttons && paypalSdkSrc === expectedSrc) {
+    return Promise.resolve();
+  }
 
   if (existingScript && existingScript.src !== expectedSrc) {
     existingScript.remove();
     paypalSdkPromise = null;
+    paypalSdkSrc = "";
+    delete window.paypal;
   }
 
   if (!paypalSdkPromise) {
@@ -147,6 +160,7 @@ function loadPayPalSdk(clientId: string, currency: string) {
       script.src = expectedSrc;
       script.async = true;
       script.dataset.clientId = clientId;
+      paypalSdkSrc = expectedSrc;
 
       script.onload = () => {
         if (window.paypal?.Buttons) {
@@ -155,11 +169,13 @@ function loadPayPalSdk(clientId: string, currency: string) {
         }
 
         paypalSdkPromise = null;
+        paypalSdkSrc = "";
         reject(new Error("PayPal SDK failed to initialize."));
       };
 
       script.onerror = () => {
         paypalSdkPromise = null;
+        paypalSdkSrc = "";
         reject(new Error("PayPal SDK failed to load."));
       };
 
@@ -263,7 +279,7 @@ export function DonatePage() {
         }
 
         setPayPalState("error");
-        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
+        setPayPalError(error instanceof Error ? error.message : PAYPAL_UNAVAILABLE_COPY);
       });
 
     return () => {
@@ -392,6 +408,13 @@ export function DonatePage() {
       },
     });
 
+    if (!buttons?.isEligible?.()) {
+      container.innerHTML = "";
+      setPayPalState("unavailable");
+      setPayPalError(PAYPAL_UNAVAILABLE_COPY);
+      return;
+    }
+
     void buttons
       .render(container)
       .then(() => {
@@ -410,6 +433,7 @@ export function DonatePage() {
 
     return () => {
       active = false;
+      void buttons.close?.().catch(() => undefined);
       container.innerHTML = "";
     };
   }, [amountKind, amountValid, navigate, payPalReady]);
@@ -673,7 +697,11 @@ export function DonatePage() {
                   <img alt="" src={paypalIcon} />
                   <h3>PayPal</h3>
                 </div>
-                <p>{config.paypal.message}</p>
+                <p>
+                  {config.paypal.available
+                    ? "Complete the donation with the PayPal account and funding sources available to this browser."
+                    : config.paypal.message}
+                </p>
                 <p className="form-status">
                   PayPal availability depends on the active PayPal account, browser, locale, and
                   eligible funding sources returned by the SDK.
@@ -701,7 +729,7 @@ export function DonatePage() {
                   )}
                 </div>
                 <span className="donate-provider-note">
-                  Smart checkout renders only when PayPal is enabled for the current runtime.
+                  The PayPal button appears only when the current browser session is eligible to show it.
                 </span>
                 {payPalState === "loading" || payPalState === "rendering" ? (
                   <p className="form-status">Preparing PayPal.</p>
@@ -709,6 +737,7 @@ export function DonatePage() {
                 {payPalState === "capturing" ? (
                   <p className="form-status">Finalizing the PayPal capture.</p>
                 ) : null}
+                {payPalState === "unavailable" ? <p className="form-status">{payPalError}</p> : null}
                 {payPalState === "error" ? (
                   <p className="form-status form-status--error">{payPalError || GENERIC_PAYPAL_ERROR}</p>
                 ) : null}

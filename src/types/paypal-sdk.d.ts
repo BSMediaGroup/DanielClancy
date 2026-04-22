@@ -5,6 +5,7 @@ type PayPalButtonsActions = {
 };
 
 type PayPalButtonsInstance = {
+  isEligible?: () => boolean;
   render: (container: HTMLElement | string) => Promise<void>;
   close?: () => Promise<void>;
 };
