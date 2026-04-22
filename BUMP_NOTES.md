@@ -1,20 +1,19 @@
-CURRENT VER= 0.3.5-alpha / PENDING VER= 0.3.6-alpha
+CURRENT VER= 0.3.6-alpha / PENDING VER= 0.3.7-alpha
 
-## 0.3.6-alpha
+## 0.3.7-alpha
 
 ### Technical
 
-- Added `functions/api/donate/session.js` to create one-time Stripe Checkout Sessions server-side from the existing Cloudflare env contract and to expose a public-safe readiness payload for `/donate`.
-- Added `functions/api/donate/webhook.js` with Stripe signature verification against `STRIPE_WEBHOOK_SECRET` and production-safe event handling seams for completed, failed, and expired checkout sessions.
-- Rebuilt `src/pages/DonatePage.tsx` around live amount selection, custom donation entry, hosted-checkout CTA wiring, and clean success, cancel, loading, unavailable, and failure states.
-- Added `src/lib/donate.ts` for the shared public donation contract and formatting helpers, then extended `src/styles/global.css` with donate-specific layout and amount-picker styling.
-- Updated `README.md` and added `docs/donate-stripe-runtime-note-2026-04-22.md` to record the live Stripe Checkout milestone, required env names, fallback behavior, and deferred PayPal seam.
-- Updated `docs/public-site-polish-audit-2026-04-22.md`, `src/content/siteContent.ts`, and bumped the package version to `0.3.6-alpha`.
+- Added a new live payment runtime under `functions/api/payments/*` covering public provider config, Stripe Checkout Session creation, Stripe webhook verification, PayPal order creation, PayPal capture, and PayPal webhook verification for `/donate`.
+- Reduced the legacy `functions/api/donate/session.js` and `functions/api/donate/webhook.js` files to compatibility shims so the old Stripe-only route surface does not break while the site moves to the new `/api/payments/*` structure.
+- Rebuilt `src/pages/DonatePage.tsx` into a polished production donation surface with working preset amounts, validated custom amount entry, provider-specific CTAs, live PayPal hydration, and short user-facing return/error states.
+- Expanded `src/lib/donate.ts`, added `src/types/paypal-sdk.d.ts`, and replaced the earlier donate styling in `src/styles/global.css` with a stronger premium layout, clearer provider presentation, and responsive payment controls.
+- Updated `README.md`, `docs/donate-stripe-runtime-note-2026-04-22.md`, `docs/public-site-polish-audit-2026-04-22.md`, and `src/content/siteContent.ts` to reflect that `/donate` now ships with live Stripe and PayPal flows while keeping all secrets server-side only.
 
 ### Human-readable
 
-- `/donate` now opens a real Stripe-hosted donation checkout instead of stopping at a static future-ready payment shell.
-- The page still degrades cleanly when Stripe is unavailable, and PayPal remains deferred instead of being shown as a fake working option.
+- `/donate` now presents a real working donation experience instead of a broken mockup.
+- Stripe and PayPal are both wired, the amount controls actually work, and the page stays professional when a provider is unavailable.
 
 ## 0.3.5-alpha
 

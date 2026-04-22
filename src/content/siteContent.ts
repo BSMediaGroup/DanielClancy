@@ -268,7 +268,7 @@ export const migrationScope = {
   later: [
     "Deployment, DNS cutover, and Cloudflare secret provisioning.",
     "Later provider migration for /watch beyond the current YouTube-backed feed.",
-    "PayPal support and any broader donation admin workflow for /donate.",
+    "Donation analytics, reconciliation, and any broader admin workflow for /donate beyond the current live Stripe and PayPal flow.",
     "Admin-side content tooling and deeper archive QA.",
   ],
 };

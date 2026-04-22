@@ -1,18 +1,41 @@
-# Donate Stripe Runtime Note
+# Donate Payment Runtime Note
 
 Date: 2026-04-22
 
-- `/donate` now uses live Stripe Checkout through Cloudflare Pages Functions when the Stripe runtime contract is mounted and enabled.
-- Required env names:
+- `/donate` now uses a live dual-provider donation runtime through Cloudflare Pages Functions.
+- Public config route:
+  - `/api/payments/config`
+- Stripe runtime routes:
+  - `/api/payments/stripe/create-session`
+  - `/api/payments/stripe/webhook`
+- PayPal runtime routes:
+  - `/api/payments/paypal/create-order`
+  - `/api/payments/paypal/capture-order`
+  - `/api/payments/paypal/webhook`
+- Required Stripe env names:
   - `STRIPE_SECRET_KEY`
   - `STRIPE_WEBHOOK_SECRET`
   - `STRIPE_PUBLISHABLE_KEY`
   - `STRIPE_LIVE_ENABLED`
-- Active payment path in this milestone: one-time Stripe Checkout card flow.
-- Deferred payment paths:
-  - PayPal
-  - any broader donation ledger or billing admin surface
+- Required PayPal env names:
+  - `PAYPAL_CLIENT_ID`
+  - `PAYPAL_CLIENT_SECRET`
+  - `PAYPAL_WEBHOOK_ID`
+  - `PAYPAL_APP_NAME`
+  - `PAYPAL_LIVE_ENABLED`
+- Active payment paths in this milestone:
+  - one-time Stripe Checkout for cards and supported Apple Pay / Google Pay wallet presentation
+  - one-time PayPal smart checkout with server-side create/capture flow
+- Server-only operations:
+  - Stripe Checkout Session creation
+  - Stripe webhook verification
+  - PayPal OAuth token exchange
+  - PayPal order creation and capture
+  - PayPal webhook verification
 - Fallback behavior:
-  - if the Stripe env contract is incomplete or unavailable, `/donate` keeps the current premium layout, disables the primary checkout action, and shows public-safe unavailability messaging instead of runtime detail
-  - the amount-selection UI stays visible so the route still reads as an intentional support page rather than a broken payment surface
-- PayPal remains a later milestone and is intentionally not presented as a working button in this pass.
+  - if one provider is unavailable, `/donate` keeps the premium layout and leaves the other provider active with short public-safe messaging
+  - if both providers are unavailable, the amount-selection UI still reads as an intentional support surface rather than a broken payment page
+- Still deferred:
+  - richer donation analytics and reconciliation
+  - receipt management outside the payment providers
+  - recurring tiers, memberships, or a broader donation admin surface

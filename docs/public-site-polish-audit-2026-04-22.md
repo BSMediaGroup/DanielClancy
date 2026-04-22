@@ -104,23 +104,33 @@ Date: 2026-04-22
 - If YouTube data is unavailable, `/watch` falls back to a polished non-broken hero and gallery state with public-safe wording, while static share metadata and personal-shell noindex handling remain intact.
 - This remains the current YouTube-first implementation phase ahead of a later Rumble migration.
 
-## Donate Stripe runtime note
+## Donate payment runtime note
 
-- `/donate` now creates one-time Stripe Checkout Sessions through Cloudflare Pages Functions at `functions/api/donate/session.js`.
+- `/donate` now reads public provider availability from `functions/api/payments/config.js`.
+- Stripe now creates one-time Checkout Sessions through `functions/api/payments/stripe/create-session.js`.
 - The current Stripe env contract for this route is:
   - `STRIPE_SECRET_KEY`
   - `STRIPE_WEBHOOK_SECRET`
   - `STRIPE_PUBLISHABLE_KEY`
   - `STRIPE_LIVE_ENABLED`
-- Stripe webhook verification is now wired at `functions/api/donate/webhook.js` with signature validation using `STRIPE_WEBHOOK_SECRET`.
-- The live payment path in this milestone is Stripe-hosted card checkout only; PayPal remains intentionally deferred.
-- If the Stripe runtime contract is incomplete or unavailable, `/donate` stays presentable, disables checkout cleanly, and shows public-safe fallback wording instead of exposing runtime details.
+- Stripe webhook verification is now wired at `functions/api/payments/stripe/webhook.js` with signature validation using `STRIPE_WEBHOOK_SECRET`.
+- PayPal now creates and captures live orders through:
+  - `functions/api/payments/paypal/create-order.js`
+  - `functions/api/payments/paypal/capture-order.js`
+  - `functions/api/payments/paypal/webhook.js`
+- The current PayPal env contract for this route is:
+  - `PAYPAL_CLIENT_ID`
+  - `PAYPAL_CLIENT_SECRET`
+  - `PAYPAL_WEBHOOK_ID`
+  - `PAYPAL_APP_NAME`
+  - `PAYPAL_LIVE_ENABLED`
+- If one provider runtime is incomplete or unavailable, `/donate` stays presentable, keeps the live provider usable, and shows public-safe fallback wording instead of exposing runtime details.
 
 ## Deferred to later Cloudflare/deployment/integration stage
 
 - Cloudflare deployment and domain cutover.
 - Cloudflare secrets provisioning and production email env configuration.
-- PayPal wiring and any broader donation ledger/admin flow.
+- Broader donation analytics, reconciliation, and admin flow beyond the current one-time live Stripe/PayPal implementation.
 - Later provider migration from the current YouTube-backed watch feed to Rumble when ready.
 - Admin-side CMS wiring.
 - Any later asset/performance optimisation pass if the full local project-media bundle proves too heavy for the production rollout target.

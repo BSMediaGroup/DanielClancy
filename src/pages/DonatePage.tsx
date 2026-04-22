@@ -1,62 +1,207 @@
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useId, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import appleIcon from "../../assets/icons/apple.svg";
+import debitCardIcon from "../../assets/icons/debitcard.svg";
+import googleIcon from "../../assets/icons/google.svg";
+import mastercardWordmark from "../../assets/icons/mastercardwordmark.svg";
+import paypalIcon from "../../assets/icons/paypal.svg";
+import paypalWordmark from "../../assets/icons/paypalwordmark.svg";
+import stripeIcon from "../../assets/icons/stripeicon.svg";
+import stripeWordmark from "../../assets/icons/stripetitle.svg";
+import visaWordmark from "../../assets/icons/visa.svg";
+import paymentsIcon from "../../assets/icons/ui/payments.svg";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { shellAssets, socialIcons } from "../content/brandAssets";
+import { shellAssets } from "../content/brandAssets";
 import {
   DONATION_MAX_USD,
   DONATION_MIN_USD,
   DONATION_PRESETS,
   formatDonationAmount,
-  type DonateAvailabilityResponse,
+  isDonationAmountValid,
   type DonateAmountKind,
+  type DonateAvailabilityResponse,
+  type DonatePayPalCaptureResponse,
+  type DonatePayPalOrderResponse,
   type DonateSessionResponse,
+  type DonationProvider,
 } from "../lib/donate";
 
-type DonateStatus = "loading" | "ready" | "unavailable";
-type CheckoutStatus = "idle" | "submitting" | "error";
+type StripeCheckoutState = "idle" | "submitting" | "error";
+type PayPalState = "idle" | "loading" | "rendering" | "creating" | "capturing" | "ready" | "error";
+type BannerTone = "success" | "neutral" | "error";
+
+type DonateBanner = {
+  tone: BannerTone;
+  title: string;
+  body: string;
+  provider?: DonationProvider;
+  reference?: string;
+};
 
 const DEFAULT_AMOUNT = DONATION_PRESETS[2];
-const GENERIC_ERROR =
-  "Secure checkout could not be started right now. Please try again in a moment.";
+const GENERIC_STRIPE_ERROR =
+  "Secure card checkout could not be opened right now. Please try again in a moment.";
+const GENERIC_PAYPAL_ERROR =
+  "PayPal could not complete the donation right now. Please try again or choose card checkout.";
 
-function readDonationState() {
-  if (typeof window === "undefined") {
+const FALLBACK_AVAILABILITY: DonateAvailabilityResponse = {
+  currency: "USD",
+  minAmount: DONATION_MIN_USD,
+  maxAmount: DONATION_MAX_USD,
+  presetAmounts: [...DONATION_PRESETS],
+  stripe: {
+    available: false,
+    mode: "unavailable",
+    message: "Secure card checkout is temporarily unavailable.",
+    methods: ["Cards"],
+    walletMessage:
+      "Apple Pay and Google Pay only appear inside Stripe Checkout when your device, browser, and wallet setup support them.",
+  },
+  paypal: {
+    available: false,
+    mode: "unavailable",
+    message: "PayPal is temporarily unavailable.",
+    methods: ["PayPal"],
+  },
+};
+
+let paypalSdkPromise: Promise<void> | null = null;
+
+function readDonationBanner(search: string): DonateBanner | null {
+  const params = new URLSearchParams(search);
+  const donationState = params.get("donation");
+  const provider = params.get("provider");
+  const normalizedProvider =
+    provider === "paypal" || provider === "stripe" ? provider : undefined;
+  const reference = params.get("session_id") || params.get("order_id") || params.get("capture_id") || "";
+
+  if (donationState === "success") {
     return {
-      banner: "",
-      sessionId: "",
+      tone: "success",
+      title: "Donation received",
+      body:
+        normalizedProvider === "paypal"
+          ? "Your PayPal donation has been confirmed."
+          : "Your secure donation has been submitted successfully.",
+      provider: normalizedProvider,
+      reference,
     };
   }
 
-  const params = new URLSearchParams(window.location.search);
-  const donationState = params.get("donation");
+  if (donationState === "cancel") {
+    return {
+      tone: "neutral",
+      title: "Donation cancelled",
+      body: "The payment flow was cancelled before funds were captured.",
+      provider: normalizedProvider,
+    };
+  }
 
-  return {
-    banner:
-      donationState === "success"
-        ? "Thank you. Your secure donation has been submitted."
-        : donationState === "cancel"
-          ? "Your checkout was cancelled before payment was completed."
-          : "",
-    sessionId: params.get("session_id") || "",
-  };
+  if (donationState === "error") {
+    return {
+      tone: "error",
+      title: "Payment unavailable",
+      body: "The donation flow could not be completed. Please try again.",
+      provider: normalizedProvider,
+    };
+  }
+
+  return null;
+}
+
+function loadPayPalSdk(clientId: string, currency: string) {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("PayPal SDK requires a browser environment."));
+  }
+
+  if (window.paypal?.Buttons) {
+    return Promise.resolve();
+  }
+
+  const existingScript = document.getElementById("paypal-js-sdk") as HTMLScriptElement | null;
+  const expectedSrc = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(
+    currency,
+  )}&intent=capture&components=buttons&commit=true`;
+
+  if (existingScript && existingScript.src !== expectedSrc) {
+    existingScript.remove();
+    paypalSdkPromise = null;
+  }
+
+  if (!paypalSdkPromise) {
+    paypalSdkPromise = new Promise<void>((resolve, reject) => {
+      const script =
+        (document.getElementById("paypal-js-sdk") as HTMLScriptElement | null) ||
+        document.createElement("script");
+
+      script.id = "paypal-js-sdk";
+      script.src = expectedSrc;
+      script.async = true;
+      script.dataset.clientId = clientId;
+
+      script.onload = () => {
+        if (window.paypal?.Buttons) {
+          resolve();
+          return;
+        }
+
+        paypalSdkPromise = null;
+        reject(new Error("PayPal SDK failed to initialize."));
+      };
+
+      script.onerror = () => {
+        paypalSdkPromise = null;
+        reject(new Error("PayPal SDK failed to load."));
+      };
+
+      if (!script.isConnected) {
+        document.head.appendChild(script);
+      }
+    });
+  }
+
+  return paypalSdkPromise;
+}
+
+async function readJson<T>(response: Response): Promise<T> {
+  return (await response.json()) as T;
 }
 
 export function DonatePage() {
-  const [{ banner, sessionId }] = useState(readDonationState);
+  const customAmountId = useId();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const paypalContainerRef = useRef<HTMLDivElement | null>(null);
+  const amountRef = useRef<number>(DEFAULT_AMOUNT);
+
   const [availability, setAvailability] = useState<DonateAvailabilityResponse | null>(null);
-  const [donateStatus, setDonateStatus] = useState<DonateStatus>("loading");
+  const [pageReady, setPageReady] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<number>(DEFAULT_AMOUNT);
   const [customAmount, setCustomAmount] = useState("");
   const [amountKind, setAmountKind] = useState<DonateAmountKind>("preset");
-  const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStatus>("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [stripeState, setStripeState] = useState<StripeCheckoutState>("idle");
+  const [stripeError, setStripeError] = useState("");
+  const [payPalState, setPayPalState] = useState<PayPalState>("idle");
+  const [payPalError, setPayPalError] = useState("");
+
+  const banner = readDonationBanner(location.search);
+  const amountValue = amountKind === "custom" ? Number(customAmount) : selectedAmount;
+  const amountValid = isDonationAmountValid(amountValue);
+  const amountLabel = amountValid ? formatDonationAmount(amountValue) : "Choose an amount";
+  const customAmountTouched = customAmount.trim().length > 0;
+  const config = availability || FALLBACK_AVAILABILITY;
+  const stripeReady = config.stripe.available && pageReady;
+  const payPalReady = config.paypal.available && pageReady;
+
+  amountRef.current = amountValue;
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadAvailability() {
       try {
-        const response = await fetch("/api/donate/session", {
+        const response = await fetch("/api/payments/config", {
           signal: controller.signal,
           cache: "no-store",
           headers: {
@@ -64,84 +209,216 @@ export function DonatePage() {
           },
         });
 
-        const data = (await response.json()) as DonateAvailabilityResponse;
-        setAvailability(data);
-        setDonateStatus(data.available ? "ready" : "unavailable");
+        if (!response.ok) {
+          throw new Error("Payment providers are unavailable.");
+        }
+
+        const payload = await readJson<DonateAvailabilityResponse>(response);
+        setAvailability(payload);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
         }
 
-        setDonateStatus("unavailable");
-        setAvailability({
-          available: false,
-          state: "unavailable",
-          mode: "unavailable",
-          currency: "USD",
-          minAmount: DONATION_MIN_USD,
-          maxAmount: DONATION_MAX_USD,
-          presetAmounts: [...DONATION_PRESETS],
-          message:
-            "Secure card checkout is temporarily unavailable. Please check back shortly.",
-          walletMessage:
-            "Apple Pay or Google Pay may appear inside Stripe Checkout when supported.",
-          deferredPaymentPaths: ["PayPal"],
-        });
+        setAvailability(FALLBACK_AVAILABILITY);
+      } finally {
+        setPageReady(true);
       }
     }
 
-    loadAvailability();
+    void loadAvailability();
 
     return () => controller.abort();
   }, []);
 
-  const effectiveAmount =
-    amountKind === "custom"
-      ? Number.isFinite(Number(customAmount))
-        ? Number(customAmount)
-        : 0
-      : selectedAmount;
-
-  const amountSummary = effectiveAmount >= DONATION_MIN_USD ? formatDonationAmount(effectiveAmount) : "";
-  const customAmountValid =
-    effectiveAmount >= DONATION_MIN_USD && effectiveAmount <= DONATION_MAX_USD;
-  const checkoutEnabled =
-    donateStatus === "ready" &&
-    checkoutStatus !== "submitting" &&
-    ((amountKind === "preset" && selectedAmount >= DONATION_MIN_USD) ||
-      (amountKind === "custom" && customAmountValid));
-
-  async function startCheckout() {
-    if (!checkoutEnabled) {
+  useEffect(() => {
+    if (!config.paypal.available || !config.paypal.clientId) {
       return;
     }
 
-    setCheckoutStatus("submitting");
-    setErrorMessage("");
+    let cancelled = false;
+    setPayPalState("loading");
+    setPayPalError("");
+
+    void loadPayPalSdk(config.paypal.clientId, config.currency)
+      .then(() => {
+        if (cancelled) {
+          return;
+        }
+
+        setPayPalState("ready");
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
+        setPayPalState("error");
+        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [config.currency, config.paypal.available, config.paypal.clientId]);
+
+  useEffect(() => {
+    const container = paypalContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    if (!payPalReady || !amountValid) {
+      container.innerHTML = "";
+      return;
+    }
+
+    if (!window.paypal?.Buttons) {
+      return;
+    }
+
+    let active = true;
+    container.innerHTML = "";
+    setPayPalState("rendering");
+
+    const buttons = window.paypal.Buttons({
+      style: {
+        layout: "vertical",
+        label: "paypal",
+        shape: "rect",
+        height: 48,
+        tagline: false,
+        color: "gold",
+      },
+      createOrder: async () => {
+        const response = await fetch("/api/payments/paypal/create-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify({
+            amount: amountRef.current,
+            kind: amountKind,
+          }),
+        });
+
+        const data = await readJson<DonatePayPalOrderResponse & { message?: string }>(response);
+
+        if (!response.ok || !data.id) {
+          setPayPalState("error");
+          setPayPalError(data.message || GENERIC_PAYPAL_ERROR);
+          throw new Error(data.message || GENERIC_PAYPAL_ERROR);
+        }
+
+        setPayPalState("ready");
+        setPayPalError("");
+        return data.id;
+      },
+      onApprove: async (data) => {
+        setPayPalState("capturing");
+        setPayPalError("");
+
+        const response = await fetch("/api/payments/paypal/capture-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify({
+            orderId: data.orderID,
+          }),
+        });
+
+        const payload = await readJson<DonatePayPalCaptureResponse & { message?: string }>(response);
+
+        if (!response.ok || !payload.id) {
+          setPayPalState("error");
+          setPayPalError(payload.message || GENERIC_PAYPAL_ERROR);
+          throw new Error(payload.message || GENERIC_PAYPAL_ERROR);
+        }
+
+        setPayPalState("ready");
+
+        startTransition(() => {
+          navigate(
+            `/donate?donation=success&provider=paypal&order_id=${encodeURIComponent(
+              payload.orderId,
+            )}&capture_id=${encodeURIComponent(payload.id)}`,
+          );
+        });
+      },
+      onCancel: (data) => {
+        setPayPalState("ready");
+
+        startTransition(() => {
+          const orderId = data.orderID ? `&order_id=${encodeURIComponent(data.orderID)}` : "";
+          navigate(`/donate?donation=cancel&provider=paypal${orderId}`);
+        });
+      },
+      onError: (error) => {
+        setPayPalState("error");
+        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
+      },
+    });
+
+    void buttons
+      .render(container)
+      .then(() => {
+        if (active) {
+          setPayPalState("ready");
+        }
+      })
+      .catch((error) => {
+        if (!active) {
+          return;
+        }
+
+        setPayPalState("error");
+        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
+      });
+
+    return () => {
+      active = false;
+      container.innerHTML = "";
+    };
+  }, [amountKind, amountValid, navigate, payPalReady]);
+
+  async function startStripeCheckout() {
+    if (!stripeReady || !amountValid) {
+      return;
+    }
+
+    setStripeState("submitting");
+    setStripeError("");
 
     try {
-      const response = await fetch("/api/donate/session", {
+      const response = await fetch("/api/payments/stripe/create-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
+        cache: "no-store",
         body: JSON.stringify({
-          amount: Math.round(effectiveAmount),
+          amount: amountValue,
           kind: amountKind,
         }),
       });
 
-      const data = (await response.json()) as Partial<DonateSessionResponse> & { message?: string };
+      const data = await readJson<Partial<DonateSessionResponse> & { message?: string }>(response);
 
       if (!response.ok || !data.url) {
-        throw new Error(data.message || GENERIC_ERROR);
+        throw new Error(data.message || GENERIC_STRIPE_ERROR);
       }
 
       window.location.assign(data.url);
     } catch (error) {
-      setCheckoutStatus("error");
-      setErrorMessage(error instanceof Error ? error.message : GENERIC_ERROR);
+      setStripeState("error");
+      setStripeError(error instanceof Error ? error.message : GENERIC_STRIPE_ERROR);
     }
   }
 
@@ -149,203 +426,295 @@ export function DonatePage() {
     <>
       <Seo
         title="Donate"
-        description="Secure Stripe-backed support page for Daniel Clancy content creation and independent design work."
+        description="Support Daniel Clancy through a polished live donation flow with secure Stripe Checkout and PayPal."
         path="/donate"
         noIndex
         image={shellAssets.personalShare}
       />
 
-      <section className="hero hero--donate">
-        <div className="container hero-split hero-split--personal">
-          <div className="hero-copy">
-            <p className="kicker">Support</p>
-            <h1>Support Daniel&apos;s content creation and independent design work through secure Stripe Checkout.</h1>
+      <section className="hero hero--donate hero--donate-upgraded">
+        <div className="container donate-hero-shell">
+          <div className="donate-hero-copy">
+            <p className="kicker">Support Daniel Clancy</p>
+            <h1>Direct, secure support for independent publishing, commentary, and design work.</h1>
             <p className="hero-copy__lead">
-              Choose a one-time amount, continue to Stripe&apos;s hosted payment page, and complete the donation without exposing card details to the public site.
+              Choose a one-time amount and complete the donation through live Stripe Checkout or
+              PayPal. Card details and provider secrets stay server-side and never pass through the
+              public site.
             </p>
 
-            <div className="logo-row">
-              <span className="logo-pill">
-                <img alt="" src={socialIcons.payments} />
-                <small>Stripe Checkout</small>
+            <div className="donate-method-strip" aria-label="Supported payment methods">
+              <span className="donate-method-pill">
+                <img alt="" src={stripeWordmark} />
+                <small>Hosted card checkout</small>
               </span>
-              <span className="logo-pill">
-                <img alt="" src={socialIcons.apple} />
-                <small>Wallets when available</small>
+              <span className="donate-method-pill">
+                <img alt="" src={paypalWordmark} />
+                <small>PayPal smart checkout</small>
               </span>
+              <span className="donate-method-pill">
+                <img alt="" src={visaWordmark} />
+                <small>Visa</small>
+              </span>
+              <span className="donate-method-pill">
+                <img alt="" src={mastercardWordmark} />
+                <small>Mastercard</small>
+              </span>
+            </div>
+
+            <div className="donate-trust-rail">
+              <article>
+                <span>Wallets</span>
+                <strong>Apple Pay and Google Pay only appear when Stripe Checkout supports them on the current device and browser.</strong>
+              </article>
+              <article>
+                <span>Processing</span>
+                <strong>Stripe handles card and wallet checkout. PayPal handles PayPal funding approval and capture.</strong>
+              </article>
+              <article>
+                <span>Runtime</span>
+                <strong>All secure payment operations run through Cloudflare Pages Functions.</strong>
+              </article>
             </div>
 
             {banner ? (
-              <p className={`form-status ${banner.includes("Thank you") ? "form-status--success" : ""}`}>
-                {banner}
-                {sessionId ? ` Reference: ${sessionId}.` : ""}
-              </p>
+              <div className={`donate-banner donate-banner--${banner.tone}`}>
+                <p className="kicker">
+                  {banner.provider === "paypal"
+                    ? "PayPal"
+                    : banner.provider === "stripe"
+                      ? "Stripe"
+                      : "Donation"}
+                </p>
+                <h2>{banner.title}</h2>
+                <p>{banner.body}</p>
+                {banner.reference ? <span>Reference: {banner.reference}</span> : null}
+              </div>
             ) : null}
           </div>
 
-          <article className="surface surface--glow donate-panel">
-            <p className="kicker">Secure payment</p>
-            <h2>{availability?.mode === "live" ? "Live card donations are available now." : "Secure donation flow ready."}</h2>
-            <p>
-              {availability?.message ||
-                "Checking the live checkout runtime now."}
-            </p>
+          <article className="surface surface--glow donate-console">
+            <div className="donate-console__header">
+              <div>
+                <p className="kicker">Donation amount</p>
+                <h2>{amountLabel}</h2>
+              </div>
+              <span className="status-pill">
+                {pageReady
+                  ? config.stripe.mode === "live" || config.paypal.mode === "live"
+                    ? "Live payments"
+                    : "Provider check"
+                  : "Loading"}
+              </span>
+            </div>
 
-            <div className="donate-amounts" role="group" aria-label="Donation amounts">
-              {(availability?.presetAmounts || DONATION_PRESETS).map((amount) => (
+            <div className="donate-amount-grid" role="radiogroup" aria-label="Donation amount">
+              {config.presetAmounts.map((amount) => (
                 <button
                   key={amount}
                   type="button"
-                  className={`filter-chip donate-amount-chip ${amountKind === "preset" && selectedAmount === amount ? "filter-chip--active" : ""}`}
+                  className={`donate-amount-card ${
+                    amountKind === "preset" && selectedAmount === amount ? "donate-amount-card--active" : ""
+                  }`}
+                  aria-pressed={amountKind === "preset" && selectedAmount === amount}
                   onClick={() => {
                     setAmountKind("preset");
                     setSelectedAmount(amount);
-                    setCheckoutStatus("idle");
-                    setErrorMessage("");
+                    setStripeState("idle");
+                    setStripeError("");
+                    setPayPalError("");
                   }}
-                  disabled={donateStatus !== "ready"}
                 >
-                  {formatDonationAmount(amount)}
+                  <strong>{formatDonationAmount(amount)}</strong>
+                  <span>One-time support</span>
                 </button>
               ))}
+
               <button
                 type="button"
-                className={`filter-chip donate-amount-chip ${amountKind === "custom" ? "filter-chip--active" : ""}`}
+                className={`donate-amount-card ${
+                  amountKind === "custom" ? "donate-amount-card--active" : ""
+                }`}
+                aria-pressed={amountKind === "custom"}
                 onClick={() => {
                   setAmountKind("custom");
-                  setCheckoutStatus("idle");
-                  setErrorMessage("");
+                  setStripeState("idle");
+                  setStripeError("");
+                  setPayPalError("");
                 }}
-                disabled={donateStatus !== "ready"}
               >
-                Custom amount
+                <strong>Custom</strong>
+                <span>Choose a whole-dollar amount</span>
               </button>
             </div>
 
-            <label className="donate-custom-field">
-              <span>Custom amount (USD)</span>
+            <label className="donate-custom-input" htmlFor={customAmountId}>
+              <span>Custom amount in USD</span>
               <input
-                inputMode="decimal"
+                id={customAmountId}
+                inputMode="numeric"
                 type="number"
-                min={DONATION_MIN_USD}
-                max={DONATION_MAX_USD}
+                min={config.minAmount}
+                max={config.maxAmount}
                 step="1"
-                placeholder={`${DONATION_MIN_USD}`}
+                placeholder={`${config.minAmount}`}
                 value={customAmount}
                 onChange={(event) => {
                   setAmountKind("custom");
                   setCustomAmount(event.target.value);
-                  setCheckoutStatus("idle");
-                  setErrorMessage("");
+                  setStripeState("idle");
+                  setStripeError("");
+                  setPayPalError("");
                 }}
-                disabled={donateStatus !== "ready"}
               />
             </label>
 
-            <div className="archive-summary donate-summary">
+            <div className="donate-console__summary">
               <article>
-                <span>Selected amount</span>
-                <strong>{amountSummary || "Choose an amount"}</strong>
+                <span>Donation</span>
+                <strong>{amountLabel}</strong>
               </article>
               <article>
-                <span>Range</span>
+                <span>Accepted range</span>
                 <strong>
-                  {formatDonationAmount(availability?.minAmount || DONATION_MIN_USD)} to{" "}
-                  {formatDonationAmount(availability?.maxAmount || DONATION_MAX_USD)}
+                  {formatDonationAmount(config.minAmount)} to {formatDonationAmount(config.maxAmount)}
                 </strong>
               </article>
               <article>
-                <span>Payment path</span>
-                <strong>{availability?.mode === "live" ? "Live Stripe" : donateStatus === "ready" ? "Stripe preview" : "Fallback state"}</strong>
+                <span>Settlement</span>
+                <strong>One-time USD payment</strong>
               </article>
             </div>
 
-            <div className="form-actions">
-              <button
-                type="button"
-                className="button button--primary"
-                onClick={startCheckout}
-                disabled={!checkoutEnabled}
-              >
-                {checkoutStatus === "submitting"
-                  ? "Opening secure checkout"
-                  : amountSummary
-                    ? `Continue with ${amountSummary}`
-                    : "Continue to secure payment"}
-              </button>
-              <p className="form-status">
-                Stripe hosts the payment page. Card details never touch this site directly.
+            {amountKind === "custom" && customAmountTouched && !amountValid ? (
+              <p className="form-status form-status--error">
+                Choose a whole-dollar amount between {formatDonationAmount(config.minAmount)} and{" "}
+                {formatDonationAmount(config.maxAmount)}.
               </p>
-              {amountKind === "custom" && !customAmountValid && customAmount ? (
-                <p className="form-status form-status--error">
-                  Choose a custom amount between {formatDonationAmount(DONATION_MIN_USD)} and{" "}
-                  {formatDonationAmount(DONATION_MAX_USD)}.
+            ) : null}
+
+            <section className="donate-provider-block">
+              <div className="donate-provider-block__copy">
+                <div className="icon-heading">
+                  <img alt="" src={stripeIcon} />
+                  <h3>Stripe Checkout</h3>
+                </div>
+                <p>{config.stripe.message}</p>
+                <p className="form-status">{config.stripe.walletMessage}</p>
+                <div className="donate-provider-icons" aria-hidden="true">
+                  <img alt="" src={paymentsIcon} />
+                  <img alt="" src={appleIcon} />
+                  <img alt="" src={googleIcon} />
+                  <img alt="" src={debitCardIcon} />
+                </div>
+              </div>
+
+              <div className="donate-provider-block__actions">
+                <button
+                  type="button"
+                  className="button button--primary donate-provider-button"
+                  onClick={startStripeCheckout}
+                  disabled={!stripeReady || !amountValid || stripeState === "submitting"}
+                >
+                  {stripeState === "submitting"
+                    ? "Opening Stripe Checkout"
+                    : `Donate ${amountValid ? amountLabel : "with Stripe"}`}
+                </button>
+                <span className="donate-provider-note">
+                  Hosted checkout for cards, Apple Pay, and Google Pay when supported.
+                </span>
+                {stripeState === "error" ? (
+                  <p className="form-status form-status--error">{stripeError || GENERIC_STRIPE_ERROR}</p>
+                ) : null}
+              </div>
+            </section>
+
+            <section className="donate-provider-block donate-provider-block--paypal">
+              <div className="donate-provider-block__copy">
+                <div className="icon-heading">
+                  <img alt="" src={paypalIcon} />
+                  <h3>PayPal</h3>
+                </div>
+                <p>{config.paypal.message}</p>
+                <p className="form-status">
+                  PayPal availability depends on the active PayPal account, browser, locale, and
+                  eligible funding sources returned by the SDK.
                 </p>
-              ) : null}
-              {checkoutStatus === "error" ? (
-                <p className="form-status form-status--error">{errorMessage || GENERIC_ERROR}</p>
-              ) : null}
-            </div>
+              </div>
+
+              <div className="donate-provider-block__actions">
+                <div className="donate-paypal-shell">
+                  {payPalReady ? (
+                    <>
+                      <div
+                        ref={paypalContainerRef}
+                        className={`donate-paypal-container ${
+                          !amountValid ? "donate-paypal-container--disabled" : ""
+                        }`}
+                      />
+                      {!amountValid ? (
+                        <p className="form-status">Choose a valid amount to enable the PayPal button.</p>
+                      ) : null}
+                    </>
+                  ) : pageReady ? (
+                    <p className="form-status">{config.paypal.message}</p>
+                  ) : (
+                    <p className="form-status">Loading PayPal availability.</p>
+                  )}
+                </div>
+                <span className="donate-provider-note">
+                  Smart checkout renders only when PayPal is enabled for the current runtime.
+                </span>
+                {payPalState === "loading" || payPalState === "rendering" ? (
+                  <p className="form-status">Preparing PayPal.</p>
+                ) : null}
+                {payPalState === "capturing" ? (
+                  <p className="form-status">Finalizing the PayPal capture.</p>
+                ) : null}
+                {payPalState === "error" ? (
+                  <p className="form-status form-status--error">{payPalError || GENERIC_PAYPAL_ERROR}</p>
+                ) : null}
+              </div>
+            </section>
           </article>
         </div>
       </section>
 
       <Section
-        eyebrow="Support flow"
-        title="A clean hosted checkout path with graceful fallback behavior."
-        intro="The page keeps the current DanielClancy visual language while moving real payment handling to Cloudflare Pages Functions and Stripe-hosted checkout."
+        eyebrow="Payment handling"
+        title="A production-safe donation surface with truthful payment messaging."
+        intro="The page presents only the payment methods that are really wired, keeps wallet claims conditional, and pushes all secure payment creation, capture, and webhook work into Cloudflare Pages Functions."
       >
-        <div className="project-grid donate-detail-grid">
-          <article className="surface">
-            <div className="icon-heading">
-              <img alt="" src={socialIcons.payments} />
-              <h3>Card payments</h3>
-            </div>
-            <p>
-              One-time support now routes through Stripe Checkout from a server-side session created inside the Cloudflare Pages runtime.
-            </p>
-            <span className="status-pill">
-              {availability?.mode === "live" ? "Live now" : donateStatus === "ready" ? "Preview-ready" : "Temporarily unavailable"}
-            </span>
+        <div className="donate-details-layout">
+          <article className="surface donate-detail-panel">
+            <p className="kicker">What is live now</p>
+            <h3>Stripe and PayPal are both wired as real providers.</h3>
+            <ul className="bullet-list">
+              <li>Preset donation amounts are selectable and visually stateful.</li>
+              <li>Custom amount entry stays in whole dollars and validates on both client and server.</li>
+              <li>Stripe launches hosted Checkout Sessions for one-time donations.</li>
+              <li>PayPal creates and captures real orders through secure server endpoints.</li>
+            </ul>
           </article>
 
-          <article className="surface">
-            <div className="icon-heading">
-              <img alt="" src={socialIcons.apple} />
-              <h3>Wallet presentation</h3>
-            </div>
-            <p>{availability?.walletMessage || "Wallet options appear only when Stripe Checkout offers them."}</p>
-            <span className="status-pill">Device dependent</span>
+          <article className="surface donate-detail-panel">
+            <p className="kicker">Provider truth</p>
+            <h3>No fake wallets, no dead buttons.</h3>
+            <ul className="bullet-list">
+              <li>Apple Pay and Google Pay are described only as Stripe Checkout options when supported.</li>
+              <li>PayPal is rendered through the live PayPal SDK only when the provider is available.</li>
+              <li>Unavailable providers degrade to short public-safe messaging instead of broken controls.</li>
+            </ul>
           </article>
 
-          <article className="surface">
-            <div className="icon-heading">
-              <img alt="" src={socialIcons.locals} />
-              <h3>Deferred paths</h3>
-            </div>
-            <p>
-              PayPal remains a later milestone, so this page avoids non-working wallet buttons and keeps the integration seam clean for a future phase.
-            </p>
-            <span className="status-pill">PayPal later</span>
-          </article>
-        </div>
-
-        <div className="two-column-grid donate-fallback-grid">
-          <article className="surface">
-            <p className="kicker">Checkout readiness</p>
-            <h3>{donateStatus === "ready" ? "The page can start a secure Stripe session." : "The page is showing its public-safe fallback state."}</h3>
-            <p>
-              {availability?.message ||
-                "Checkout availability is being checked."}
-            </p>
-          </article>
-
-          <article className="surface">
-            <p className="kicker">Public wording</p>
-            <h3>No fake buttons, no raw runtime errors.</h3>
-            <p>
-              When Stripe is unavailable, the amount chooser stays visible for context, the primary action disables cleanly, and the page keeps professional public copy instead of exposing internal configuration detail.
-            </p>
+          <article className="surface donate-detail-panel">
+            <p className="kicker">Operational stance</p>
+            <h3>Secrets remain server-side only.</h3>
+            <ul className="bullet-list">
+              <li>Checkout creation, OAuth, capture, and webhook verification all stay in Pages Functions.</li>
+              <li>No secret keys or webhook secrets are read by the client bundle.</li>
+              <li>Return-state messaging is short, public-facing, and safe for live traffic.</li>
+            </ul>
           </article>
         </div>
       </Section>

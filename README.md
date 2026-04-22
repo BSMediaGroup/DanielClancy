@@ -71,16 +71,29 @@ Environment keys already used:
 
 - UI route: `/donate`
 - Server endpoints:
-  - `functions/api/donate/session.js`
-  - `functions/api/donate/webhook.js`
-- Active payment phase: one-time Stripe Checkout donation flow
+  - `functions/api/payments/config.js`
+  - `functions/api/payments/stripe/create-session.js`
+  - `functions/api/payments/stripe/webhook.js`
+  - `functions/api/payments/paypal/create-order.js`
+  - `functions/api/payments/paypal/capture-order.js`
+  - `functions/api/payments/paypal/webhook.js`
+  - compatibility shims remain at `functions/api/donate/session.js` and `functions/api/donate/webhook.js`
+- Active payment phase: live one-time Stripe Checkout and live PayPal donation flow
 - Server-only Stripe env contract:
   - `STRIPE_SECRET_KEY`
   - `STRIPE_WEBHOOK_SECRET`
   - `STRIPE_PUBLISHABLE_KEY`
   - `STRIPE_LIVE_ENABLED`
-- Fallback behavior: if the Stripe env contract is incomplete or unavailable, `/donate` keeps the public support layout, disables checkout cleanly, and avoids exposing runtime detail in the browser
-- Deferred payment path: PayPal remains intentionally deferred until credentials and final product requirements are ready
+- Server-only PayPal env contract:
+  - `PAYPAL_CLIENT_ID`
+  - `PAYPAL_CLIENT_SECRET`
+  - `PAYPAL_WEBHOOK_ID`
+  - `PAYPAL_APP_NAME`
+  - `PAYPAL_LIVE_ENABLED`
+- Runtime behavior:
+  - `/donate` exposes only public provider availability and PayPal client configuration to the browser
+  - Stripe Checkout Session creation, PayPal order creation/capture, and both webhook handlers stay server-side only
+  - if one provider is unavailable, the page stays presentable and keeps the other live provider active instead of exposing runtime detail
 
 ## Fonts and assets
 
