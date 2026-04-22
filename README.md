@@ -64,8 +64,11 @@ Environment keys already used:
 - Public CV: `public/docs/Daniel_Clancy_CV_2026.pdf`
 - Canonical portfolio source: `cmsdata/wix/collection-tables/WorkSet.csv`
 - Canonical portfolio media root: `cmsdata/wix/portfolio/`
+- Portfolio project PDFs under `cmsdata/wix/portfolio/` are source-only local archive material and should remain gitignored rather than tracked or deployed.
 - Local preview-only fallbacks for genuinely missing WorkSet exports: `public/media/portfolio/`
 - Logo/social/software/company marks: `assets/logos/` and `assets/icons/`
+
+Project detail document actions temporarily route to a shared OneDrive folder until the later admin/data flow can provide exact individual cloud file links.
 
 ## Key implementation files
 

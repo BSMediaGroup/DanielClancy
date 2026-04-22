@@ -68,7 +68,7 @@ export function PortfolioMediaGallery({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open PDF
+                  Open document folder
                 </a>
               ) : documentationStatusNote ? (
                 <button
@@ -78,7 +78,7 @@ export function PortfolioMediaGallery({
                   title={documentationStatusNote}
                   type="button"
                 >
-                  PDF unavailable
+                  Document folder unavailable
                 </button>
               ) : null}
             </div>
@@ -88,7 +88,7 @@ export function PortfolioMediaGallery({
             <div>
               <strong>{projectTitle}</strong>
               <p>No matching local Wix-exported image was found for this public record.</p>
-              {!documentationAvailable && documentationStatusNote ? (
+              {documentationStatusNote ? (
                 <p className="portfolio-gallery__status-note">{documentationStatusNote}</p>
               ) : null}
             </div>
@@ -112,7 +112,7 @@ export function PortfolioMediaGallery({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open PDF
+                  Open document folder
                 </a>
               ) : documentationStatusNote ? (
                 <button
@@ -122,7 +122,7 @@ export function PortfolioMediaGallery({
                   title={documentationStatusNote}
                   type="button"
                 >
-                  PDF unavailable
+                  Document folder unavailable
                 </button>
               ) : null}
               {activeMedia ? (
@@ -168,7 +168,7 @@ export function PortfolioMediaGallery({
             <div>
               <strong>{activeMedia.title || projectTitle}</strong>
               <p>{activeMedia.description || `Documentation view for ${projectTitle}.`}</p>
-              {!documentationAvailable && documentationStatusNote ? (
+              {documentationStatusNote ? (
                 <p className="portfolio-gallery__status-note">{documentationStatusNote}</p>
               ) : null}
             </div>

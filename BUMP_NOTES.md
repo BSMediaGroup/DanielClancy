@@ -1,4 +1,19 @@
-CURRENT VER= 0.3.2-alpha / PENDING VER= 0.3.3-alpha
+CURRENT VER= 0.3.3-alpha / PENDING VER= 0.3.4-alpha
+
+## 0.3.4-alpha
+
+### Technical
+
+- Removed portfolio-project PDF importing from `src/content/workSetPortfolio.ts` so Vite no longer bundles project PDFs from `cmsdata/wix/portfolio/` into deploy output.
+- Repointed project document actions in the portfolio detail flow to the shared interim OneDrive folder and updated the button/link copy to match folder-based access.
+- Replaced the prior targeted `.gitignore` exceptions with a repo-safe rule covering `cmsdata/wix/portfolio/**/*.pdf`, keeping the local project PDF archive source-only and ready for untracking.
+- Appended the broader pre-admin PDF-removal and shared-folder-routing note to `docs/public-site-polish-audit-2026-04-22.md` and clarified the asset policy in `README.md`.
+- Bumped the package version to `0.3.4-alpha`.
+
+### Human-readable
+
+- Cloudflare Pages should no longer receive any project PDFs from the portfolio archive in the tracked repo surface or build output.
+- Project detail pages still show an active document action, but it now opens the shared OneDrive folder until individual cloud links are introduced.
 
 ## 0.3.3-alpha
 

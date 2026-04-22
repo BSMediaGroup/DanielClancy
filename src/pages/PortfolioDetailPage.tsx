@@ -167,13 +167,14 @@ export function PortfolioDetailPage() {
             </p>
             {project.documentationUrl ? (
               <a className="text-link" href={project.documentationUrl} target="_blank" rel="noreferrer">
-                Open supporting PDF
+                Open project documents folder
               </a>
             ) : project.documentationStatusNote ? (
               <span className="text-link text-link--disabled" title={project.documentationStatusNote}>
-                PDF temporarily unavailable
+                Document folder temporarily unavailable
               </span>
             ) : null}
+            {project.documentationStatusNote ? <p className="surface-note">{project.documentationStatusNote}</p> : null}
           </article>
         </div>
       </Section>

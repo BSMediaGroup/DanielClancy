@@ -6,27 +6,15 @@ const assetModules = import.meta.glob("../../cmsdata/wix/portfolio/**/*.{png,jpg
   import: "default",
 });
 
-const documentModules = import.meta.glob(
-  [
-    "../../cmsdata/wix/portfolio/**/*.pdf",
-    "!../../cmsdata/wix/portfolio/bimset/PNN_AR_DA.pdf",
-    "!../../cmsdata/wix/portfolio/general/GENERAL - UNSORTED.pdf",
-  ],
-  {
-    eager: true,
-    import: "default",
-  },
-);
-
-const DETACHED_DOCUMENT_NOTE =
-  "The full drawing set is temporarily unavailable online while document hosting is being upgraded.";
-const detachedDocumentFileNames = new Set(["pnn_ar_da.pdf", "general - unsorted.pdf"]);
+const SHARED_PROJECT_DOCUMENT_FOLDER_URL =
+  "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz";
+const SHARED_PROJECT_DOCUMENT_FOLDER_NOTE =
+  "Project documents temporarily open a shared OneDrive folder while individual cloud file links are being prepared.";
 const documentFileNameAliases: Record<string, string> = {
   "pns_ar_da.pdf": "PNN_AR_DA.pdf",
 };
 
 const imageAssetIndex = createAssetIndex(assetModules);
-const documentAssetIndex = createAssetIndex(documentModules);
 
 const previewFallbackBySlug: Record<string, string> = {
   "cue-roadhouse": "/media/portfolio/cue-roadhouse.jpg",
@@ -119,7 +107,7 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
   const projectDate = row.projectDate;
   const year = projectDate ? new Date(projectDate).getFullYear().toString() : "Undated";
   const resolvedDocument = resolveDocumentUrl(row.singleDoc);
-  const documentationUrl = resolvedDocument?.available ? resolvedDocument.src : "";
+  const documentationUrl = resolvedDocument?.src ?? "";
   const mediaResolution = createMediaItems({
     title,
     slug,
@@ -133,7 +121,7 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
   const references = [
     row.companyUrl ? { label: `${primaryStudio} website`, path: row.companyUrl } : null,
     row.clientUrl ? { label: `${row.client || "Client"} website`, path: row.clientUrl } : null,
-    documentationUrl ? { label: "Documentation PDF", path: documentationUrl } : null,
+    documentationUrl ? { label: "Project documents folder", path: documentationUrl } : null,
   ].filter((item): item is { label: string; path: string } => Boolean(item));
 
   return {
@@ -163,8 +151,7 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
       `${disciplines.join(" / ")} documentation record drawn from the canonical WorkSet export.`,
       constructionType ? `Project type: ${constructionType}.` : null,
       location ? `Recorded location: ${location}.` : null,
-      resolvedDocument?.status === "available" ? "Supporting PDF set retained for document-style review." : null,
-      resolvedDocument?.status === "detached" ? resolvedDocument.statusNote : null,
+      resolvedDocument?.status === "available" ? resolvedDocument.statusNote : null,
       mediaResolution.usingPreviewFallback
         ? "No matching Wix-exported image files were found for this WorkSet row, so the public view falls back to an existing local preview image."
         : null,
@@ -446,27 +433,12 @@ function resolveDocumentUrl(value: string) {
   const requestedFileName = getFileName(value);
   const fileName = documentFileNameAliases[requestedFileName.toLowerCase()] ?? requestedFileName;
 
-  if (detachedDocumentFileNames.has(fileName.toLowerCase())) {
-    return {
-      fileName,
-      src: "",
-      available: false,
-      status: "detached" as const,
-      statusNote: DETACHED_DOCUMENT_NOTE,
-    };
-  }
-
-  const assetUrl = documentAssetIndex.byFileName[fileName.toLowerCase()];
-
-  if (!assetUrl) {
-    return null;
-  }
-
   return {
     fileName,
-    src: assetUrl,
+    src: SHARED_PROJECT_DOCUMENT_FOLDER_URL,
     available: true,
     status: "available" as const,
+    statusNote: SHARED_PROJECT_DOCUMENT_FOLDER_NOTE,
   };
 }
 

@@ -88,12 +88,12 @@ Date: 2026-04-22
 
 ## Temporary Cloudflare Pages PDF detachment note
 
-- Added a temporary pre-R2 Cloudflare Pages mitigation for oversized local project PDFs exceeding a 15 MB deployment threshold.
-- Detached oversized local PDFs from the deployable site bundle while leaving the source files in place under `cmsdata/wix/portfolio/`:
-  - `cmsdata/wix/portfolio/bimset/PNN_AR_DA.pdf` (`Redevelopment of Highway Service Center Pheasants Nest (M31) North & South`)
-  - `cmsdata/wix/portfolio/general/GENERAL - UNSORTED.pdf` (unpublished/local archive material only)
-- The affected public project detail page now keeps its PDF action visible but intentionally disabled until large-file hosting is introduced in a later R2 or equivalent phase.
-- This mitigation is deployment-focused only; gallery imagery and other non-PDF project evidence remain active.
+- Expanded the temporary pre-admin Cloudflare Pages mitigation so all project PDFs are removed from the tracked and deployed repo surface instead of only detaching the largest files from the Vite bundle.
+- Local source PDFs remain on disk only under `cmsdata/wix/portfolio/`; they are now treated as source-only archive material and are expected to stay gitignored there.
+- Public project document actions remain visible, but now temporarily open a shared OneDrive folder instead of any bundled local PDF:
+  - `https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz`
+- This is an interim pre-admin / pre-individual-cloud-link solution only; exact per-project cloud document links still need a later data/admin pass.
+- The CV PDF remains outside this cleanup and continues to use its existing public path unchanged.
 
 ## Deferred to later Cloudflare/deployment/integration stage
 
