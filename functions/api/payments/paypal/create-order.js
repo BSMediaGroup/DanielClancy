@@ -11,6 +11,13 @@ import {
 
 const GENERIC_ERROR = "PayPal could not start the donation right now. Please try again in a moment.";
 
+function readApprovalUrl(order) {
+  const links = Array.isArray(order?.links) ? order.links : [];
+  const approvalLink = links.find((link) => link?.rel === "approve" || link?.rel === "payer-action");
+
+  return typeof approvalLink?.href === "string" ? approvalLink.href : "";
+}
+
 function buildOrderPayload(request, env, amount) {
   const origin = buildOrigin(request);
   const appName = getPayPalAvailability(env).appName || "DanielClancyNet";
@@ -84,11 +91,16 @@ export async function onRequestPost(context) {
       body: JSON.stringify(orderPayload),
     });
 
-    if (!response.ok || !data?.id) {
+    const approvalUrl = readApprovalUrl(data);
+
+    if (!response.ok || !data?.id || !approvalUrl) {
       return json({ message: GENERIC_ERROR }, response.status >= 400 && response.status < 500 ? 400 : 502);
     }
 
-    return json({ id: data.id });
+    return json({
+      id: data.id,
+      approvalUrl,
+    });
   } catch (_error) {
     return json({ message: GENERIC_ERROR }, 502);
   }

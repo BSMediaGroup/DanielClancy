@@ -30,13 +30,7 @@ import {
 } from "../lib/donate";
 
 type StripeCheckoutState = "idle" | "submitting" | "error";
-type PayPalState =
-  | "idle"
-  | "loading"
-  | "rendering"
-  | "capturing"
-  | "ready"
-  | "error";
+type PayPalState = "idle" | "submitting" | "capturing" | "error";
 type BannerTone = "success" | "neutral" | "error";
 
 type DonateBanner = {
@@ -80,18 +74,26 @@ const FALLBACK_AVAILABILITY: DonateAvailabilityResponse = {
   },
 };
 
-let paypalSdkPromise: Promise<void> | null = null;
-let paypalSdkSrc = "";
-
 function readDonationBanner(search: string): DonateBanner | null {
   const params = new URLSearchParams(search);
   const donationState = params.get("donation");
   const provider = params.get("provider");
   const normalizedProvider =
     provider === "paypal" || provider === "stripe" ? provider : undefined;
-  const reference = params.get("session_id") || params.get("order_id") || params.get("capture_id") || "";
+  const reference = params.get("session_id") || params.get("capture_id") || params.get("order_id") || "";
+  const payPalToken = params.get("token") || params.get("order_id") || "";
 
   if (donationState === "success") {
+    if (normalizedProvider === "paypal" && payPalToken && !params.get("capture_id")) {
+      return {
+        tone: "neutral",
+        title: "Finalizing donation",
+        body: "Your PayPal approval was received. Final confirmation is being completed now.",
+        provider: normalizedProvider,
+        reference: payPalToken,
+      };
+    }
+
     return {
       tone: "success",
       title: "Donation received",
@@ -125,65 +127,6 @@ function readDonationBanner(search: string): DonateBanner | null {
   return null;
 }
 
-function loadPayPalSdk(clientId: string, currency: string) {
-  if (typeof window === "undefined") {
-    return Promise.reject(new Error("PayPal SDK requires a browser environment."));
-  }
-
-  const existingScript = document.getElementById("paypal-js-sdk") as HTMLScriptElement | null;
-  const expectedSrc = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(
-    currency,
-  )}&intent=capture&components=buttons&commit=true`;
-
-  if (window.paypal?.Buttons && paypalSdkSrc === expectedSrc) {
-    return Promise.resolve();
-  }
-
-  if (existingScript && existingScript.src !== expectedSrc) {
-    existingScript.remove();
-    paypalSdkPromise = null;
-    paypalSdkSrc = "";
-    delete window.paypal;
-  }
-
-  if (!paypalSdkPromise) {
-    paypalSdkPromise = new Promise<void>((resolve, reject) => {
-      const script =
-        (document.getElementById("paypal-js-sdk") as HTMLScriptElement | null) ||
-        document.createElement("script");
-
-      script.id = "paypal-js-sdk";
-      script.src = expectedSrc;
-      script.async = true;
-      script.dataset.clientId = clientId;
-      paypalSdkSrc = expectedSrc;
-
-      script.onload = () => {
-        if (window.paypal?.Buttons) {
-          resolve();
-          return;
-        }
-
-        paypalSdkPromise = null;
-        paypalSdkSrc = "";
-        reject(new Error("PayPal SDK failed to initialize."));
-      };
-
-      script.onerror = () => {
-        paypalSdkPromise = null;
-        paypalSdkSrc = "";
-        reject(new Error("PayPal SDK failed to load."));
-      };
-
-      if (!script.isConnected) {
-        document.head.appendChild(script);
-      }
-    });
-  }
-
-  return paypalSdkPromise;
-}
-
 async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
@@ -192,8 +135,8 @@ export function DonatePage() {
   const customAmountId = useId();
   const location = useLocation();
   const navigate = useNavigate();
-  const paypalContainerRef = useRef<HTMLDivElement | null>(null);
   const amountRef = useRef<number>(DEFAULT_AMOUNT);
+  const handledPayPalTokenRef = useRef("");
 
   const [availability, setAvailability] = useState<DonateAvailabilityResponse | null>(null);
   const [pageReady, setPageReady] = useState(false);
@@ -214,6 +157,14 @@ export function DonatePage() {
   const config = availability || FALLBACK_AVAILABILITY;
   const stripeReady = config.stripe.available && pageReady;
   const payPalReady = config.paypal.available && pageReady;
+  const searchParams = new URLSearchParams(location.search);
+  const payPalReturnToken = searchParams.get("token") || searchParams.get("order_id") || "";
+  const payPalCaptureId = searchParams.get("capture_id") || "";
+  const isPayPalReturnCapture =
+    searchParams.get("donation") === "success" &&
+    searchParams.get("provider") === "paypal" &&
+    Boolean(payPalReturnToken) &&
+    !payPalCaptureId;
 
   amountRef.current = amountValue;
 
@@ -253,35 +204,71 @@ export function DonatePage() {
   }, []);
 
   useEffect(() => {
-    if (!config.paypal.available || !config.paypal.clientId) {
+    if (!isPayPalReturnCapture || !payPalReady) {
       return;
     }
 
+    if (handledPayPalTokenRef.current === payPalReturnToken) {
+      return;
+    }
+
+    handledPayPalTokenRef.current = payPalReturnToken;
     let cancelled = false;
-    setPayPalState("loading");
+    setPayPalState("capturing");
     setPayPalError("");
 
-    void loadPayPalSdk(config.paypal.clientId, config.currency)
-      .then(() => {
+    void fetch("/api/payments/paypal/capture-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      cache: "no-store",
+      body: JSON.stringify({
+        orderId: payPalReturnToken,
+      }),
+    })
+      .then(async (response) => {
+        const payload = await readJson<DonatePayPalCaptureResponse & { message?: string }>(response);
+
         if (cancelled) {
           return;
         }
 
-        setPayPalState("ready");
+        if (!response.ok || !payload.id) {
+          throw new Error(payload.message || GENERIC_PAYPAL_ERROR);
+        }
+
+        setPayPalState("idle");
+        startTransition(() => {
+          navigate(
+            `/donate?donation=success&provider=paypal&order_id=${encodeURIComponent(
+              payload.orderId,
+            )}&capture_id=${encodeURIComponent(payload.id)}`,
+            { replace: true },
+          );
+        });
       })
       .catch((error) => {
         if (cancelled) {
           return;
         }
 
+        const message = error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR;
         setPayPalState("error");
-        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
+        setPayPalError(message);
+        startTransition(() => {
+          navigate(
+            `/donate?donation=error&provider=paypal&order_id=${encodeURIComponent(payPalReturnToken)}`,
+            { replace: true },
+          );
+        });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [config.currency, config.paypal.available, config.paypal.clientId]);
+  }, [isPayPalReturnCapture, navigate, payPalReady, payPalReturnToken]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -300,132 +287,6 @@ export function DonatePage() {
 
     return () => window.clearInterval(intervalId);
   }, []);
-
-  useEffect(() => {
-    const container = paypalContainerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    if (!payPalReady || !amountValid) {
-      container.innerHTML = "";
-      return;
-    }
-
-    if (!window.paypal?.Buttons) {
-      return;
-    }
-
-    let active = true;
-    container.innerHTML = "";
-    setPayPalState("rendering");
-
-    const buttons = window.paypal.Buttons({
-      style: {
-        layout: "vertical",
-        label: "paypal",
-        shape: "rect",
-        height: 48,
-        tagline: false,
-        color: "gold",
-      },
-      createOrder: async () => {
-        const response = await fetch("/api/payments/paypal/create-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          cache: "no-store",
-          body: JSON.stringify({
-            amount: amountRef.current,
-            kind: amountKind,
-          }),
-        });
-
-        const data = await readJson<DonatePayPalOrderResponse & { message?: string }>(response);
-
-        if (!response.ok || !data.id) {
-          setPayPalState("error");
-          setPayPalError(data.message || GENERIC_PAYPAL_ERROR);
-          throw new Error(data.message || GENERIC_PAYPAL_ERROR);
-        }
-
-        setPayPalState("ready");
-        setPayPalError("");
-        return data.id;
-      },
-      onApprove: async (data) => {
-        setPayPalState("capturing");
-        setPayPalError("");
-
-        const response = await fetch("/api/payments/paypal/capture-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          cache: "no-store",
-          body: JSON.stringify({
-            orderId: data.orderID,
-          }),
-        });
-
-        const payload = await readJson<DonatePayPalCaptureResponse & { message?: string }>(response);
-
-        if (!response.ok || !payload.id) {
-          setPayPalState("error");
-          setPayPalError(payload.message || GENERIC_PAYPAL_ERROR);
-          throw new Error(payload.message || GENERIC_PAYPAL_ERROR);
-        }
-
-        setPayPalState("ready");
-
-        startTransition(() => {
-          navigate(
-            `/donate?donation=success&provider=paypal&order_id=${encodeURIComponent(
-              payload.orderId,
-            )}&capture_id=${encodeURIComponent(payload.id)}`,
-          );
-        });
-      },
-      onCancel: (data) => {
-        setPayPalState("ready");
-
-        startTransition(() => {
-          const orderId = data.orderID ? `&order_id=${encodeURIComponent(data.orderID)}` : "";
-          navigate(`/donate?donation=cancel&provider=paypal${orderId}`);
-        });
-      },
-      onError: (error) => {
-        setPayPalState("error");
-        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
-      },
-    });
-
-    void buttons
-      .render(container)
-      .then(() => {
-        if (active) {
-          setPayPalState("ready");
-        }
-      })
-      .catch((error) => {
-        if (!active) {
-          return;
-        }
-
-        setPayPalState("error");
-        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
-      });
-
-    return () => {
-      active = false;
-      void buttons.close?.().catch(() => undefined);
-      container.innerHTML = "";
-    };
-  }, [amountKind, amountValid, navigate, payPalReady]);
 
   async function startStripeCheckout() {
     if (!stripeReady || !amountValid) {
@@ -459,6 +320,41 @@ export function DonatePage() {
     } catch (error) {
       setStripeState("error");
       setStripeError(error instanceof Error ? error.message : GENERIC_STRIPE_ERROR);
+    }
+  }
+
+  async function startPayPalCheckout() {
+    if (!payPalReady || !amountValid || isPayPalReturnCapture) {
+      return;
+    }
+
+    setPayPalState("submitting");
+    setPayPalError("");
+
+    try {
+      const response = await fetch("/api/payments/paypal/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({
+          amount: amountRef.current,
+          kind: amountKind,
+        }),
+      });
+
+      const data = await readJson<DonatePayPalOrderResponse & { message?: string }>(response);
+
+      if (!response.ok || !data.id || !data.approvalUrl) {
+        throw new Error(data.message || GENERIC_PAYPAL_ERROR);
+      }
+
+      window.location.assign(data.approvalUrl);
+    } catch (error) {
+      setPayPalState("error");
+      setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
     }
   }
 
@@ -688,12 +584,11 @@ export function DonatePage() {
                 </div>
                 <p>
                   {config.paypal.available
-                    ? "Complete the donation with the PayPal account and funding sources available to this browser."
+                    ? "Continue securely on PayPal to approve the donation, then return here for confirmation."
                     : config.paypal.message}
                 </p>
                 <p className="form-status">
-                  The default PayPal checkout button renders here when PayPal is configured, the
-                  SDK loads, and the selected donation amount is valid.
+                  The site creates the order server-side and redirects to the official PayPal approval page.
                 </p>
               </div>
 
@@ -701,14 +596,18 @@ export function DonatePage() {
                 <div className="donate-paypal-shell">
                   {payPalReady ? (
                     <>
-                      <div
-                        ref={paypalContainerRef}
-                        className={`donate-paypal-container ${
-                          !amountValid ? "donate-paypal-container--disabled" : ""
-                        }`}
-                      />
+                      <button
+                        type="button"
+                        className="button button--primary donate-provider-button donate-provider-button--paypal"
+                        onClick={startPayPalCheckout}
+                        disabled={!amountValid || payPalState === "submitting" || payPalState === "capturing"}
+                      >
+                        {payPalState === "submitting"
+                          ? "Redirecting to PayPal"
+                          : `Donate ${amountValid ? amountLabel : "with PayPal"}`}
+                      </button>
                       {!amountValid ? (
-                        <p className="form-status">Choose a valid amount to enable the PayPal button.</p>
+                        <p className="form-status">Choose a valid amount to enable PayPal checkout.</p>
                       ) : null}
                     </>
                   ) : pageReady ? (
@@ -718,13 +617,10 @@ export function DonatePage() {
                   )}
                 </div>
                 <span className="donate-provider-note">
-                  Donations are created and captured through the site&apos;s server-side PayPal order flow.
+                  Secure approval opens on PayPal, then the site captures the approved order when you return.
                 </span>
-                {payPalState === "loading" || payPalState === "rendering" ? (
-                  <p className="form-status">Preparing PayPal.</p>
-                ) : null}
                 {payPalState === "capturing" ? (
-                  <p className="form-status">Finalizing the PayPal capture.</p>
+                  <p className="form-status">Finalizing the approved PayPal donation.</p>
                 ) : null}
                 {payPalState === "error" ? (
                   <p className="form-status form-status--error">{payPalError || GENERIC_PAYPAL_ERROR}</p>
@@ -757,7 +653,7 @@ export function DonatePage() {
             <h3>No fake wallets, no dead buttons.</h3>
             <ul className="bullet-list">
               <li>Apple Pay and Google Pay are described only as Stripe Checkout options when supported.</li>
-              <li>PayPal is rendered through the live PayPal SDK only when the provider is available.</li>
+              <li>PayPal now uses a server-created order and official PayPal approval redirect instead of a browser-rendered smart button.</li>
               <li>Unavailable providers degrade to short public-safe messaging instead of broken controls.</li>
             </ul>
           </article>

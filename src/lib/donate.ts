@@ -44,6 +44,7 @@ export type DonateSessionResponse = {
 
 export type DonatePayPalOrderResponse = {
   id: string;
+  approvalUrl: string;
 };
 
 export type DonatePayPalCaptureResponse = {

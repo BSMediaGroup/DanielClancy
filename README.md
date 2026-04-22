@@ -31,7 +31,7 @@ The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collect
 | --- | --- | --- |
 | `/home` | Personal landing page for channels and supporter paths | No |
 | `/watch` | Featured latest-video page hydrated from a server-side YouTube feed, with a clean provider seam for later migration | No |
-| `/donate` | Live Stripe and PayPal support page with hosted checkout, smart buttons, and graceful fallback handling | No |
+| `/donate` | Live Stripe and PayPal support page with hosted checkout, PayPal approval redirect, and graceful fallback handling | No |
 
 ## SEO and metadata split
 
@@ -225,7 +225,6 @@ DanielClancy/
 
 - Cloudflare deployment and DNS cutover
 - Later provider migration for the current YouTube-backed `/watch` feed
-- PayPal support for `/donate`
 - Admin-side content workflow integration
 - Further archive enrichment as more source material is verified
 - Potential media-bundle optimisation if the full local WorkSet asset set proves too heavy for final deployment targets

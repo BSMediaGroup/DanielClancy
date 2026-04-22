@@ -8,10 +8,11 @@ Date: 2026-04-22
   - the rebuilt donate hero uses only the existing repo slideshow assets under `assets/backgrounds/heroslides/`
   - version-note handling is being reset after the public `v0.3.6-alpha` release so new work now rolls under `0.4.0-beta`
 - 2026-04-23 PayPal runtime repair:
-  - root cause: the main PayPal button on `/donate` was being incorrectly suppressed by eligibility and fallback logic even when the real PayPal client configuration existed
-  - fix: the primary PayPal area now renders the default smart button directly through `paypal.Buttons({...}).render(container)` after config, SDK, and amount validation pass
-  - rule retained: standalone eligibility checks are for optional alternate funding-source buttons only and must not suppress the main default PayPal render
-  - fallback that remains: `/donate` only shows PayPal fallback copy for real failures such as missing config, SDK load failure, invalid amount, create-order failure, or capture failure
+  - root cause: the PayPal smart-button SDK render path remained unreliable in the real browser/runtime even with valid dashboard setup and env credentials
+  - root cause confirmed: dashboard credentials were not the actual blocker; the flaky part was the browser-side smart-button render dependency
+  - fix: the live `/donate` PayPal path now creates the order server-side, returns the official PayPal approval URL, redirects the browser to PayPal, and captures the approved order after return to the site
+  - current dependency: PayPal checkout now depends on the official approval redirect link returned by PayPal order creation rather than the front-end smart-button renderer
+  - fallback that remains: `/donate` only shows PayPal failure messaging for real issues such as missing provider availability, invalid amount, create-order failure, or capture failure
 - Public config route:
   - `/api/payments/config`
 - Stripe runtime routes:
@@ -34,7 +35,7 @@ Date: 2026-04-22
   - `PAYPAL_LIVE_ENABLED`
 - Active payment paths in this milestone:
   - one-time Stripe Checkout for cards and supported Apple Pay / Google Pay wallet presentation
-  - one-time PayPal smart checkout with server-side create/capture flow
+  - one-time PayPal redirect approval flow with server-side create/capture flow
 - Server-only operations:
   - Stripe Checkout Session creation
   - Stripe webhook verification
