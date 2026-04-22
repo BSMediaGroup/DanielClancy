@@ -11,8 +11,8 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 ### Technical
 
 - Hardened the `/donate` PayPal runtime so the shared config helper no longer falls back to stale preview messaging on enabled paths, expanded PayPal live-flag parsing for the current Cloudflare env contract, and aligned API-base selection with that resolved mode.
-- Reworked the client PayPal SDK loader and button mount on `src/pages/DonatePage.tsx` to request funding eligibility, avoid stale script reuse, and show fallback copy only for real config, SDK, or eligibility failure.
-- Updated `docs/donate-stripe-runtime-note-2026-04-22.md` with the PayPal render root cause, the live-render fix, and the remaining true-failure fallback behavior.
+- Reworked the client PayPal SDK loader and button mount on `src/pages/DonatePage.tsx` so the default PayPal smart button renders directly through the standard SDK flow, removed main-button suppression via eligibility gating, and kept fallback copy only for real config, SDK, create-order, or capture failures.
+- Updated `docs/donate-stripe-runtime-note-2026-04-22.md` with the PayPal render root cause, the direct default-button fix, and the rule that standalone eligibility checks must not suppress the main render path.
 - Replaced the personal-shell header subtitle with `Personal Studio`, added a shared animated mobile-menu toggle component, and split both shell headers into desktop/mobile navigation treatments without merging route logic.
 - Updated header-responsive styling in `src/styles/global.css` so mobile shows only the logo mark, collapses nav into a themed burger menu, and keeps the personal account trigger avatar-only while preserving desktop/tablet behavior.
 - Simplified the personal-shell header account trigger to a logged-out-by-default icon state, removed the old `Member access` trigger label, and kept a structural logged-in username/avatar fallback seam without introducing auth logic.
@@ -25,7 +25,7 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Human-readable
 
-- `/donate` now treats PayPal as a real runtime path when the live config is present, removes the stale preview wording from the enabled state, and keeps fallback copy only for actual PayPal unavailability.
+- `/donate` now renders the real default PayPal button whenever PayPal is configured, the SDK loads, and the chosen amount is valid, instead of suppressing the main checkout path behind eligibility fallback logic.
 - Both site headers now behave cleanly on mobile: the full wordmark/subtitle hides, the logo mark stays visible, navigation collapses into a compact animated menu, and the personal shell subtitle now reads `Personal Studio`.
 - The personal header account control is now cleaner and quieter by default, showing only the circular key icon until real sign-in state exists.
 - `/home` and `/watch` now include a slim social link strip for Daniel's public channels without adding a bulky toolbar feel.

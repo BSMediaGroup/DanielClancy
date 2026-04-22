@@ -8,9 +8,10 @@ Date: 2026-04-22
   - the rebuilt donate hero uses only the existing repo slideshow assets under `assets/backgrounds/heroslides/`
   - version-note handling is being reset after the public `v0.3.6-alpha` release so new work now rolls under `0.4.0-beta`
 - 2026-04-23 PayPal runtime repair:
-  - root cause: the public config/runtime helper still allowed a preview-style PayPal branch and the client button mount did not guard eligibility cleanly, so `/donate` could stay on fallback copy even when the PayPal client configuration existed
-  - fix: PayPal runtime mode parsing now accepts the final live/test flag variants consistently, the public config copy no longer advertises preview mode on an enabled provider path, and the client SDK loader now requests the required button eligibility data before rendering
-  - fallback that remains: `/donate` only shows short PayPal unavailability copy when the config is missing, the SDK fails, or the current browser session is not eligible to render the PayPal button
+  - root cause: the main PayPal button on `/donate` was being incorrectly suppressed by eligibility and fallback logic even when the real PayPal client configuration existed
+  - fix: the primary PayPal area now renders the default smart button directly through `paypal.Buttons({...}).render(container)` after config, SDK, and amount validation pass
+  - rule retained: standalone eligibility checks are for optional alternate funding-source buttons only and must not suppress the main default PayPal render
+  - fallback that remains: `/donate` only shows PayPal fallback copy for real failures such as missing config, SDK load failure, invalid amount, create-order failure, or capture failure
 - Public config route:
   - `/api/payments/config`
 - Stripe runtime routes:

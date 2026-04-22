@@ -34,10 +34,8 @@ type PayPalState =
   | "idle"
   | "loading"
   | "rendering"
-  | "creating"
   | "capturing"
   | "ready"
-  | "unavailable"
   | "error";
 type BannerTone = "success" | "neutral" | "error";
 
@@ -60,8 +58,6 @@ const GENERIC_STRIPE_ERROR =
   "Secure card checkout could not be opened right now. Please try again in a moment.";
 const GENERIC_PAYPAL_ERROR =
   "PayPal could not complete the donation right now. Please try again or choose card checkout.";
-const PAYPAL_UNAVAILABLE_COPY =
-  "PayPal checkout is unavailable in this browser right now. You can try again or use secure card checkout.";
 
 const FALLBACK_AVAILABILITY: DonateAvailabilityResponse = {
   currency: "USD",
@@ -137,7 +133,7 @@ function loadPayPalSdk(clientId: string, currency: string) {
   const existingScript = document.getElementById("paypal-js-sdk") as HTMLScriptElement | null;
   const expectedSrc = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(
     currency,
-  )}&intent=capture&components=buttons,funding-eligibility&commit=true`;
+  )}&intent=capture&components=buttons&commit=true`;
 
   if (window.paypal?.Buttons && paypalSdkSrc === expectedSrc) {
     return Promise.resolve();
@@ -279,7 +275,7 @@ export function DonatePage() {
         }
 
         setPayPalState("error");
-        setPayPalError(error instanceof Error ? error.message : PAYPAL_UNAVAILABLE_COPY);
+        setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
       });
 
     return () => {
@@ -407,13 +403,6 @@ export function DonatePage() {
         setPayPalError(error instanceof Error ? error.message : GENERIC_PAYPAL_ERROR);
       },
     });
-
-    if (!buttons?.isEligible?.()) {
-      container.innerHTML = "";
-      setPayPalState("unavailable");
-      setPayPalError(PAYPAL_UNAVAILABLE_COPY);
-      return;
-    }
 
     void buttons
       .render(container)
@@ -703,8 +692,8 @@ export function DonatePage() {
                     : config.paypal.message}
                 </p>
                 <p className="form-status">
-                  PayPal availability depends on the active PayPal account, browser, locale, and
-                  eligible funding sources returned by the SDK.
+                  The default PayPal checkout button renders here when PayPal is configured, the
+                  SDK loads, and the selected donation amount is valid.
                 </p>
               </div>
 
@@ -729,7 +718,7 @@ export function DonatePage() {
                   )}
                 </div>
                 <span className="donate-provider-note">
-                  The PayPal button appears only when the current browser session is eligible to show it.
+                  Donations are created and captured through the site&apos;s server-side PayPal order flow.
                 </span>
                 {payPalState === "loading" || payPalState === "rendering" ? (
                   <p className="form-status">Preparing PayPal.</p>
@@ -737,7 +726,6 @@ export function DonatePage() {
                 {payPalState === "capturing" ? (
                   <p className="form-status">Finalizing the PayPal capture.</p>
                 ) : null}
-                {payPalState === "unavailable" ? <p className="form-status">{payPalError}</p> : null}
                 {payPalState === "error" ? (
                   <p className="form-status form-status--error">{payPalError || GENERIC_PAYPAL_ERROR}</p>
                 ) : null}

@@ -2133,11 +2133,15 @@ select:focus {
 }
 
 .donate-paypal-container {
+  width: 100%;
   min-height: 3rem;
+  display: block;
+  overflow: visible;
 }
 
 .donate-paypal-container--disabled {
   opacity: 0.65;
+  pointer-events: none;
 }
 
 .donate-details-layout {
