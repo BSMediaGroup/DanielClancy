@@ -194,6 +194,8 @@ button {
   align-items: center;
   gap: 0.95rem;
   width: fit-content;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
 }
 
 .brand__mark {
@@ -813,6 +815,10 @@ h3 {
 .section {
   position: relative;
   padding: 0 0 var(--space-2xl);
+}
+
+.section > .container {
+  padding-top: 0.9rem;
 }
 
 .section--muted {
