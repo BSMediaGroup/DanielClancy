@@ -62,8 +62,9 @@ Environment keys already used:
 - Body: `assets/fonts/SuiGeneris-Regular.otf`
 - Monospace UI: `assets/fonts/mono/SUSEMono-Variable.ttf`
 - Public CV: `public/docs/Daniel_Clancy_CV_2026.pdf`
-- Portfolio media: `public/media/portfolio/`
 - Canonical portfolio source: `cmsdata/wix/collection-tables/WorkSet.csv`
+- Canonical portfolio media root: `cmsdata/wix/portfolio/`
+- Local preview-only fallbacks for genuinely missing WorkSet exports: `public/media/portfolio/`
 - Logo/social/software/company marks: `assets/logos/` and `assets/icons/`
 
 ## Key implementation files

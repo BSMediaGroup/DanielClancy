@@ -6,12 +6,21 @@ const assetModules = import.meta.glob("../../cmsdata/wix/portfolio/**/*.{png,jpg
   import: "default",
 });
 
-const assetUrlByFileName = Object.fromEntries(
-  Object.entries(assetModules).map(([path, assetUrl]) => [
-    getFileName(path).toLowerCase(),
-    String(assetUrl),
-  ]),
-);
+const assetIndex = createAssetIndex(assetModules);
+
+const previewFallbackBySlug: Record<string, string> = {
+  "cue-roadhouse": "/media/portfolio/cue-roadhouse.jpg",
+  "curtin-creative-quarter-misc-details": "/media/portfolio/curtin-creative-quarter.png",
+  "lake-joondalup-baptist-college-new-arts-building-structural-plans":
+    "/media/portfolio/lake-joondalup-baptist-college.jpg",
+  "redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south":
+    "/media/portfolio/pheasants-nest.jpg",
+  "spratt-residence-proposed-addition": "/media/portfolio/spratt-residence.jpg",
+  "upss-beacon-hill-nsw": "/media/portfolio/upss-beacon-hill.jpg",
+  "upss-homebush-nsw": "/media/portfolio/upss-homebush.jpg",
+  "upss-wyoming-nsw": "/media/portfolio/upss-wyoming.jpg",
+  "wungong-urban-water-master-plan": "/media/portfolio/wungong-master-plan.jpg",
+};
 
 const preferredFeaturedTitles = [
   "Redevelopment of Highway Service Center Pheasants Nest",
@@ -43,6 +52,17 @@ type WorkSetGalleryItem = {
   };
 };
 
+type ResolvedAsset = {
+  src: string;
+  matchedFileName: string;
+};
+
+type MediaResolution = {
+  items: PortfolioMediaItem[];
+  missingFileNames: string[];
+  usingPreviewFallback: boolean;
+};
+
 const workSetRows = parseCsv(workSetCsv)
   .map(normalizeWorkSetRow)
   .filter((row) => row.Status === "PUBLISHED");
@@ -71,7 +91,13 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
   const projectDate = row.projectDate;
   const year = projectDate ? new Date(projectDate).getFullYear().toString() : "Undated";
   const documentationUrl = resolveDocumentUrl(row.singleDoc);
-  const media = createMediaItems({ title, gallery, singleImage: row.singleImage });
+  const mediaResolution = createMediaItems({
+    title,
+    slug,
+    gallery,
+    singleImage: row.singleImage,
+  });
+  const media = mediaResolution.items;
   const primaryImage = media[0]?.src ?? "";
   const constructionType = tidySentence(row.constructionType);
   const tags = [constructionType, ...disciplines].filter(Boolean);
@@ -109,10 +135,19 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
       constructionType ? `Project type: ${constructionType}.` : null,
       location ? `Recorded location: ${location}.` : null,
       documentationUrl ? "Supporting PDF set retained for document-style review." : null,
+      mediaResolution.usingPreviewFallback
+        ? "No matching Wix-exported image files were found for this WorkSet row, so the public view falls back to an existing local preview image."
+        : null,
+      mediaResolution.missingFileNames.length
+        ? `${mediaResolution.missingFileNames.length} WorkSet media reference${
+            mediaResolution.missingFileNames.length === 1 ? " was" : "s were"
+          } not found under cmsdata/wix/portfolio and remain excluded from the public gallery.`
+        : null,
     ].filter((item): item is string => Boolean(item)),
     projectFamily: primaryStudio,
     documentationType: constructionType || disciplines[0] || "Project documentation",
-    sourceConfidence: "High",
+    sourceConfidence:
+      mediaResolution.usingPreviewFallback || mediaResolution.missingFileNames.length ? "Medium" : "High",
     evidenceAssets: media.slice(0, 4).map((item) => ({
       label: item.title || item.fileName || projectLabelFromIndex(title, item.index),
       path: item.src,
@@ -128,67 +163,104 @@ function createPortfolioItem(row: WorkSetRow): PortfolioItem {
 
 function createMediaItems({
   title,
+  slug,
   gallery,
   singleImage,
 }: {
   title: string;
+  slug: string;
   gallery: WorkSetGalleryItem[];
   singleImage: string;
-}): PortfolioMediaItem[] {
+}): MediaResolution {
+  const missingFileNames = new Set<string>();
+  const singleImageFileName = getFileName(singleImage);
   const galleryItems = gallery.reduce<PortfolioMediaItem[]>((items, item, index) => {
     if ((item.type || "image") !== "image") {
       return items;
     }
 
-      const fileName = item.fileName?.trim() || `${title}-${index + 1}.jpg`;
-      const localUrl = resolveLocalAsset(fileName);
-      const src = localUrl ?? resolveWixImageUrl(item.src || singleImage);
-      const width = Number(item.settings?.width || 0) || undefined;
-      const height = Number(item.settings?.height || 0) || undefined;
+    const canonicalFileName = item.fileName?.trim() || `${title}-${index + 1}.jpg`;
+    const resolvedAsset = resolveImageAsset(index, canonicalFileName, item.src, singleImageFileName);
+    const width = Number(item.settings?.width || 0) || undefined;
+    const height = Number(item.settings?.height || 0) || undefined;
 
-      if (!src) {
-        return items;
-      }
-
-      items.push({
-        id: `${slugify(fileName)}-${index}`,
-        index,
-        fileName,
-        src,
-        alt: item.alt?.trim() || item.title?.trim() || title,
-        title: item.title?.trim() || projectLabelFromIndex(title, index),
-        description:
-          tidySentence(item.description ?? "") || `Documentation view ${index + 1} for ${title}.`,
-        width,
-        height,
-        aspectRatio: width && height ? width / height : 16 / 9,
-      });
-
+    if (!resolvedAsset) {
+      missingFileNames.add(canonicalFileName);
       return items;
-    }, []);
+    }
+
+    items.push({
+      id: `${slugify(resolvedAsset.matchedFileName)}-${index}`,
+      index,
+      fileName: resolvedAsset.matchedFileName,
+      src: resolvedAsset.src,
+      alt: item.alt?.trim() || item.title?.trim() || title,
+      title: item.title?.trim() || projectLabelFromIndex(title, index),
+      description:
+        tidySentence(item.description ?? "") || `Documentation view ${index + 1} for ${title}.`,
+      width,
+      height,
+      aspectRatio: width && height ? width / height : 16 / 9,
+    });
+
+    return items;
+  }, []);
 
   if (galleryItems.length) {
-    return galleryItems;
+    return {
+      items: galleryItems,
+      missingFileNames: Array.from(missingFileNames),
+      usingPreviewFallback: false,
+    };
   }
 
-  const fallbackImage = resolveWixImageUrl(singleImage);
+  const localSingleImage = singleImageFileName ? resolveLocalAsset(singleImageFileName) : null;
 
-  if (!fallbackImage) {
-    return [];
+  if (localSingleImage) {
+    return {
+      items: [
+        {
+          id: `${slugify(localSingleImage.matchedFileName)}-0`,
+          index: 0,
+          fileName: localSingleImage.matchedFileName,
+          src: localSingleImage.src,
+          alt: title,
+          title,
+          description: `Documentation view for ${title}.`,
+          aspectRatio: 16 / 9,
+        },
+      ],
+      missingFileNames: Array.from(missingFileNames),
+      usingPreviewFallback: false,
+    };
   }
 
-  return [
-    {
-      id: `${slugify(title)}-0`,
-      index: 0,
-      fileName: getFileName(singleImage) || `${slugify(title)}.jpg`,
-      src: fallbackImage,
-      alt: title,
-      title,
-      description: `Documentation view for ${title}.`,
-      aspectRatio: 16 / 9,
-    },
-  ];
+  const previewFallback = previewFallbackBySlug[slug];
+
+  if (!previewFallback) {
+    return {
+      items: [],
+      missingFileNames: Array.from(missingFileNames),
+      usingPreviewFallback: false,
+    };
+  }
+
+  return {
+    items: [
+      {
+        id: `${slug}-preview`,
+        index: 0,
+        fileName: getFileName(previewFallback),
+        src: previewFallback,
+        alt: title,
+        title,
+        description: `Local preview image for ${title}.`,
+        aspectRatio: 16 / 9,
+      },
+    ],
+    missingFileNames: Array.from(missingFileNames),
+    usingPreviewFallback: true,
+  };
 }
 
 function parseCsv(input: string): WorkSetRow[] {
@@ -303,22 +375,33 @@ function parseLocation(rawLocation: string) {
 }
 
 function resolveLocalAsset(fileName: string) {
-  return assetUrlByFileName[fileName.toLowerCase()];
+  const assetUrl = assetIndex.byFileName[fileName.toLowerCase()];
+
+  return assetUrl
+    ? {
+        src: assetUrl,
+        matchedFileName: fileName,
+      }
+    : null;
 }
 
-function resolveWixImageUrl(value: string) {
-  if (!value.trim()) {
-    return "";
+function resolveImageAsset(index: number, canonicalFileName: string, rawSrc: string | undefined, singleImageFileName: string) {
+  const exactMatch = resolveLocalAsset(canonicalFileName);
+
+  if (exactMatch) {
+    return exactMatch;
   }
 
-  const directFile = resolveLocalAsset(getFileName(value));
+  if (index === 0 && singleImageFileName) {
+    const singleImageMatch = resolveLocalAsset(singleImageFileName);
 
-  if (directFile) {
-    return directFile;
+    if (singleImageMatch) {
+      return singleImageMatch;
+    }
   }
 
-  const match = value.match(/^wix:image:\/\/v1\/([^/]+)\//);
-  return match ? `https://static.wixstatic.com/media/${match[1]}` : value;
+  const srcFileName = getFileName(rawSrc || "");
+  return srcFileName ? resolveLocalAsset(srcFileName) : null;
 }
 
 function resolveDocumentUrl(value: string) {
@@ -326,19 +409,7 @@ function resolveDocumentUrl(value: string) {
     return "";
   }
 
-  const directFile = resolveLocalAsset(getFileName(value));
-
-  if (directFile) {
-    return directFile;
-  }
-
-  const match = value.match(/^wix:document:\/\/v1\/ugd\/([^/]+)\/(.+)$/);
-
-  if (!match) {
-    return value;
-  }
-
-  return `https://static.wixstatic.com/ugd/${match[1]}/${decodeURIComponent(match[2])}`;
+  return resolveLocalAsset(getFileName(value))?.src ?? "";
 }
 
 function formatProjectDate(value: string) {
@@ -394,4 +465,16 @@ function getFileName(value: string) {
 
 function projectLabelFromIndex(title: string, index: number) {
   return `${title} ${index + 1}`;
+}
+
+function createAssetIndex(modules: Record<string, unknown>) {
+  const byFileName: Record<string, string> = {};
+
+  for (const [path, assetUrl] of Object.entries(modules)) {
+    byFileName[getFileName(path).toLowerCase()] = String(assetUrl);
+  }
+
+  return {
+    byFileName,
+  };
 }

@@ -51,7 +51,34 @@ export function PortfolioMediaGallery({
   }, [hasMultipleMedia, lightboxOpen, media.length]);
 
   if (!activeMedia) {
-    return null;
+    return (
+      <div className="portfolio-gallery">
+        <div className="portfolio-gallery__stage surface">
+          <div className="portfolio-gallery__toolbar">
+            <p className="kicker">Project media</p>
+            <div className="portfolio-gallery__actions">
+              {documentationUrl ? (
+                <a
+                  className="button button--secondary"
+                  href={documentationUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open PDF
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="portfolio-gallery__caption">
+            <div>
+              <strong>{projectTitle}</strong>
+              <p>No matching local Wix-exported image was found for this public record.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -71,9 +98,11 @@ export function PortfolioMediaGallery({
                   Open PDF
                 </a>
               ) : null}
-              <button className="button button--ghost" type="button" onClick={() => setLightboxOpen(true)}>
-                Expand
-              </button>
+              {activeMedia ? (
+                <button className="button button--ghost" type="button" onClick={() => setLightboxOpen(true)}>
+                  Expand
+                </button>
+              ) : null}
             </div>
           </div>
 

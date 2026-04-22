@@ -1,4 +1,19 @@
-CURRENT VER= 0.3.1-alpha / PENDING VER= 0.3.2-alpha
+CURRENT VER= 0.3.2-alpha / PENDING VER= 0.3.3-alpha
+
+## 0.3.2-alpha
+
+### Technical
+
+- Reworked `src/content/workSetPortfolio.ts` so WorkSet media resolution now prefers the canonical filenames from `cmsdata/wix/collection-tables/WorkSet.csv` against the actual local Wix-exported files under `cmsdata/wix/portfolio/`.
+- Removed the remaining runtime fallback to Wix CDN media/document URLs; unmatched WorkSet assets now stay local-only, using restrained `public/media/portfolio/` preview fallbacks only where an existing local preview already exists.
+- Added safer no-media handling in `src/components/MediaFrame.tsx` and `src/components/PortfolioMediaGallery.tsx` so gallery/detail routes stay stable when a WorkSet reference is genuinely missing from the local Wix export.
+- Appended a focused WorkSet media-mapping audit note to `docs/public-site-polish-audit-2026-04-22.md`.
+- Updated README media-source notes and bumped the package version to `0.3.2-alpha`.
+
+### Human-readable
+
+- Portfolio cards and project detail pages now resolve against the real local Wix-exported files first instead of falling back to old Wix-hosted URLs.
+- Projects with partial local exports now show the matched local media that actually exists in the repo, while genuinely missing files are called out more truthfully and degrade safely.
 
 ## 0.3.1-alpha
 

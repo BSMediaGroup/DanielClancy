@@ -73,6 +73,19 @@ Date: 2026-04-22
 - Intentionally left everything below the hero unchanged in structure and purpose: the selected-projects section, software capability section, chronology section, footer, and all non-homepage routes still use the existing post-hero layout.
 - The professional header now keeps its normal sticky structure everywhere, but on `/` only it is visually overlaid on the hero with a transparent shell at the top of the page and a scroll-driven fade back to the standard dark glass surface as the hero scroll state clears.
 
+## WorkSet media-mapping correction note
+
+- `cmsdata/wix/collection-tables/WorkSet.csv` was rechecked against the actual local export under `cmsdata/wix/portfolio/`, and portfolio media resolution now matches canonical WorkSet filenames back to those local Wix-exported files first.
+- Confirmed mismatch types:
+  - WorkSet filenames that do exist locally but only under different portfolio subfolders
+  - rows where `singleImage` matched a local export even though some `imageGallery.fileName` values did not
+  - rows whose WorkSet filenames were missing entirely from the local Wix export, including several image sets and some PDFs
+- Genuine local-export gaps remain for several WorkSet references, including examples such as `Dawesville IGA`, `Jull Street Boundary Realignment`, `Eighth Road Land Resumption`, `Henry Street Residence`, and selected Curtin/Cockburn/Lake Joondalup/Cottesloe naming variants.
+- Fallback behavior now stays local-only:
+  - matched Wix-exported files from `cmsdata/wix/portfolio/` are used first
+  - existing `public/media/portfolio/` previews are used only for some rows where no matched local export image exists
+  - no Wix CDN media/document URL fallback remains in the runtime resolver
+
 ## Deferred to later Cloudflare/deployment/integration stage
 
 - Cloudflare deployment and domain cutover.
