@@ -10,7 +10,7 @@ import googleIcon from "../../assets/icons/google.svg";
 import mastercardIcon from "../../assets/icons/mastercard.svg";
 import paypalIcon from "../../assets/icons/paypal.svg";
 import stripeIcon from "../../assets/icons/stripeicon.svg";
-import visaIcon from "../../assets/icons/visaconc.svg";
+import visaIcon from "../../assets/icons/visacond.svg";
 import paymentsIcon from "../../assets/icons/ui/payments.svg";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
