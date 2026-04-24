@@ -1011,8 +1011,8 @@ h3 {
 
 .logo-pill img,
 .icon-heading img {
-  width: 1rem;
-  height: 1rem;
+  width: 1.95rem;
+  height: 1.95rem;
   object-fit: contain;
 }
 
@@ -2168,7 +2168,7 @@ select:focus {
 .donate-provider-icons img {
   width: auto;
   max-width: 4rem;
-  max-height: 1.15rem;
+  max-height: 1.4rem;
   object-fit: contain;
   opacity: 0.94;
 }
