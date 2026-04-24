@@ -4,7 +4,7 @@ import donationsSlideOne from "../../assets/backgrounds/heroslides/donations1.we
 import donationsSlideTwo from "../../assets/backgrounds/heroslides/donations2.webp";
 import donationsSlideThree from "../../assets/backgrounds/heroslides/donations3.webp";
 import donationsSlideFour from "../../assets/backgrounds/heroslides/donations4.webp";
-import appleIcon from "../../assets/icons/apple.svg";
+import appleIcon from "../../assets/icons/applecon.svg";
 import debitCardIcon from "../../assets/icons/debitcardsingle.svg";
 import googleIcon from "../../assets/icons/google.svg";
 import mastercardIcon from "../../assets/icons/mastercard.svg";

@@ -8,7 +8,7 @@ import patreonIcon from "../../assets/icons/patreon.svg";
 import kofiIcon from "../../assets/icons/kofi.svg";
 import localsIcon from "../../assets/icons/locals.svg";
 import telegramIcon from "../../assets/icons/telegram.svg";
-import appleIcon from "../../assets/icons/apple.svg";
+import appleIcon from "../../assets/icons/applecon.svg";
 import googleIcon from "../../assets/icons/google.svg";
 import paymentIcon from "../../assets/icons/ui/payments.svg";
 import keyIcon from "../../assets/icons/ui/key.svg";
