@@ -4,13 +4,13 @@ import donationsSlideOne from "../../assets/backgrounds/heroslides/donations1.we
 import donationsSlideTwo from "../../assets/backgrounds/heroslides/donations2.webp";
 import donationsSlideThree from "../../assets/backgrounds/heroslides/donations3.webp";
 import donationsSlideFour from "../../assets/backgrounds/heroslides/donations4.webp";
-import appleIcon from "../../assets/icons/applepay.svg";
+import appleIcon from "../../assets/icons/apple.svg";
 import debitCardIcon from "../../assets/icons/debitcardsingle.svg";
-import googleIcon from "../../assets/icons/gpay.svg";
-import mastercardIcon from "../../assets/icons/mastercard-b.svg";
+import googleIcon from "../../assets/icons/google.svg";
+import mastercardIcon from "../../assets/icons/mastercard.svg";
 import paypalIcon from "../../assets/icons/paypal.svg";
 import stripeIcon from "../../assets/icons/stripeicon.svg";
-import visaIcon from "../../assets/icons/visaconb.svg";
+import visaIcon from "../../assets/icons/visaconc.svg";
 import paymentsIcon from "../../assets/icons/ui/payments.svg";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
