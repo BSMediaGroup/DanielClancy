@@ -7,10 +7,10 @@ import donationsSlideFour from "../../assets/backgrounds/heroslides/donations4.w
 import appleIcon from "../../assets/icons/applepay.svg";
 import debitCardIcon from "../../assets/icons/debitcardsingle.svg";
 import googleIcon from "../../assets/icons/gpay.svg";
-import mastercardIcon from "../../assets/icons/mastercard.svg";
+import mastercardIcon from "../../assets/icons/mastercard-b.svg";
 import paypalIcon from "../../assets/icons/paypal.svg";
 import stripeIcon from "../../assets/icons/stripeicon.svg";
-import visaIcon from "../../assets/icons/visacard.svg";
+import visaIcon from "../../assets/icons/visaconb.svg";
 import paymentsIcon from "../../assets/icons/ui/payments.svg";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
