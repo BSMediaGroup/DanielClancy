@@ -2724,15 +2724,17 @@ select:focus {
   }
 
   .timeline-card--document .timeline-card__body {
-    padding-right: 0;
+    padding-right: clamp(4.75rem, 24vw, 8rem);
   }
 
   .timeline-card--document .timeline-card__logo {
-    position: static;
-    justify-content: start;
-    width: auto;
+    position: absolute;
+    top: 1.15rem;
+    right: 1.15rem;
+    justify-content: end;
+    width: clamp(4.5rem, 22vw, 7rem);
     min-height: 2.4rem;
-    padding-top: 0.55rem;
+    padding-top: 0;
   }
 
   .brand__mark {

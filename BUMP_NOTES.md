@@ -23,6 +23,7 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 - Updated `docs/donate-stripe-runtime-note-2026-04-22.md` to record this final donation-page polish pass, the slideshow-asset constraint, and the post-`v0.3.6-alpha` version-note realignment.
 - Realigned `package.json` to `0.4.0-beta` so local versioning matches the next public milestone direction instead of continuing an unreconciled alpha increment.
 - Corrected employer logo placement on the `/` and `/cv` employment cards, switched those card marks to the monochrome `-0.svg` logo assets rendered white, and added breathing room above the employment-list CTA rows.
+- Kept `/cv` employment-card logos pinned to the top-right corner on smaller breakpoints so they no longer create extra bottom whitespace in the card stack.
 
 ### Human-readable
 
