@@ -169,6 +169,9 @@ export function HomePage() {
                 <div className="timeline-card__meta">
                   <span>{item.period}</span>
                   <small>{item.location}</small>
+                  <div className="timeline-card__logo">
+                    <CompanyLogoMark company={item.company} variant="monochrome" />
+                  </div>
                 </div>
                 <div className="timeline-card__body">
                   <div className="timeline-card__heading">
@@ -178,9 +181,6 @@ export function HomePage() {
                     </div>
                   </div>
                   <p>{item.summary}</p>
-                  <div className="timeline-card__logo">
-                    <CompanyLogoMark company={item.company} />
-                  </div>
                 </div>
               </article>
             );

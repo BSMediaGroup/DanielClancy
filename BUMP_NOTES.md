@@ -22,6 +22,7 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 - Replaced the donate payment-method wordmarks with icon variants already present in `assets/icons/`, and added an explicit manual white treatment for the black `assets/icons/ui/payments.svg` asset in the Stripe provider row.
 - Updated `docs/donate-stripe-runtime-note-2026-04-22.md` to record this final donation-page polish pass, the slideshow-asset constraint, and the post-`v0.3.6-alpha` version-note realignment.
 - Realigned `package.json` to `0.4.0-beta` so local versioning matches the next public milestone direction instead of continuing an unreconciled alpha increment.
+- Corrected employer logo placement on the `/` and `/cv` employment cards, switched those card marks to the monochrome `-0.svg` logo assets rendered white, and added breathing room above the employment-list CTA rows.
 
 ### Human-readable
 

@@ -108,7 +108,7 @@ export function CvPage() {
                     {item.url.replace("https://", "").replace(/\/$/, "")}
                   </a>
                   <div className="timeline-card__logo">
-                    <CompanyLogoMark company={item.company} />
+                    <CompanyLogoMark company={item.company} variant="monochrome" />
                   </div>
                 </div>
               </article>
