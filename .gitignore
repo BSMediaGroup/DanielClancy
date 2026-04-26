@@ -18,3 +18,4 @@ Thumbs.db
 codex-primer.md
 cmsdata/wix/portfolio/**/*.pdf
 /.wrangler/tmp
+/drafts
