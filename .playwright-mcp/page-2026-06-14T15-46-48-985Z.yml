@@ -1,0 +1,120 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "Daniel Clancy Design Consultant" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]:
+          - generic [ref=e9]: Daniel Clancy
+          - generic [ref=e11]: Design Consultant
+      - navigation "Professional navigation" [ref=e13]:
+        - link "Home" [ref=e14] [cursor=pointer]:
+          - /url: /
+        - link "CV" [ref=e15] [cursor=pointer]:
+          - /url: /cv
+        - link "Portfolio" [ref=e16] [cursor=pointer]:
+          - /url: /portfolio
+        - link "Contact" [ref=e17] [cursor=pointer]:
+          - /url: /contact
+  - main [ref=e18]:
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - paragraph [ref=e22]: Contact
+        - heading "Direct contact for professional enquiries, project follow-up, and collaboration." [level=1] [ref=e23]
+        - paragraph [ref=e24]: Use the form for introductions, project discussions, or role conversations. Messages are delivered server-side for Cloudflare Pages deployment, and the page now includes a Sydney location map for fast spatial context.
+      - complementary [ref=e25]:
+        - paragraph [ref=e26]: Primary details
+        - generic [ref=e27]:
+          - link "mail@danielclancy.net" [ref=e28] [cursor=pointer]:
+            - /url: mailto:mail@danielclancy.net
+          - link "+61 458 747 524" [ref=e29] [cursor=pointer]:
+            - /url: tel:+61458747524
+          - paragraph [ref=e30]: PO Box 422, Potts Point NSW 1335
+          - paragraph [ref=e31]: Potts Point, New South Wales, Australia
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - paragraph [ref=e36]: Location
+        - heading "Sydney-based with a map surface that matches the site." [level=2] [ref=e37]
+        - paragraph [ref=e38]: The map stays static-host friendly while using a dark presentation, a custom studio marker, and a restrained hover tooltip.
+      - generic [ref=e39]:
+        - article [ref=e40]
+        - article [ref=e43]:
+          - paragraph [ref=e44]: Base
+          - heading "Sydney CBD context" [level=3] [ref=e45]
+          - paragraph [ref=e46]: Daniel Clancy is based in Sydney, New South Wales, with the professional contact surface anchored to the CBD for quick geographic reference.
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - text: City
+              - strong [ref=e49]: Sydney
+            - generic [ref=e50]:
+              - text: Region
+              - strong [ref=e51]: New South Wales
+            - generic [ref=e52]:
+              - text: Postal
+              - strong [ref=e53]: PO Box 422, Potts Point NSW 1335
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - paragraph [ref=e58]: Send a message
+        - heading "A polished contact form with server-side delivery handling." [level=2] [ref=e59]
+        - paragraph [ref=e60]: The form validates required fields, uses a honeypot and timing check, and sends through a Pages Function without exposing delivery credentials.
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - text: Name
+              - textbox "Name" [ref=e65]:
+                - /placeholder: Your name
+            - generic [ref=e66]:
+              - text: Email
+              - textbox "Email" [ref=e67]:
+                - /placeholder: hello@example.com
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - text: Company
+              - textbox "Company" [ref=e70]:
+                - /placeholder: Company or studio
+            - generic [ref=e71]:
+              - text: Subject
+              - textbox "Subject" [ref=e72]:
+                - /placeholder: Reason for contact
+          - generic [ref=e73]:
+            - text: Website
+            - textbox [ref=e74]
+          - generic [ref=e75]:
+            - text: Message
+            - textbox "Message" [ref=e76]:
+              - /placeholder: Share the role, project, or context for your enquiry.
+          - generic [ref=e77]:
+            - button "Send enquiry" [ref=e78] [cursor=pointer]
+            - status
+        - generic [ref=e79]:
+          - article [ref=e80]:
+            - paragraph [ref=e81]: Best fit
+            - list [ref=e82]:
+              - listitem [ref=e83]: Professional introductions and hiring enquiries
+              - listitem [ref=e84]: Project sample and documentation follow-up
+              - listitem [ref=e85]: Collaboration, drafting, and design support conversations
+          - article [ref=e86]:
+            - paragraph [ref=e87]: Delivery
+            - paragraph [ref=e88]:
+              - text: Messages are addressed to
+              - strong [ref=e89]: mail@danielclancy.net
+              - text: through the configured server-side delivery endpoint. Reply handling stays server-side.
+  - contentinfo [ref=e90]:
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - paragraph [ref=e93]: Daniel Clancy
+        - heading "Design documentation, project evidence, and direct contact." [level=2] [ref=e94]
+        - paragraph [ref=e95]: Independent drafting and design presentation spanning architecture, urban work, structural coordination, and project record keeping.
+      - generic [ref=e96]:
+        - paragraph [ref=e97]: Direct contact
+        - generic [ref=e98]:
+          - link "mail@danielclancy.net" [ref=e99] [cursor=pointer]:
+            - /url: mailto:mail@danielclancy.net
+          - link "+61 458 747 524" [ref=e100] [cursor=pointer]:
+            - /url: tel:+61458747524
+          - generic [ref=e101]: Potts Point, New South Wales, Australia
+      - generic [ref=e102]:
+        - paragraph [ref=e103]: Elsewhere
+        - link "LinkedIn" [ref=e104] [cursor=pointer]:
+          - /url: https://www.linkedin.com/in/danielmarkclancy/
+          - generic [ref=e105]: LinkedIn

@@ -1,14 +1,16 @@
 const RESEND_API_URL = "https://api.resend.com/emails";
 const DESTINATION_EMAIL = "mail@danielclancy.net";
-const CC_EMAIL = "daniel@brainstream.media";
-const LOCAL_PREVIEW_MODE = "Local preview mode validated the form successfully. Delivery is ready for the deployed Pages Function.";
+const SITE_LABEL = "DanielClancy.net";
+const CONTACT_UNAVAILABLE_MESSAGE =
+  "Message delivery is temporarily unavailable. Please email mail@danielclancy.net directly if this continues.";
 
-function json(body, status = 200) {
+function json(body, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
+      ...headers,
     },
   });
 }
@@ -16,6 +18,12 @@ function json(body, status = 200) {
 function sanitize(value, maxLength = 3000) {
   return String(value || "")
     .replace(/[<>]/g, "")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function sanitizeEnv(value, maxLength = 400) {
+  return String(value || "")
     .trim()
     .slice(0, maxLength);
 }
@@ -34,6 +42,49 @@ export async function onRequestOptions() {
   });
 }
 
+function methodNotAllowed() {
+  return json({ message: "Method not allowed." }, 405, {
+    Allow: "POST, OPTIONS",
+  });
+}
+
+export const onRequestGet = methodNotAllowed;
+export const onRequestPut = methodNotAllowed;
+export const onRequestPatch = methodNotAllowed;
+export const onRequestDelete = methodNotAllowed;
+
+function getEnvValue(env, names, maxLength = 300) {
+  for (const name of names) {
+    const value = sanitizeEnv(env?.[name], maxLength);
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+function htmlEscape(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildFieldLines(fields) {
+  return Object.entries(fields).map(([label, value]) => `${label}: ${value || "Not provided"}`);
+}
+
+function buildHtmlBody(lines) {
+  return `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.55;color:#111827;">
+${lines
+  .map((line) => (line ? `<p style="margin:0 0 10px;">${htmlEscape(line)}</p>` : "<br>"))
+  .join("\n")}
+</div>`;
+}
+
 export async function onRequestPost(context) {
   let payload;
 
@@ -47,13 +98,19 @@ export async function onRequestPost(context) {
   const email = sanitize(payload.email, 160);
   const company = sanitize(payload.company, 160);
   const subject = sanitize(payload.subject, 180);
+  const reason = sanitize(payload.reason || payload.service || payload.topic, 180);
+  const phone = sanitize(payload.phone, 80);
+  const projectType = sanitize(payload.projectType || payload.project_type, 160);
+  const budget = sanitize(payload.budget, 120);
+  const timeline = sanitize(payload.timeline, 120);
+  const sourcePage = sanitize(payload.sourcePage || payload.source || payload.page, 500);
   const message = sanitize(payload.message, 4000);
   const website = sanitize(payload.website, 120);
   const startedAt = Number(payload.startedAt);
   const elapsedMs = Number.isFinite(startedAt) ? Date.now() - startedAt : 0;
 
   if (website) {
-    return json({ message: "Submission rejected." }, 400);
+    return json({ message: "Thanks. Your message has been received." }, 200);
   }
 
   if (!name || !email || !message) {
@@ -72,58 +129,90 @@ export async function onRequestPost(context) {
     return json({ message: "Please wait a moment before sending the form." }, 429);
   }
 
-  const apiKey = sanitize(context.env?.RESEND_API_KEY, 200);
-  const mailFrom = sanitize(context.env?.MAIL_FROM, 200);
-  const mailReplyTo = sanitize(context.env?.MAIL_REPLY_TO, 200) || DESTINATION_EMAIL;
+  const apiKey = sanitizeEnv(context.env?.RESEND_API_KEY, 200);
+  const mailFrom = sanitizeEnv(context.env?.MAIL_FROM, 200);
+  const destinationEmail =
+    getEnvValue(context.env, ["CONTACT_MAIL_TO", "MAIL_TO", "MAIL_REPLY_TO"], 200) ||
+    DESTINATION_EMAIL;
 
-  if (!apiKey || !mailFrom) {
-    return json({ message: LOCAL_PREVIEW_MODE, mode: "mock" }, 200);
+  if (!apiKey || !mailFrom || !destinationEmail || !isEmail(destinationEmail)) {
+    console.error(
+      JSON.stringify({
+        event: "contact_config_missing",
+        hasResendApiKey: Boolean(apiKey),
+        hasMailFrom: Boolean(mailFrom),
+        hasDestinationEmail: Boolean(destinationEmail),
+      }),
+    );
+    return json({ message: CONTACT_UNAVAILABLE_MESSAGE }, 503);
   }
 
-  const ip =
-    context.request.headers.get("CF-Connecting-IP") ||
-    context.request.headers.get("X-Forwarded-For") ||
-    "Unknown";
   const userAgent = sanitize(context.request.headers.get("User-Agent"), 400);
+  const submittedAt = new Date().toISOString();
+  const submittedFrom = sourcePage || new URL(context.request.url).pathname;
+  const topic = subject || reason || "Website enquiry";
 
-  const lines = [
-    `Name: ${name}`,
-    `Email: ${email}`,
-    `Company: ${company || "Not provided"}`,
-    `Subject: ${subject || "Website enquiry"}`,
-    "",
-    message,
-    "",
-    `IP: ${ip}`,
-    `User agent: ${userAgent || "Not provided"}`,
-  ];
-
-  const resendResponse = await fetch(RESEND_API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: mailFrom,
-      to: [DESTINATION_EMAIL],
-      cc: [CC_EMAIL],
-      reply_to: [mailReplyTo, email].filter(Boolean),
-      subject: `[DanielClancy.net] ${subject || "Website enquiry"} - ${name}`,
-      text: lines.join("\n"),
-    }),
+  const fieldLines = buildFieldLines({
+    Name: name,
+    Email: email,
+    Phone: phone,
+    Company: company,
+    Subject: subject,
+    Topic: reason,
+    "Project type": projectType,
+    Budget: budget,
+    Timeline: timeline,
+    "Source page": submittedFrom,
+    "Submitted at": submittedAt,
+    "User agent": userAgent || "Not provided",
   });
 
-  if (!resendResponse.ok) {
-    const errorText = await resendResponse.text();
-    return json(
-      {
-        message: "Message delivery failed. Please email mail@danielclancy.net directly if this continues.",
-        detail: errorText.slice(0, 400),
+  const lines = [
+    `${SITE_LABEL} contact form submission`,
+    "",
+    ...fieldLines,
+    "",
+    "Message:",
+    message,
+  ];
+
+  try {
+    const resendResponse = await fetch(RESEND_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
-      502,
+      body: JSON.stringify({
+        from: mailFrom,
+        to: [destinationEmail],
+        reply_to: [email],
+        subject: `${SITE_LABEL} contact form: ${topic}`,
+        text: lines.join("\n"),
+        html: buildHtmlBody(lines),
+      }),
+    });
+
+    if (!resendResponse.ok) {
+      console.error(
+        JSON.stringify({
+          event: "contact_resend_failure",
+          status: resendResponse.status,
+          submittedAt,
+        }),
+      );
+      return json({ message: CONTACT_UNAVAILABLE_MESSAGE }, 502);
+    }
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        event: "contact_resend_exception",
+        message: error instanceof Error ? error.message : "Unknown error",
+        submittedAt,
+      }),
     );
+    return json({ message: CONTACT_UNAVAILABLE_MESSAGE }, 502);
   }
 
-  return json({ message: "Message sent successfully." }, 200);
+  return json({ message: "Thanks. Your message has been sent." }, 200);
 }

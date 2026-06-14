@@ -44,17 +44,18 @@ The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collect
 
 - UI route: `/contact`
 - Server endpoint: `functions/api/contact.js`
-- Delivery target:
-  - To: `mail@danielclancy.net`
-  - CC: `daniel@brainstream.media`
-- Delivery provider: Resend via server-side env usage
-- Local preview behavior: explicit safe mock success if the Pages Function env/runtime is not mounted
+- Delivery provider: Resend via server-side Cloudflare Pages Function env usage
+- Delivery target: `CONTACT_MAIL_TO` or `MAIL_TO` if configured, otherwise `MAIL_REPLY_TO`, with `mail@danielclancy.net` as the final code fallback
+- Sender: `MAIL_FROM`
+- Reply-To: the validated submitter email address so Daniel can reply directly
 
-Environment keys already used:
+Required Cloudflare Pages environment variables:
 
 - `RESEND_API_KEY`
 - `MAIL_FROM`
 - `MAIL_REPLY_TO`
+
+Do not expose or commit `RESEND_API_KEY`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured.
 
 ## Watch feed delivery
 

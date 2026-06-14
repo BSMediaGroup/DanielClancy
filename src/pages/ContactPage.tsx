@@ -29,6 +29,10 @@ export function ContactPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (status === "submitting") {
+      return;
+    }
+
     if (!values.name.trim() || !values.email.trim() || !values.message.trim()) {
       setStatus("error");
       setStatusMessage("Please complete your name, email, and message before sending.");
@@ -47,6 +51,7 @@ export function ContactPage() {
         body: JSON.stringify({
           ...values,
           startedAt,
+          sourcePage: window.location.pathname,
         }),
       });
 
@@ -55,29 +60,12 @@ export function ContactPage() {
         mode?: string;
       };
 
-      if (
-        response.status === 404 &&
-        (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost")
-      ) {
-        setStatus("success");
-        setStatusMessage(
-          "Local preview mode validated the form successfully. Delivery is ready for the deployed Pages Function.",
-        );
-        setValues(initialValues);
-        setStartedAt(String(Date.now()));
-        return;
-      }
-
       if (!response.ok) {
         throw new Error(payload.message ?? "Unable to send your message right now.");
       }
 
       setStatus("success");
-      setStatusMessage(
-        payload.mode === "mock"
-          ? "Local preview mode validated the form successfully. Delivery is ready for the deployed Pages Function."
-          : payload.message ?? "Message sent successfully.",
-      );
+      setStatusMessage(payload.message ?? "Thanks. Your message has been sent.");
       setValues(initialValues);
       setStartedAt(String(Date.now()));
     } catch (error) {
@@ -159,17 +147,20 @@ export function ContactPage() {
 
       <Section
         eyebrow="Send a message"
-        title="A polished contact form with safe first-pass delivery handling."
-        intro="The form validates required fields, uses a honeypot and timing check, and sends through a Pages Function when deployment wiring is available."
+        title="A polished contact form with server-side delivery handling."
+        intro="The form validates required fields, uses a honeypot and timing check, and sends through a Pages Function without exposing delivery credentials."
       >
         <div className="two-column-grid two-column-grid--contact">
-          <form className="surface form-shell" onSubmit={handleSubmit}>
+          <form className="surface form-shell" onSubmit={handleSubmit} aria-busy={status === "submitting"}>
             <div className="form-grid">
               <label>
                 Name
                 <input
                   name="name"
                   type="text"
+                  required
+                  autoComplete="name"
+                  disabled={status === "submitting"}
                   value={values.name}
                   onChange={(event) => setValues((current) => ({ ...current, name: event.target.value }))}
                   placeholder="Your name"
@@ -180,6 +171,9 @@ export function ContactPage() {
                 <input
                   name="email"
                   type="email"
+                  required
+                  autoComplete="email"
+                  disabled={status === "submitting"}
                   value={values.email}
                   onChange={(event) => setValues((current) => ({ ...current, email: event.target.value }))}
                   placeholder="hello@example.com"
@@ -193,6 +187,8 @@ export function ContactPage() {
                 <input
                   name="company"
                   type="text"
+                  autoComplete="organization"
+                  disabled={status === "submitting"}
                   value={values.company}
                   onChange={(event) => setValues((current) => ({ ...current, company: event.target.value }))}
                   placeholder="Company or studio"
@@ -203,6 +199,7 @@ export function ContactPage() {
                 <input
                   name="subject"
                   type="text"
+                  disabled={status === "submitting"}
                   value={values.subject}
                   onChange={(event) => setValues((current) => ({ ...current, subject: event.target.value }))}
                   placeholder="Reason for contact"
@@ -217,6 +214,7 @@ export function ContactPage() {
                 type="text"
                 tabIndex={-1}
                 autoComplete="off"
+                disabled={status === "submitting"}
                 value={values.website}
                 onChange={(event) => setValues((current) => ({ ...current, website: event.target.value }))}
               />
@@ -229,6 +227,8 @@ export function ContactPage() {
               <textarea
                 name="message"
                 rows={8}
+                required
+                disabled={status === "submitting"}
                 value={values.message}
                 onChange={(event) => setValues((current) => ({ ...current, message: event.target.value }))}
                 placeholder="Share the role, project, or context for your enquiry."
@@ -239,7 +239,9 @@ export function ContactPage() {
               <button className="button button--primary" disabled={status === "submitting"} type="submit">
                 {status === "submitting" ? "Sending…" : "Send enquiry"}
               </button>
-              <p className={`form-status form-status--${status}`}>{statusMessage}</p>
+              <p className={`form-status form-status--${status}`} role="status" aria-live="polite">
+                {statusMessage}
+              </p>
             </div>
           </form>
 
@@ -256,8 +258,8 @@ export function ContactPage() {
             <article className="surface">
               <p className="kicker">Delivery</p>
               <p>
-                Messages are addressed to <strong>mail@danielclancy.net</strong> with a courtesy copy to{" "}
-                <strong>daniel@brainstream.media</strong>. Reply handling stays server-side.
+                Messages are addressed to <strong>mail@danielclancy.net</strong> through the configured
+                server-side delivery endpoint. Reply handling stays server-side.
               </p>
             </article>
           </div>

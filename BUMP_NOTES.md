@@ -10,6 +10,9 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Technical
 
+- Repaired the `/contact` delivery path so `src/pages/ContactPage.tsx` submits to the Cloudflare Pages Function without local mock success, includes the source path, blocks duplicate pending submits, and exposes accessible pending/success/error status text.
+- Hardened `functions/api/contact.js` for real Resend delivery with JSON POST validation, quiet honeypot handling, non-POST 405 responses, configurable destination selection via `CONTACT_MAIL_TO`/`MAIL_TO`/`MAIL_REPLY_TO`, submitter-email Reply-To, safe browser errors, and server-side logging for missing config or provider failures.
+- Updated `README.md` contact-delivery notes to document the required Cloudflare Pages environment variables: `RESEND_API_KEY`, `MAIL_FROM`, and `MAIL_REPLY_TO`.
 - Hardened the `/donate` PayPal runtime so the shared config helper no longer falls back to stale preview messaging on enabled paths, expanded PayPal live-flag parsing for the current Cloudflare env contract, and aligned API-base selection with that resolved mode.
 - Replaced the `/donate` PayPal smart-button dependency with a server-created order plus redirect approval flow, updated the create-order endpoint to return the official PayPal approval URL, and added return-time capture handling on the page before the final success banner is shown.
 - Updated `docs/donate-stripe-runtime-note-2026-04-22.md` with the redirect-flow reason, the confirmation that dashboard credentials were not the root issue, and the rule that the live PayPal path now depends on the approval URL returned by order creation.
@@ -27,6 +30,8 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Human-readable
 
+- The contact page now sends real enquiries through the server-side Resend endpoint on Cloudflare Pages instead of accepting cosmetic/local-preview submissions.
+- Daniel receives submissions at the configured inbox, and replies can go directly to the submitter when their email address is valid.
 - `/donate` now starts PayPal from a real branded CTA that redirects to PayPal approval after server-side order creation, instead of depending on the flaky smart-button renderer in the browser.
 - Both site headers now behave cleanly on mobile: the full wordmark/subtitle hides, the logo mark stays visible, navigation collapses into a compact animated menu, and the personal shell subtitle now reads `Personal Studio`.
 - The personal header account control is now cleaner and quieter by default, showing only the circular key icon until real sign-in state exists.
