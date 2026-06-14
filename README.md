@@ -59,10 +59,12 @@ Do not expose or commit `RESEND_API_KEY`. `MAIL_FROM` may use the StreamSuites n
 
 ## Public login modal and auth origin
 
-- The personal-shell account widget opens a lightbox login modal with GitHub, Google, Twitter/X, and email/password options.
+- The personal-shell account widget opens a polished login/signup lightbox modal with a DC mark, GitHub, Google, Twitter/X, and collapsed email/password sections.
+- Sign in and Create account modes share the OAuth entry flow because provider login/signup both start through the same admin auth origin.
 - The public site does not verify admin passwords in browser code. Email/password and OAuth requests are sent to the DanielClancy-Admin Cloudflare Pages Functions auth origin.
+- Email/password signup is scaffolded only. Until durable account storage exists, attempts return a clear storage-required message and do not store passwords client-side.
 - Public session-aware content remains future work. Signing in on the public site must not grant admin dashboard access unless the server-side admin session says the account is admin.
-- Admin dashboard action/link target: `https://admin.danielclancy.net`. This does not claim Cloudflare Pages custom domain or DNS setup is complete.
+- Admin dashboard action/link target: `https://admin.danielclancy.net`.
 
 Public build-time env:
 

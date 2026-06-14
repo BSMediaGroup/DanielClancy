@@ -1,5 +1,42 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Auth UX polish and signup scaffold milestone
+
+### Technical
+
+- Upgraded the personal-shell login lightbox into a sign in/create account modal with a DC brand mark, OAuth-first provider actions, and a collapsed manual email/password section.
+- Reused local GitHub, Google, and Twitter/X icon assets through the existing brand asset map.
+- Added safe email signup handling that calls the admin auth origin but only reports the durable account-store limitation; no password is stored client-side and no client-side account authority is introduced.
+- Kept public session rendering tied to `/api/auth/session`, preserving regular/non-admin vs admin session display without granting admin access from OAuth.
+- OAuth live env setup has been completed externally enough for provider flows to redirect, but OAuth users remain regular/non-admin unless explicitly allowlisted or promoted later.
+
+### Human-readable
+
+- The account modal now feels like a finished DanielClancy.net login/signup control rather than a basic scaffold.
+- Manual env-backed admin login remains the production admin path.
+- OAuth is the preferred public signup/signin route for now.
+- Email signup clearly explains that durable account storage is still coming soon.
+- The admin dashboard link remains visible and points to `https://admin.danielclancy.net`.
+
+### Files / areas changed
+
+- `src/content/brandAssets.ts`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/styles/global.css`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Testing / validation notes
+
+- Run `npm run check`, `npm run build`, and `git diff --check`.
+- Smoke test login modal open/close/Escape, sign in/create account toggle, OAuth button hrefs, collapsed email expansion, safe email signup messaging, signed-in status display, and mobile viewport sanity.
+
+### Risks / follow-ups
+
+- Durable account store remains future work.
+- OAuth users are not automatically admins unless explicit allowlist or future durable role promotion work is implemented.
+- Next planned phase is making scaffolded admin pages operational/hydrated.
+
 ## Auth/login foundation milestone
 
 ### Technical

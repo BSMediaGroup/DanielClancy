@@ -43,12 +43,14 @@ import softwareOffice365 from "../../assets/logos/software-office365.svg";
 import softwareQgis from "../../assets/logos/software-qgis.svg";
 import softwareRevit from "../../assets/logos/software-revit.svg";
 import softwareSketchUp from "../../assets/logos/software-sketchup.svg";
+import dcIconCircle from "../../assets/logos/dciconcircle.svg";
 
 export const shellAssets = {
   danielLogo,
   linkedinIcon,
   heroPortrait,
   profileAvatar,
+  dcIconCircle,
   keyIcon,
   profileIcon,
   professionalHeroBanner,
@@ -61,6 +63,7 @@ export const socialIcons = {
   rumble: rumbleIcon,
   github: githubIcon,
   x: xIcon,
+  twitter: xIcon,
   streamSuites: streamSuitesIcon,
   patreon: patreonIcon,
   kofi: kofiIcon,
