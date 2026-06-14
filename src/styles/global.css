@@ -2607,6 +2607,31 @@ select:focus {
   justify-content: center;
 }
 
+.turnstile-box {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.7rem;
+  border: 1px solid rgba(219, 201, 166, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.turnstile-box__widget {
+  min-height: 65px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.turnstile-box__message {
+  margin: 0;
+  color: var(--text-muted);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .login-modal__inline-note {
   margin: 0;
   color: var(--text-muted);

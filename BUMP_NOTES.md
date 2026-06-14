@@ -1,5 +1,51 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Turnstile login and contact protection milestone
+
+### Technical
+
+- Added a Cloudflare Pages-compatible Turnstile Siteverify helper at `functions/_shared/turnstile.js`.
+- Added `/api/turnstile/config` so the public site can fetch `DC_TURNSTILE_SITE_KEY` without exposing `DC_TURNSTILE_SECRET_KEY`.
+- Added the shared React Turnstile renderer in `src/lib/turnstile.tsx`, loading the Cloudflare script only when the login modal or contact form needs it.
+- Added Turnstile to the public login/signup modal while preserving `assets/logos/logo.webp`, OAuth provider icons, the sign in/create account toggle, Escape/close behavior, and collapsed email/password by default.
+- Public manual login/signup now includes a Turnstile token in the admin-auth request body.
+- Public OAuth start buttons now require a Turnstile token and append it to the admin OAuth start request for server-side verification.
+- Added Turnstile to the `/contact` form before submit, disabled submit until a token exists, and sent the token to `/api/contact`.
+- Updated `functions/api/contact.js` so honeypot behavior remains quiet but real submissions must pass server-side Turnstile verification before validation and Resend delivery.
+- Added `DC_TURNSTILE_SITE_KEY`, `DC_TURNSTILE_SECRET_KEY`, and `DC_TURNSTILE_DEV_BYPASS=false` to `.env.example`.
+- Turnstile secret remains server-only.
+- StreamSuites and StreamSuites-Dashboard were not mutated.
+- Alert delivery bridge remains the next separate task.
+
+### Human-readable
+
+- Login/signup and contact submissions now require a real server-verified anti-abuse challenge instead of a decorative browser-only widget.
+- Local static/Vite views can show Turnstile unavailable until Pages Functions and env bindings are available.
+- Existing manual env-backed admin auth is preserved through the admin auth origin, and OAuth users are still not auto-promoted to admin.
+
+### Files / areas changed
+
+- `.env.example`
+- `functions/_shared/turnstile.js`
+- `functions/api/contact.js`
+- `functions/api/turnstile/config.js`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/lib/turnstile.tsx`
+- `src/pages/ContactPage.tsx`
+- `src/styles/global.css`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Testing / validation notes
+
+- Run `npm run check`, `npm run build`, syntax checks for changed Pages Functions, and `git diff --check`.
+- Smoke test login modal open/close/Escape, logo rendering, sign in/create account toggle, OAuth button presence/start gating, collapsed email expansion, Turnstile container rendering, contact form Turnstile rendering, and mobile sanity.
+
+### Risks / follow-ups
+
+- Live Turnstile verification requires the Cloudflare Pages deployment to have matching `DC_TURNSTILE_SITE_KEY` and `DC_TURNSTILE_SECRET_KEY` values.
+- Public OAuth start protection depends on the DanielClancy-Admin auth deployment accepting and verifying the `turnstileToken` query parameter.
+
 ## Contact Resend delivery hardening milestone
 
 ### Technical

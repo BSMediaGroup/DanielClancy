@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { shellAssets, socialIcons } from "../content/brandAssets";
+import { TurnstileChallenge } from "../lib/turnstile";
 
 type AccountState =
   | {
@@ -45,6 +46,8 @@ export function PersonalHeaderAccount() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("Sign in or create an account for DanielClancy.net. Admin access is restricted.");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const account = getAccountState(session);
   const usesIconAvatar = !account.isLoggedIn || !account.avatarSrc;
   const avatarSrc = account.isLoggedIn
@@ -61,6 +64,11 @@ export function PersonalHeaderAccount() {
 
   const heading = mode === "signin" ? "Sign in" : "Create account";
   const emailToggleLabel = mode === "signin" ? "Use email instead" : "Use email signup";
+
+  function resetTurnstile() {
+    setTurnstileToken("");
+    setTurnstileResetKey((value) => value + 1);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -92,6 +100,10 @@ export function PersonalHeaderAccount() {
       setStatus("Enter both email and password to continue.");
       return;
     }
+    if (!turnstileToken) {
+      setStatus("Complete the security check before continuing.");
+      return;
+    }
     if (mode === "signup") {
       setIsSubmitting(true);
       setStatus("Email signup is not available yet.");
@@ -100,7 +112,7 @@ export function PersonalHeaderAccount() {
           method: "POST",
           credentials: "include",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ email, turnstileToken }),
         });
         const payload = await response.json().catch(() => null);
         setStatus(payload?.message || "Email signup is not available yet.");
@@ -110,6 +122,7 @@ export function PersonalHeaderAccount() {
       } finally {
         setIsSubmitting(false);
         setPassword("");
+        resetTurnstile();
       }
       return;
     }
@@ -120,7 +133,7 @@ export function PersonalHeaderAccount() {
         method: "POST",
         credentials: "include",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstileToken }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.session) {
@@ -138,7 +151,18 @@ export function PersonalHeaderAccount() {
       setStatus("Sign in is not reachable right now. Try again later.");
     } finally {
       setIsSubmitting(false);
+      resetTurnstile();
     }
+  }
+
+  function handleOAuthStart(href: string) {
+    if (!turnstileToken) {
+      setStatus("Complete the security check before continuing with OAuth.");
+      return;
+    }
+    const url = new URL(href);
+    url.searchParams.set("turnstileToken", turnstileToken);
+    window.location.assign(url.toString());
   }
 
   async function handleLogout() {
@@ -200,12 +224,23 @@ export function PersonalHeaderAccount() {
 
               <div className="login-modal__providers">
                 {oauthLinks.map((link) => (
-                  <a key={link.provider} className="button button--secondary login-modal__provider" href={link.href}>
+                  <button
+                    key={link.provider}
+                    className="button button--secondary login-modal__provider"
+                    type="button"
+                    onClick={() => handleOAuthStart(link.href)}
+                  >
                     <img className="login-modal__provider-icon" src={link.icon} alt="" />
                     <span>{mode === "signin" ? link.signinLabel : link.signupLabel}</span>
-                  </a>
+                  </button>
                 ))}
               </div>
+
+              <TurnstileChallenge
+                actionLabel={mode === "signin" ? "sign in" : "create an account"}
+                resetKey={turnstileResetKey}
+                onTokenChange={setTurnstileToken}
+              />
 
               <div className="login-modal__divider"><span>or</span></div>
 

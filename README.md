@@ -49,25 +49,30 @@ The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collect
 - Sender: `MAIL_FROM`
 - Reply-To: the validated submitter email address so Daniel can reply directly
 - Env handling: delivery env values are trimmed and one accidental pair of wrapping single or double quotes is stripped server-side before Resend validation
+- Cloudflare Turnstile: the form renders a Turnstile challenge before submit and `functions/api/contact.js` verifies the token server-side before accepting or sending the message
 
 Required Cloudflare Pages environment variables:
 
 - `RESEND_API_KEY`
 - `MAIL_FROM`
 - `MAIL_REPLY_TO`
+- `DC_TURNSTILE_SITE_KEY`
+- `DC_TURNSTILE_SECRET_KEY`
 
 Optional destination overrides:
 
 - `CONTACT_MAIL_TO`
 - `MAIL_TO`
+- `DC_TURNSTILE_DEV_BYPASS=false` for normal production behavior; only set `true` in explicit dev/test environments
 
-Do not expose or commit `RESEND_API_KEY`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured.
+Do not expose or commit `RESEND_API_KEY` or `DC_TURNSTILE_SECRET_KEY`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured. A simple static/Vite dev server cannot run Pages Functions, so Turnstile may show an unavailable static-dev state until served through a Pages-compatible runtime with the env vars.
 
 ## Public login modal and auth origin
 
 - The personal-shell account widget opens a polished login/signup lightbox modal branded with `assets/logos/logo.webp`, GitHub, Google, Twitter/X, and collapsed email/password sections.
 - Sign in and Create account modes share the OAuth entry flow because provider login/signup both start through the same admin auth origin.
 - The public site does not verify admin passwords in browser code. Email/password and OAuth requests are sent to the DanielClancy-Admin Cloudflare Pages Functions auth origin.
+- The modal renders Cloudflare Turnstile before email/password auth or OAuth start. Tokens are sent to the admin auth origin for server-side Siteverify validation; the client widget alone is not treated as protection.
 - Email/password signup is scaffolded only. Until durable account storage exists, attempts return a clear storage-required message and do not store passwords client-side.
 - Public session-aware content remains future work. Signing in on the public site must not grant admin dashboard access unless the server-side admin session says the account is admin.
 - The surfaced modal copy stays user-facing and does not expose internal env/provider setup notes.
@@ -76,6 +81,12 @@ Do not expose or commit `RESEND_API_KEY`. `MAIL_FROM` may use the StreamSuites n
 Public build-time env:
 
 - `VITE_DC_AUTH_ORIGIN` - expected `https://admin.danielclancy.net`
+
+Turnstile env:
+
+- `DC_TURNSTILE_SITE_KEY` - exposed only through the safe `/api/turnstile/config` Pages Function response
+- `DC_TURNSTILE_SECRET_KEY` - server-side only; missing production secrets fail protected endpoints closed
+- `DC_TURNSTILE_DEV_BYPASS=false`
 
 Server-side admin auth env vars and OAuth redirect URIs live in the DanielClancy-Admin repo because the admin Pages Functions own password verification and session cookies.
 
@@ -216,11 +227,15 @@ DanielClancy/
 │  ├─ portfolio-tranche-2-audit.md
 │  └─ public-site-polish-audit-2026-04-22.md
 ├─ functions/
+│  ├─ _shared/
+│  │  └─ turnstile.js
 │  └─ api/
 │     ├─ contact.js
 │     ├─ donate/
 │     │  ├─ session.js
 │     │  └─ webhook.js
+│     ├─ turnstile/
+│     │  └─ config.js
 │     └─ watch-feed.js
 ├─ public/
 │  ├─ assets/fonts/
@@ -239,6 +254,7 @@ DanielClancy/
 │  ├─ lib/
 │  │  ├─ donate.ts
 │  │  ├─ portfolio.ts
+│  │  ├─ turnstile.tsx
 │  │  └─ watchFeed.ts
 │  ├─ pages/
 │  └─ styles/global.css

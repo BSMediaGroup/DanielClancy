@@ -1,3 +1,5 @@
+import { verifyTurnstileToken } from "../_shared/turnstile.js";
+
 const RESEND_API_URL = "https://api.resend.com/emails";
 const DESTINATION_EMAIL = "mail@danielclancy.net";
 const SITE_LABEL = "DanielClancy.net";
@@ -131,11 +133,21 @@ export async function onRequestPost(context) {
   const sourcePage = sanitize(payload.sourcePath || payload.sourcePage || payload.source || payload.page, 500);
   const message = sanitize(payload.message, 4000);
   const website = sanitize(payload.website, 120);
+  const turnstileToken = sanitize(payload.turnstileToken || payload["cf-turnstile-response"], 3000);
   const startedAt = Number(payload.startedAt);
   const elapsedMs = Number.isFinite(startedAt) ? Date.now() - startedAt : 0;
 
   if (website) {
     return json({ message: "Thanks. Your message has been received." }, 200);
+  }
+
+  const turnstileResult = await verifyTurnstileToken({
+    env: context.env,
+    token: turnstileToken,
+    remoteIp: context.request.headers.get("CF-Connecting-IP") || "",
+  });
+  if (!turnstileResult.ok) {
+    return json({ message: turnstileResult.message, code: "TURNSTILE_FAILED" }, 403);
   }
 
   if (!name || !email || !message) {

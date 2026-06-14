@@ -4,6 +4,7 @@ import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { shellAssets } from "../content/brandAssets";
 import { contactUseCases, siteMeta } from "../content/siteContent";
+import { TurnstileChallenge } from "../lib/turnstile";
 
 type ContactStatus = "idle" | "submitting" | "success" | "error";
 
@@ -21,6 +22,8 @@ export function ContactPage() {
   const [startedAt, setStartedAt] = useState("");
   const [status, setStatus] = useState<ContactStatus>("idle");
   const [statusMessage, setStatusMessage] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
 
   useEffect(() => {
     setStartedAt(String(Date.now()));
@@ -39,6 +42,12 @@ export function ContactPage() {
       return;
     }
 
+    if (!turnstileToken) {
+      setStatus("error");
+      setStatusMessage("Please complete the security check before sending.");
+      return;
+    }
+
     setStatus("submitting");
     setStatusMessage("Sending message…");
 
@@ -52,6 +61,7 @@ export function ContactPage() {
           ...values,
           startedAt,
           sourcePath: window.location.pathname,
+          turnstileToken,
         }),
       });
 
@@ -69,11 +79,15 @@ export function ContactPage() {
       setStatusMessage(payload.message ?? "Thanks. Your message has been sent.");
       setValues(initialValues);
       setStartedAt(String(Date.now()));
+      setTurnstileToken("");
+      setTurnstileResetKey((value) => value + 1);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to send your message right now.";
       setStatus("error");
       setStatusMessage(message);
+      setTurnstileToken("");
+      setTurnstileResetKey((value) => value + 1);
     }
   }
 
@@ -236,8 +250,14 @@ export function ContactPage() {
               />
             </label>
 
+            <TurnstileChallenge
+              actionLabel="send this enquiry"
+              resetKey={turnstileResetKey}
+              onTokenChange={setTurnstileToken}
+            />
+
             <div className="form-actions">
-              <button className="button button--primary" disabled={status === "submitting"} type="submit">
+              <button className="button button--primary" disabled={status === "submitting" || !turnstileToken} type="submit">
                 {status === "submitting" ? "Sending…" : "Send enquiry"}
               </button>
               <p className={`form-status form-status--${status}`} role="status" aria-live="polite">
