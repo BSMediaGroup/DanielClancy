@@ -51,12 +51,13 @@ export function ContactPage() {
         body: JSON.stringify({
           ...values,
           startedAt,
-          sourcePage: window.location.pathname,
+          sourcePath: window.location.pathname,
         }),
       });
 
       const payload = (await response.json().catch(() => ({}))) as {
         message?: string;
+        code?: string;
         mode?: string;
       };
 

@@ -48,12 +48,18 @@ The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collect
 - Delivery target: `CONTACT_MAIL_TO` or `MAIL_TO` if configured, otherwise `MAIL_REPLY_TO`, with `mail@danielclancy.net` as the final code fallback
 - Sender: `MAIL_FROM`
 - Reply-To: the validated submitter email address so Daniel can reply directly
+- Env handling: delivery env values are trimmed and one accidental pair of wrapping single or double quotes is stripped server-side before Resend validation
 
 Required Cloudflare Pages environment variables:
 
 - `RESEND_API_KEY`
 - `MAIL_FROM`
 - `MAIL_REPLY_TO`
+
+Optional destination overrides:
+
+- `CONTACT_MAIL_TO`
+- `MAIL_TO`
 
 Do not expose or commit `RESEND_API_KEY`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured.
 

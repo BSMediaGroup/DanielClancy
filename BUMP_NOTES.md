@@ -1,5 +1,39 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Contact Resend delivery hardening milestone
+
+### Technical
+
+- Re-tested `/api/contact` through local Cloudflare Pages dev before changing code; the local process could see `RESEND_API_KEY`, `MAIL_FROM`, and `MAIL_REPLY_TO`, and the pre-change POST returned success locally.
+- The previous pass still left a deployment-risk failure path: contact delivery used raw env strings without code-level quote stripping or sender-shape validation, ignored the frontend `sourcePath` field requested for submission evidence, and returned generic failure JSON without safe diagnostic codes.
+- Hardened `functions/api/contact.js` with env normalization that trims whitespace and strips one accidental pair of wrapping single or double quotes before Resend validation.
+- Added Resend-compatible sender validation, destination validation, safe JSON response codes (`INVALID_INPUT`, `CONFIG_MISSING`, `RESEND_REJECTED`, `SEND_FAILED`, `SENT`), and kept provider/config details server-side only.
+- Aligned the contact form payload with the endpoint by sending `sourcePath` from `src/pages/ContactPage.tsx`.
+- Kept delivery through the real Cloudflare Pages Function path and Resend `fetch` API; no mock success path was introduced.
+
+### Human-readable
+
+- The contact form now handles quoted email env values safely and keeps Daniel's inbox fallback working through `MAIL_REPLY_TO`.
+- Valid submissions continue to show the professional success message instead of surfacing provider internals.
+
+### Files / areas changed
+
+- `functions/api/contact.js`
+- `src/pages/ContactPage.tsx`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Testing / validation notes
+
+- Pre-change Pages-dev endpoint POST returned success locally through `http://127.0.0.1:8791/api/contact`; no local pre-change failure response was reproducible in this checkout.
+- Run `npm run check`, `npm run build`, and a post-change local Cloudflare Pages dev POST to `/api/contact` using the BSMG Resend integration payload.
+- Browser-smoke-test `/contact` against the real local endpoint after the post-change endpoint test succeeds.
+- Record whether a real Resend email was sent by the post-change endpoint run.
+
+### Risks / follow-ups
+
+- Production success still depends on the deployed Cloudflare Pages project having a valid `RESEND_API_KEY`, normalized or normalizable `MAIL_FROM`, and a verified Resend sending domain.
+
 ## Login/signup modal logo and copy polish milestone
 
 ### Technical
