@@ -1,5 +1,41 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Auth/login foundation milestone
+
+### Technical
+
+- Wired the personal-shell account widget to open a real login lightbox modal with GitHub, Google, Twitter/X, and email/password options.
+- Pointed public login/session actions at the DanielClancy-Admin auth origin via `VITE_DC_AUTH_ORIGIN`, expected `https://admin.danielclancy.net`.
+- Kept password verification out of the Vite bundle; manual email/password checks are documented as server-side Pages Function work owned by DanielClancy-Admin.
+- Added session status and logout UI handling for the modal without treating public-site state as admin authority.
+
+### Human-readable
+
+- The public login icon now opens a proper sign-in modal instead of a cosmetic account preview.
+- Admin access remains restricted; public session-aware content remains future work.
+- OAuth buttons are present, but OAuth requires Cloudflare env vars and provider redirect URI setup before live testing.
+- Alerts page remains future work.
+- Cloudflare Pages/DNS setup checkpoint is now approaching and should be completed before real OAuth production testing.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/styles/global.css`
+- `BUMP_NOTES.md`
+
+### Testing / validation notes
+
+- Run `npm run check`, `npm run build`, and `git diff --check`.
+- Smoke test the public account widget, modal close/Escape behavior, missing email/password validation, OAuth start links, and mobile viewport sanity.
+
+### Risks / follow-ups
+
+- Manual email/password env-backed master admin accounts are the first production admin path, but live verification depends on the admin Pages Functions deployment.
+- OAuth users are not automatically master admins unless explicitly allowlisted or promoted through the future durable account-role system.
+- Public session-aware content remains future work.
+
 ## v0.1.2-beta baseline correction
 
 ### Technical

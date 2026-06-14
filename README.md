@@ -57,6 +57,27 @@ Required Cloudflare Pages environment variables:
 
 Do not expose or commit `RESEND_API_KEY`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured.
 
+## Public login modal and auth origin
+
+- The personal-shell account widget opens a lightbox login modal with GitHub, Google, Twitter/X, and email/password options.
+- The public site does not verify admin passwords in browser code. Email/password and OAuth requests are sent to the DanielClancy-Admin Cloudflare Pages Functions auth origin.
+- Public session-aware content remains future work. Signing in on the public site must not grant admin dashboard access unless the server-side admin session says the account is admin.
+- Admin dashboard action/link target: `https://admin.danielclancy.net`. This does not claim Cloudflare Pages custom domain or DNS setup is complete.
+
+Public build-time env:
+
+- `VITE_DC_AUTH_ORIGIN` - expected `https://admin.danielclancy.net`
+
+Server-side admin auth env vars and OAuth redirect URIs live in the DanielClancy-Admin repo because the admin Pages Functions own password verification and session cookies.
+
+Cloudflare setup checkpoint after this local scaffold:
+
+- Create/confirm the DanielClancy-Admin Cloudflare Pages project.
+- Configure `admin.danielclancy.net` DNS/custom domain.
+- Add the required admin auth env vars in Cloudflare.
+- Create OAuth apps in GitHub, Google Cloud, and Twitter/X developer portals.
+- Register callback URLs and confirm cookies across `danielclancy.net` and `admin.danielclancy.net`.
+
 ## Watch feed delivery
 
 - UI route: `/watch`
