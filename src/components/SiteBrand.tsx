@@ -15,9 +15,7 @@ export function SiteBrand({ homeTo, subtitle, theme = "professional" }: SiteBran
       </span>
       <span className="brand__copy">
         <span className="brand__title">Daniel Clancy</span>
-        <span className="brand__subtitle-chip">
-          <span className="brand__subtitle">{subtitle}</span>
-        </span>
+        <span className="brand__subtitle">{subtitle}</span>
       </span>
     </NavLink>
   );

@@ -10,6 +10,7 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Technical
 
+- Removed the `brand__subtitle-chip` wrapper from the shared `SiteBrand` header component and deleted the chip-only border/background styling so professional and personal page headers show the existing subtitle text without an outer container.
 - Repaired the `/contact` delivery path so `src/pages/ContactPage.tsx` submits to the Cloudflare Pages Function without local mock success, includes the source path, blocks duplicate pending submits, and exposes accessible pending/success/error status text.
 - Hardened `functions/api/contact.js` for real Resend delivery with JSON POST validation, quiet honeypot handling, non-POST 405 responses, configurable destination selection via `CONTACT_MAIL_TO`/`MAIL_TO`/`MAIL_REPLY_TO`, submitter-email Reply-To, safe browser errors, and server-side logging for missing config or provider failures.
 - Updated `README.md` contact-delivery notes to document the required Cloudflare Pages environment variables: `RESEND_API_KEY`, `MAIL_FROM`, and `MAIL_REPLY_TO`.
@@ -30,6 +31,7 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 
 ### Human-readable
 
+- The header subtitle under `Daniel Clancy` now appears as plain text on both professional and personal pages, without the small outlined chip around it.
 - The contact page now sends real enquiries through the server-side Resend endpoint on Cloudflare Pages instead of accepting cosmetic/local-preview submissions.
 - Daniel receives submissions at the configured inbox, and replies can go directly to the submitter when their email address is valid.
 - `/donate` now starts PayPal from a real branded CTA that redirects to PayPal approval after server-side order creation, instead of depending on the flaky smart-button renderer in the browser.
