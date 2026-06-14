@@ -1,4 +1,38 @@
-CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
+CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
+
+## v0.1.2-beta baseline correction
+
+### Technical
+
+- Established the shared DanielClancy project version baseline as `CURRENT VER= v0.1.2-beta / PENDING VER= v1.0`.
+- Aligned the public-site package metadata with the corrected project baseline because this repo already uses explicit package version metadata.
+- Preserved the existing historical implementation notes below without reclassifying admin-dashboard work into the public website repo.
+- StreamSuites and StreamSuites-Dashboard follow their own separate version formats and must not be altered as part of DanielClancy versioning.
+- Public-site login/admin entry wiring remains a future integration step and should be coordinated with the DanielClancy-Admin deployment readiness checkpoint.
+
+### Human-readable
+
+- DanielClancy now shares the same version baseline as DanielClancy-Admin.
+- The public site has not gained admin dashboard implementation, CMS wiring, login wiring, or Cloudflare setup as part of this documentation/version correction.
+
+### Files / areas changed
+
+- `BUMP_NOTES.md`
+- `package.json`
+- `package-lock.json`
+
+### Testing / validation notes
+
+- Version/documentation correction only; no public-site runtime behavior is intended to change.
+- `git diff --check` should be run after the edit.
+- Because package metadata changed, use the repo's existing lightweight validation scripts where practical.
+
+### Risks / follow-ups
+
+- Public-site login/admin entry wiring remains deferred.
+- Coordinate the future public login/admin entry wiring with the DanielClancy-Admin readiness checkpoint before production testing.
+
+## Historical public-site notes retained from earlier local versioning
 
 ## Released series through 0.3.6-alpha
 
@@ -25,7 +59,7 @@ CURRENT VER= 0.3.6-alpha / PENDING VER= 0.4.0-beta
 - Reduced the donate hero title scale materially, tightened the supporting copy width, removed the public-facing `Accepted range` summary language, and kept the amount/payment runtime logic intact.
 - Replaced the donate payment-method wordmarks with icon variants already present in `assets/icons/`, and added an explicit manual white treatment for the black `assets/icons/ui/payments.svg` asset in the Stripe provider row.
 - Updated `docs/donate-stripe-runtime-note-2026-04-22.md` to record this final donation-page polish pass, the slideshow-asset constraint, and the post-`v0.3.6-alpha` version-note realignment.
-- Realigned `package.json` to `0.4.0-beta` so local versioning matches the next public milestone direction instead of continuing an unreconciled alpha increment.
+- Realigned `package.json` at the time to the then-local `0.4.0-beta` milestone direction; the current shared DanielClancy baseline above supersedes that earlier local version note.
 - Corrected employer logo placement on the `/` and `/cv` employment cards, switched those card marks to the monochrome `-0.svg` logo assets rendered white, and added breathing room above the employment-list CTA rows.
 - Kept `/cv` employment-card logos pinned to the top-right corner on smaller breakpoints so they no longer create extra bottom whitespace in the card stack.
 
