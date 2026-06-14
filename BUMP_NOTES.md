@@ -1,5 +1,38 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Login/signup modal logo and copy polish milestone
+
+### Technical
+
+- Added `assets/logos/logo.webp` to the shared brand asset map and used it as the top mark in the personal-shell login/signup modal.
+- Adjusted the modal brand mark sizing so the webp logo renders cleanly and responsively.
+- Removed surfaced internal setup text from the login/signup modal, including env/provider setup notes and server implementation details.
+- Kept OAuth buttons, sign in/create account toggle, Escape/close behavior, and the manual email/password section collapsed by default.
+- Preserved public-site behavior: OAuth users are still not auto-promoted to admin, and admin authority remains server-side.
+
+### Human-readable
+
+- The public login/signup modal now uses the requested DanielClancy logo and presents concise user-facing copy.
+- Internal setup details remain documentation material rather than modal UI text.
+
+### Files / areas changed
+
+- `src/content/brandAssets.ts`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/styles/global.css`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Testing / validation notes
+
+- Run `npm run check`, `npm run build`, and `git diff --check`.
+- Smoke test login modal open/close/Escape, logo rendering, sign in/create account toggle, OAuth links, collapsed email expansion, removed setup text, and mobile sanity.
+
+### Risks / follow-ups
+
+- Live auth/session verification still depends on the DanielClancy-Admin Pages Functions deployment and configured provider/env setup.
+- OAuth users are still not automatically admins.
+
 ## Auth UX polish and signup scaffold milestone
 
 ### Technical

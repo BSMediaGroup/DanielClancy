@@ -43,7 +43,7 @@ export function PersonalHeaderAccount() {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState("Account-aware public content is planned. Admin access is restricted.");
+  const [status, setStatus] = useState("Sign in or create an account for DanielClancy.net. Admin access is restricted.");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const account = getAccountState(session);
   const usesIconAvatar = !account.isLoggedIn || !account.avatarSrc;
@@ -94,7 +94,7 @@ export function PersonalHeaderAccount() {
     }
     if (mode === "signup") {
       setIsSubmitting(true);
-      setStatus("Email signup needs the durable account store. Use OAuth for now or sign in with an existing admin account.");
+      setStatus("Email signup is not available yet.");
       try {
         const response = await fetch(`${AUTH_ORIGIN}/api/auth/signup`, {
           method: "POST",
@@ -103,13 +103,10 @@ export function PersonalHeaderAccount() {
           body: JSON.stringify({ email }),
         });
         const payload = await response.json().catch(() => null);
-        setStatus(
-          payload?.message ||
-            "Email signup needs the durable account store. Use OAuth for now or sign in with an existing admin account."
-        );
+        setStatus(payload?.message || "Email signup is not available yet.");
         if (response.ok && payload?.session) setSession(payload.session);
       } catch {
-        setStatus("Email signup needs the durable account store. Use OAuth for now or sign in with an existing admin account.");
+        setStatus("Email signup is not available yet.");
       } finally {
         setIsSubmitting(false);
         setPassword("");
@@ -127,7 +124,7 @@ export function PersonalHeaderAccount() {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.session) {
-        setStatus("Sign in failed. Check the email/password pair and Cloudflare auth configuration.");
+        setStatus("Sign in failed. Check the email/password pair and try again.");
         return;
       }
       setSession(payload.session);
@@ -138,7 +135,7 @@ export function PersonalHeaderAccount() {
       );
       setPassword("");
     } catch {
-      setStatus("Auth endpoint is not reachable yet. Cloudflare Pages/DNS setup may still be pending.");
+      setStatus("Sign in is not reachable right now. Try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -165,14 +162,14 @@ export function PersonalHeaderAccount() {
               </button>
               <div className="login-modal__header">
                 <span className="login-modal__brand-mark" aria-hidden="true">
-                  <img src={shellAssets.dcIconCircle} alt="" />
+                  <img src={shellAssets.logoWebp} alt="" />
                 </span>
                 <p className="kicker">DanielClancy.net account</p>
                 <h2 id="login-modal-title">{heading}</h2>
                 <p>
                   {mode === "signin"
-                    ? "Use OAuth for a public session or expand email for the env-backed admin path. Admin dashboard access stays restricted to explicit admin sessions."
-                    : "OAuth is the preferred signup route for now. Email/password account creation waits for durable account storage."}
+                    ? "Sign in or create an account for DanielClancy.net. Admin access is restricted."
+                    : "Create an account for DanielClancy.net. Admin access is restricted."}
                 </p>
               </div>
 
@@ -183,7 +180,7 @@ export function PersonalHeaderAccount() {
                   aria-pressed={mode === "signin"}
                   onClick={() => {
                     setMode("signin");
-                    setStatus("Sign in with OAuth or expand email for the server-side admin login path.");
+                    setStatus("Sign in or create an account for DanielClancy.net. Admin access is restricted.");
                   }}
                 >
                   Sign in
@@ -194,7 +191,7 @@ export function PersonalHeaderAccount() {
                   aria-pressed={mode === "signup"}
                   onClick={() => {
                     setMode("signup");
-                    setStatus("Email signup needs the durable account store. OAuth is the preferred signup route for now.");
+                    setStatus("Create an account for DanielClancy.net. Admin access is restricted.");
                   }}
                 >
                   Create account
@@ -241,9 +238,7 @@ export function PersonalHeaderAccount() {
                       {isSubmitting ? "Working..." : mode === "signin" ? "Sign in with email" : "Request email signup"}
                     </button>
                     {mode === "signup" ? (
-                      <p className="login-modal__inline-note">
-                        Email signup will not store a password until durable account storage exists.
-                      </p>
+                      <p className="login-modal__inline-note">Email signup is not available yet.</p>
                     ) : null}
                   </form>
                 ) : null}
@@ -269,9 +264,7 @@ export function PersonalHeaderAccount() {
               <a className="button button--ghost login-modal__admin-link" href="https://admin.danielclancy.net">
                 Admin Dashboard
               </a>
-              <p className="login-modal__note">
-                OAuth redirects use the admin auth origin. Manual admin passwords are checked only by the server-side Pages Function, and OAuth users are not admins unless explicitly allowlisted or promoted later.
-              </p>
+              <p className="login-modal__note">Admin access is restricted.</p>
             </section>
           </div>,
           document.body,

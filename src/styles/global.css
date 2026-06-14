@@ -2437,7 +2437,7 @@ select:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.45rem;
+  width: min(7rem, 48vw);
   height: 3.45rem;
   border: 1px solid rgba(219, 201, 166, 0.28);
   border-radius: 999px;
@@ -2448,8 +2448,8 @@ select:focus {
 }
 
 .login-modal__brand-mark img {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: min(5.8rem, 34vw);
+  max-height: 3.1rem;
   object-fit: contain;
 }
 

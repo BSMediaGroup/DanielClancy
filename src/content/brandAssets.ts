@@ -43,6 +43,7 @@ import softwareOffice365 from "../../assets/logos/software-office365.svg";
 import softwareQgis from "../../assets/logos/software-qgis.svg";
 import softwareRevit from "../../assets/logos/software-revit.svg";
 import softwareSketchUp from "../../assets/logos/software-sketchup.svg";
+import logoWebp from "../../assets/logos/logo.webp";
 import dcIconCircle from "../../assets/logos/dciconcircle.svg";
 
 export const shellAssets = {
@@ -51,6 +52,7 @@ export const shellAssets = {
   heroPortrait,
   profileAvatar,
   dcIconCircle,
+  logoWebp,
   keyIcon,
   profileIcon,
   professionalHeroBanner,
