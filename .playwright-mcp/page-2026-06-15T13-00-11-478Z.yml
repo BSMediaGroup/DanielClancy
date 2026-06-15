@@ -1,0 +1,173 @@
+- generic [ref=e1]:
+  - dialog [ref=e2]:
+    - region "Sign in" [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: Restricted dashboard
+        - heading "Sign in" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Sign in to continue.
+      - tablist "Authentication mode" [ref=e9]:
+        - button "Sign in" [pressed] [ref=e10] [cursor=pointer]
+        - button "Create account" [ref=e11] [cursor=pointer]
+      - generic [ref=e12]:
+        - button "Continue with GitHub" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: Continue with GitHub
+        - button "Continue with Google" [ref=e15] [cursor=pointer]:
+          - generic [ref=e16]: Continue with Google
+        - button "Continue with Twitter/X" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: Continue with Twitter/X
+      - paragraph [ref=e21]: Turnstile unavailable in static dev.
+      - generic [ref=e23]: or
+      - button "Use email instead" [ref=e25] [cursor=pointer]:
+        - generic [ref=e26]: Use email instead
+        - generic [ref=e27]: +
+      - status [ref=e28]: Auth endpoint is unavailable in this local/static view. Local scaffold unlock is available for UI smoke testing.
+      - button "Local scaffold unlock" [ref=e29] [cursor=pointer]
+      - paragraph [ref=e30]: Local scaffold unlock is available only on file, localhost, or Pages preview hosts. It is not a production admin credential.
+  - generic:
+    - complementary "Admin navigation":
+      - link "DanielClancy.net Admin overview":
+        - /url: "#/overview"
+        - generic:
+          - strong: DanielClancy.net
+          - text: Admin
+      - navigation:
+        - link "OV Overview Open":
+          - /url: "#/overview"
+          - generic: OV
+          - generic: Overview
+          - generic: Open
+        - link "AN Analytics Open":
+          - /url: "#/analytics"
+          - generic: AN
+          - generic: Analytics
+          - generic: Open
+        - link "AC Accounts Open":
+          - /url: "#/accounts"
+          - generic: AC
+          - generic: Accounts
+          - generic: Open
+        - link "SE Settings Open":
+          - /url: "#/settings"
+          - generic: SE
+          - generic: Settings
+          - generic: Open
+        - link "PR Projects Open":
+          - /url: "#/projects"
+          - generic: PR
+          - generic: Projects
+          - generic: Open
+        - link "ME Media Open":
+          - /url: "#/media"
+          - generic: ME
+          - generic: Media
+          - generic: Open
+        - link "AL Alerts Open":
+          - /url: "#/alerts"
+          - generic: AL
+          - generic: Alerts
+          - generic: Open
+      - generic: Static foundation. No live admin API connected.
+    - generic:
+      - banner:
+        - generic:
+          - generic: Professional Portfolio Administration
+          - strong: Overview
+        - generic:
+          - generic: Scaffold data
+          - generic:
+            - generic: Auth required
+          - link "Public site":
+            - /url: https://danielclancy.net
+      - main [active]:
+        - generic:
+          - generic:
+            - generic:
+              - text: Admin command overview
+              - heading "Overview" [level=1]
+              - paragraph: Operational posture from signed admin APIs. Counts are shown only where a configured source reports them.
+            - generic:
+              - generic: Status pending
+          - generic:
+            - generic:
+              - generic:
+                - text: Signed-in admin
+                - heading "Session not resolved" [level=2]
+                - paragraph: No signed account details available · unknown provider · pending role source
+                - generic:
+                  - button "Refresh status"
+                  - link "Review Accounts":
+                    - /url: "#/accounts"
+                  - link "Open Settings":
+                    - /url: "#/settings"
+              - generic:
+                - heading "Authority boundary" [level=3]
+                - paragraph: Accounts and CMS state resolve through Pages Functions and DC_ADMIN_KV where configured. Public-site publishing and alert posting remain separate future work.
+                - generic: Status API unavailable (404).
+          - generic:
+            - generic:
+              - generic:
+                - heading "Operational status" [level=2]
+                - paragraph: "Last checked: Not recorded"
+            - generic:
+              - generic:
+                - article:
+                  - generic: Account registry
+                  - strong: Storage missing
+                  - paragraph: DC_ADMIN_KV is required for durable OAuth/admin roles.
+                - article:
+                  - generic: Projects CMS
+                  - strong: Storage missing
+                  - paragraph: Falls back to protected public baseline/local browser data when unavailable.
+                - article:
+                  - generic: Media CMS
+                  - strong: Storage missing
+                  - paragraph: No live media publishing is claimed.
+                - article:
+                  - generic: Alerts CMS
+                  - strong: Storage missing
+                  - paragraph: Alert posting remains future bridge work.
+          - generic:
+            - generic:
+              - generic:
+                - heading "Configuration readiness" [level=2]
+                - paragraph: Secret values are never displayed.
+            - generic:
+              - generic:
+                - article:
+                  - generic: Public baseline
+                  - strong: Unavailable
+                  - paragraph: No baseline response yet
+                - article:
+                  - generic: Turnstile
+                  - strong: Missing
+                  - paragraph: "Site key: Missing; secret: Missing"
+                - article:
+                  - generic: OAuth providers
+                  - strong: 0/3 configured
+                  - paragraph: GitHub, Google, and Twitter/X report configured status only.
+                - article:
+                  - generic: Alert ingest secret
+                  - strong: Missing
+                  - paragraph: DANIELCLANCY_ALERT_INGEST_SECRET is checked only as present/missing.
+          - generic:
+            - generic:
+              - generic:
+                - heading "Implementation boundaries" [level=2]
+                - paragraph: Current constraints that should remain explicit.
+            - generic:
+              - generic:
+                - article:
+                  - generic: Boundary
+                  - paragraph: OAuth users register as regular accounts and are not auto-promoted to admin.
+                - article:
+                  - generic: Boundary
+                  - paragraph: Env-backed manual master admins remain the protected root authority.
+                - article:
+                  - generic: Boundary
+                  - paragraph: Projects, Media, and Alerts keep their existing KV CMS behavior.
+                - article:
+                  - generic: Boundary
+                  - paragraph: Public publishing/hydration and alert event posting are not claimed complete.
+      - contentinfo:
+        - generic: DanielClancy.net Admin Foundation
+        - generic: Projects and Media CMS are local scaffold-only. Login wiring and Cloudflare/DNS setup are pending.
