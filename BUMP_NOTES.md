@@ -1,5 +1,47 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Emergency Turnstile Reliability And Alert Sender Wiring
+
+### Technical
+
+- Stabilized the shared React Turnstile lifecycle so widgets render once per visible form/modal lifecycle and reset only through explicit per-widget retry/submit consumption.
+- Stored Turnstile token issue time in the public login modal and contact form, kept token state stable after success, and kept manual email/password collapsed by default.
+- Preserved public OAuth start protection by requiring the current Turnstile token before redirecting to the admin auth origin; OAuth callbacks remain owned by DanielClancy-Admin and are not Turnstile-gated here.
+- Added `functions/_shared/alert-sender.js` for Cloudflare Pages-compatible posting to StreamSuites `POST /api/alerts/danielclancy` with server-only `DANIELCLANCY_ALERT_INGEST_URL` and `DANIELCLANCY_ALERT_INGEST_SECRET`.
+- Wired successful contact form delivery to post `contact_form` alerts with safe summary metadata only.
+- Added `/api/track/page-visit` plus `PageVisitBeacon` to send route-deduped `page_visit` events without blocking rendering.
+- Updated `.env.example` and README documentation for alert ingest URL/secret generation and non-blocking alert delivery.
+- StreamSuites and StreamSuites-Dashboard were not mutated.
+
+### Human-readable
+
+- Completing Turnstile once should no longer uncheck itself during normal login/OAuth/contact use.
+- Contact and page visit alerts now post to StreamSuites when the sender env vars are configured.
+- Alert delivery failures stay server-side and do not block contact submission or page rendering.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `functions/_shared/alert-sender.js`
+- `functions/api/contact.js`
+- `functions/api/track/page-visit.js`
+- `src/app/App.tsx`
+- `src/components/PageVisitBeacon.tsx`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/lib/turnstile.tsx`
+- `src/pages/ContactPage.tsx`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Run `node --check` on changed Pages Function/helper JS, `npm run check`, `npm run build`, and `git diff --check`.
+
+### Follow-ups
+
+- Hosted Cloudflare Pages testing should confirm the configured alert ingest URL reaches the intended StreamSuites runtime/API host.
+- Live OAuth provider testing still depends on DanielClancy-Admin provider/env configuration.
+
 ## Turnstile login and contact protection milestone
 
 ### Technical

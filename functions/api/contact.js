@@ -1,3 +1,4 @@
+import { postDanielClancyAlert } from "../_shared/alert-sender.js";
 import { verifyTurnstileToken } from "../_shared/turnstile.js";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
@@ -147,7 +148,7 @@ export async function onRequestPost(context) {
     remoteIp: context.request.headers.get("CF-Connecting-IP") || "",
   });
   if (!turnstileResult.ok) {
-    return json({ message: turnstileResult.message, code: "TURNSTILE_FAILED" }, 403);
+    return json({ message: turnstileResult.message, code: turnstileResult.code || "TURNSTILE_FAILED" }, 403);
   }
 
   if (!name || !email || !message) {
@@ -251,6 +252,29 @@ export async function onRequestPost(context) {
       }),
     );
     return json({ message: CONTACT_UNAVAILABLE_MESSAGE, code: "SEND_FAILED" }, 502);
+  }
+
+  const alertResult = await postDanielClancyAlert(context, {
+    triggerType: "contact_form",
+    surface: "danielclancy.net",
+    domain: "danielclancy.net",
+    severity: "info",
+    title: "New DanielClancy.net contact form submission",
+    message: `Contact form submission from ${name || "Unknown"} for ${topic || "Website enquiry"}.`,
+    tags: ["contact", "danielclancy"],
+    linkUrl: "https://admin.danielclancy.net/#/alerts",
+    pagePath: submittedFrom,
+    payload: {
+      name,
+      email,
+      company,
+      topic,
+      sourcePage: submittedFrom,
+      submittedAt,
+    },
+  });
+  if (!alertResult.ok && alertResult.configured) {
+    console.error(JSON.stringify({ event: "contact_alert_delivery_failed", status: alertResult.status || 0, error: alertResult.error }));
   }
 
   return json({ message: "Thanks. Your message has been sent.", code: "SENT" }, 200);

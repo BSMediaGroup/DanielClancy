@@ -64,8 +64,16 @@ Optional destination overrides:
 - `CONTACT_MAIL_TO`
 - `MAIL_TO`
 - `DC_TURNSTILE_DEV_BYPASS=false` for normal production behavior; only set `true` in explicit dev/test environments
+- `DANIELCLANCY_ALERT_INGEST_URL` - StreamSuites runtime/API `POST /api/alerts/danielclancy` endpoint for contact/page-visit alert delivery
+- `DANIELCLANCY_ALERT_INGEST_SECRET` - server-only shared secret matching the StreamSuites receiver
 
-Do not expose or commit `RESEND_API_KEY` or `DC_TURNSTILE_SECRET_KEY`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured. A simple static/Vite dev server cannot run Pages Functions, so Turnstile may show an unavailable static-dev state until served through a Pages-compatible runtime with the env vars.
+Generate the alert ingest secret with:
+
+```sh
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+Use the same generated value in this sender repo and the StreamSuites runtime receiver environment. Do not expose or commit `RESEND_API_KEY`, `DC_TURNSTILE_SECRET_KEY`, or `DANIELCLANCY_ALERT_INGEST_SECRET`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured. A simple static/Vite dev server cannot run Pages Functions, so Turnstile may show an unavailable static-dev state until served through a Pages-compatible runtime with the env vars. Alert delivery failures are logged server-side and do not block contact delivery or page rendering.
 
 ## Public login modal and auth origin
 
@@ -228,12 +236,15 @@ DanielClancy/
 │  └─ public-site-polish-audit-2026-04-22.md
 ├─ functions/
 │  ├─ _shared/
+│  │  ├─ alert-sender.js
 │  │  └─ turnstile.js
 │  └─ api/
 │     ├─ contact.js
 │     ├─ donate/
 │     │  ├─ session.js
 │     │  └─ webhook.js
+│     ├─ track/
+│     │  └─ page-visit.js
 │     ├─ turnstile/
 │     │  └─ config.js
 │     └─ watch-feed.js
@@ -250,6 +261,7 @@ DanielClancy/
 │  ├─ assets.d.ts
 │  ├─ vite-env.d.ts
 │  ├─ components/
+│  │  └─ PageVisitBeacon.tsx
 │  ├─ content/
 │  ├─ lib/
 │  │  ├─ donate.ts

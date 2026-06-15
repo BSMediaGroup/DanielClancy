@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { ContactMap } from "../components/ContactMap";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
@@ -23,11 +23,23 @@ export function ContactPage() {
   const [status, setStatus] = useState<ContactStatus>("idle");
   const [statusMessage, setStatusMessage] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileTokenIssuedAt, setTurnstileTokenIssuedAt] = useState(0);
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
 
   useEffect(() => {
     setStartedAt(String(Date.now()));
   }, []);
+
+  const handleTurnstileTokenChange = useCallback((token: string) => {
+    setTurnstileToken(token);
+    setTurnstileTokenIssuedAt(token ? Date.now() : 0);
+  }, []);
+
+  function resetTurnstile() {
+    setTurnstileToken("");
+    setTurnstileTokenIssuedAt(0);
+    setTurnstileResetKey((value) => value + 1);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,7 +54,7 @@ export function ContactPage() {
       return;
     }
 
-    if (!turnstileToken) {
+    if (!turnstileToken || !turnstileTokenIssuedAt) {
       setStatus("error");
       setStatusMessage("Please complete the security check before sending.");
       return;
@@ -79,15 +91,13 @@ export function ContactPage() {
       setStatusMessage(payload.message ?? "Thanks. Your message has been sent.");
       setValues(initialValues);
       setStartedAt(String(Date.now()));
-      setTurnstileToken("");
-      setTurnstileResetKey((value) => value + 1);
+      resetTurnstile();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to send your message right now.";
       setStatus("error");
       setStatusMessage(message);
-      setTurnstileToken("");
-      setTurnstileResetKey((value) => value + 1);
+      resetTurnstile();
     }
   }
 
@@ -253,7 +263,7 @@ export function ContactPage() {
             <TurnstileChallenge
               actionLabel="send this enquiry"
               resetKey={turnstileResetKey}
-              onTokenChange={setTurnstileToken}
+              onTokenChange={handleTurnstileTokenChange}
             />
 
             <div className="form-actions">

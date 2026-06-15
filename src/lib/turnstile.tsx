@@ -53,18 +53,22 @@ function loadTurnstileScript() {
 }
 
 export function TurnstileChallenge({
-  actionLabel,
   configUrl = "/api/turnstile/config",
   resetKey = 0,
   onTokenChange,
 }: TurnstileChallengeProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const widgetRef = useRef<string | null>(null);
+  const onTokenChangeRef = useRef(onTokenChange);
   const [message, setMessage] = useState("Loading security check...");
 
   useEffect(() => {
+    onTokenChangeRef.current = onTokenChange;
+  }, [onTokenChange]);
+
+  useEffect(() => {
     let cancelled = false;
-    onTokenChange("");
+    onTokenChangeRef.current("");
 
     async function renderWidget() {
       try {
@@ -77,27 +81,24 @@ export function TurnstileChallenge({
         }
         await loadTurnstileScript();
         if (cancelled || !containerRef.current || !window.turnstile) return;
-        if (widgetRef.current) {
-          window.turnstile.remove(widgetRef.current);
-          widgetRef.current = null;
-        }
+        if (widgetRef.current) return;
         containerRef.current.innerHTML = "";
         widgetRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           callback: (token) => {
-            onTokenChange(token);
+            onTokenChangeRef.current(token);
             setMessage("Security check complete.");
           },
           "expired-callback": () => {
-            onTokenChange("");
-            setMessage("Security check expired. Complete it again.");
+            onTokenChangeRef.current("");
+            setMessage("Security check expired. Please try again.");
           },
           "error-callback": () => {
-            onTokenChange("");
-            setMessage("Security check failed to load. Refresh and try again.");
+            onTokenChangeRef.current("");
+            setMessage("Security check failed. Retry.");
           },
         });
-        setMessage(`Complete the security check to ${actionLabel}.`);
+        setMessage("Complete the security check to continue.");
       } catch {
         if (!cancelled) setMessage("Turnstile unavailable in static dev.");
       }
@@ -107,21 +108,21 @@ export function TurnstileChallenge({
 
     return () => {
       cancelled = true;
-      onTokenChange("");
+      onTokenChangeRef.current("");
       if (widgetRef.current && window.turnstile) {
         window.turnstile.remove(widgetRef.current);
         widgetRef.current = null;
       }
     };
-  }, [actionLabel, configUrl, onTokenChange, resetKey]);
+  }, [configUrl]);
 
   useEffect(() => {
     if (widgetRef.current && window.turnstile) {
       window.turnstile.reset(widgetRef.current);
-      onTokenChange("");
-      setMessage(`Complete the security check to ${actionLabel}.`);
+      onTokenChangeRef.current("");
+      setMessage("Complete the security check to continue.");
     }
-  }, [actionLabel, onTokenChange, resetKey]);
+  }, [resetKey]);
 
   return (
     <div className="turnstile-box">
