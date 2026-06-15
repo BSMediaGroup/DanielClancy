@@ -24,6 +24,44 @@ function cleanTags(tags) {
     : [];
 }
 
+const RULE_DEFINITION_FIELDS = new Set([
+  "rules",
+  "alertRules",
+  "definitions",
+  "ruleDefinitions",
+  "replaceRules",
+  "fullManifest",
+  "configuration",
+  "preferences",
+  "destination_defaults",
+  "schema_version",
+  "import",
+  "reset",
+  "seed",
+  "defaults",
+  "apply_configuration",
+]);
+
+function eventObjectOnly(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const cleanNested = (nested) => {
+    if (Array.isArray(nested)) {
+      return nested
+        .map((item) => (item && typeof item === "object" ? eventObjectOnly(item) : item))
+        .filter((item) => !(item && typeof item === "object" && Object.keys(item).length === 0));
+    }
+    if (nested && typeof nested === "object") {
+      return eventObjectOnly(nested);
+    }
+    return nested;
+  };
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !RULE_DEFINITION_FIELDS.has(key))
+      .map(([key, nested]) => [key, cleanNested(nested)])
+  );
+}
+
 function configured(env) {
   const url = normalizeEnvValue(env?.DANIELCLANCY_ALERT_INGEST_URL, 1000);
   const secret = normalizeEnvValue(env?.DANIELCLANCY_ALERT_INGEST_SECRET, 500);
@@ -58,8 +96,8 @@ export async function postDanielClancyAlert(context, event) {
     request_method: context?.request?.method || "",
     client_ip: context?.request?.headers?.get("CF-Connecting-IP") || "",
     user_agent: cleanText(context?.request?.headers?.get("User-Agent"), 300),
-    payload: event.payload && typeof event.payload === "object" ? event.payload : {},
-    context: event.context && typeof event.context === "object" ? event.context : {},
+    payload: eventObjectOnly(event.payload),
+    context: eventObjectOnly(event.context),
   };
 
   try {

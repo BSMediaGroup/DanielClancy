@@ -1,5 +1,17 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Emergency Alert Event-Only Sender Guard
+
+### Technical
+
+- Hardened `functions/_shared/alert-sender.js` so public contact/page_visit alert payload/context objects recursively strip rule-definition, configuration, preferences, manifest, seed/reset/import, and `apply_configuration` fields before posting to StreamSuites ingest.
+- Public DanielClancy alert delivery remains event-only and does not send StreamSuites alert rule definitions.
+
+### Human-readable
+
+- DanielClancy.net may send alert events only.
+- StreamSuites alert rule definitions remain canonical in StreamSuites and StreamSuites-Dashboard.
+
 ## Emergency Turnstile Reliability And Alert Sender Wiring
 
 ### Technical
