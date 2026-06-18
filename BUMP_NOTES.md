@@ -1,5 +1,37 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Public Page-Visit Analytics Forwarding Milestone
+
+### Technical
+
+- Updated `POST /api/track/page-visit` so public DanielClancy page visits still beacon locally but now forward sanitized page-visit metadata server-side to DanielClancy-Admin analytics ingest when configured.
+- Added server-only env vars `DANIELCLANCY_ADMIN_ANALYTICS_INGEST_URL` and `DANIELCLANCY_ANALYTICS_INGEST_SECRET`; the ingest secret is sent only by the Pages Function using `X-DanielClancy-Analytics-Secret`.
+- Added page URL, timezone, browser, device, and platform metadata to the public `PageVisitBeacon` payload without exposing any secret to frontend JavaScript.
+- Kept alert event sending intact and non-blocking; analytics forwarding failures are logged server-side and do not block page rendering.
+- StreamSuites and StreamSuites-Dashboard were not mutated.
+- No MCP browser tests or Playwright MCP checks were run.
+
+### Human-readable
+
+- Public `danielclancy.net` traffic can now feed DanielClancy-Admin page-visit analytics when both repos share the generated analytics ingest secret.
+- The public browser never receives the admin analytics ingest secret.
+
+### Files / areas changed
+
+- `.env.example`
+- `functions/api/track/page-visit.js`
+- `src/components/PageVisitBeacon.tsx`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Run `node --check functions/api/track/page-visit.js`, `npm run check`, `npm run build`, and `git diff --check`.
+
+### Follow-ups
+
+- Hosted Cloudflare Pages verification is still required to confirm forwarding reaches `https://admin.danielclancy.net/api/analytics/ingest/page-visit` with the configured shared secret.
+
 ## Emergency Alert Event-Only Sender Guard
 
 ### Technical

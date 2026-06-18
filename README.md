@@ -67,6 +67,8 @@ Optional destination overrides:
 - `DANIELCLANCY_ALERT_INGEST_URL` - StreamSuites runtime/API `POST /api/alerts/danielclancy` endpoint for contact/page-visit alert delivery
 - `DANIELCLANCY_ALERT_INGEST_SECRET` - server-only shared secret matching the StreamSuites receiver
 - DanielClancy.net alert sender payloads are event-only; rule/configuration/preferences/manifest fields are stripped from nested payload/context data before posting to StreamSuites ingest.
+- `DANIELCLANCY_ADMIN_ANALYTICS_INGEST_URL` - DanielClancy-Admin `POST /api/analytics/ingest/page-visit` endpoint, expected `https://admin.danielclancy.net/api/analytics/ingest/page-visit`
+- `DANIELCLANCY_ANALYTICS_INGEST_SECRET` - server-only shared secret matching DanielClancy-Admin analytics ingest
 
 Generate the alert ingest secret with:
 
@@ -75,6 +77,14 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
 Use the same generated value in this sender repo and the StreamSuites runtime receiver environment. Do not expose or commit `RESEND_API_KEY`, `DC_TURNSTILE_SECRET_KEY`, or `DANIELCLANCY_ALERT_INGEST_SECRET`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured. A simple static/Vite dev server cannot run Pages Functions, so Turnstile may show an unavailable static-dev state until served through a Pages-compatible runtime with the env vars. Alert delivery failures are logged server-side and do not block contact delivery or page rendering.
+
+Generate `DANIELCLANCY_ANALYTICS_INGEST_SECRET` separately unless intentionally reusing another generated secret:
+
+```sh
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. That Pages Function forwards sanitized page-visit metadata server-side to DanielClancy-Admin analytics ingest when the analytics URL/secret are configured. The browser never receives the analytics ingest secret, and forwarding failures do not block page rendering.
 
 ## Public login modal and auth origin
 
