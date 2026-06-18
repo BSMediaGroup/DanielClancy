@@ -3,9 +3,17 @@ import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
-import { experienceItems, platformList, siteMeta } from "../content/siteContent";
+import { siteMeta } from "../content/siteContent";
+import {
+  getPlatformIconPath,
+  resolveCompanyByIdNameSlug,
+  resolvePlatformByIdNameSlug,
+  usePublicSiteData,
+} from "../lib/publicSiteData";
 
 export function CvPage() {
+  const { companies, platforms, positions } = usePublicSiteData();
+  const platformList = platforms.map((platform) => platform.name);
   return (
     <>
       <Seo
@@ -68,12 +76,13 @@ export function CvPage() {
       >
         <div className="logo-card-grid">
           {platformList.map((item) => {
-            const logo = getSoftwareLogo(item);
+            const platform = resolvePlatformByIdNameSlug(platforms, item);
+            const logo = getPlatformIconPath(platform, item) || getSoftwareLogo(item);
 
             return (
               <article key={item} className="surface surface--compact">
-                <div className="icon-heading">
-                  {logo ? <img alt="" src={logo} /> : null}
+                <div className="icon-heading" title={platform?.name || item}>
+                  {logo ? <img alt={platform?.name || item} src={logo} /> : null}
                   <h3>{item}</h3>
                 </div>
               </article>
@@ -88,27 +97,31 @@ export function CvPage() {
         intro="Roles are ordered as a readable digital record, with the company mark present where a reliable local asset exists."
       >
         <div className="timeline-list timeline-list--document">
-          {experienceItems.map((item) => {
+          {positions.map((item) => {
+            const company = resolveCompanyByIdNameSlug(companies, item.companyId || item.companyName);
+            const period = item.period || formatPositionPeriod(item.startDate, item.endDate, item.current);
             return (
-              <article key={`${item.company}-${item.period}`} className="timeline-card timeline-card--document">
+              <article key={`${item.companyName}-${period}`} className="timeline-card timeline-card--document">
                 <div className="timeline-card__meta">
-                  <span>{item.period}</span>
+                  <span>{period}</span>
                   <small>{item.location}</small>
                 </div>
 
                 <div className="timeline-card__body">
                   <div className="timeline-card__heading">
                     <div>
-                      <h3>{item.company}</h3>
-                      <p>{item.role}</p>
+                      <h3>{item.companyName}</h3>
+                      <p>{item.title}</p>
                     </div>
                   </div>
                   <p>{item.summary}</p>
-                  <a className="text-link" href={item.url} target="_blank" rel="noreferrer">
-                    {item.url.replace("https://", "").replace(/\/$/, "")}
-                  </a>
+                  {item.url || company?.website ? (
+                    <a className="text-link" href={item.url || company?.website} target="_blank" rel="noreferrer">
+                      {(item.url || company?.website || "").replace("https://", "").replace(/\/$/, "")}
+                    </a>
+                  ) : null}
                   <div className="timeline-card__logo">
-                    <CompanyLogoMark company={item.company} variant="monochrome" />
+                    <CompanyLogoMark company={item.companyName} variant="monochrome" />
                   </div>
                 </div>
               </article>
@@ -127,4 +140,21 @@ export function CvPage() {
       </Section>
     </>
   );
+}
+
+function formatPositionPeriod(startDate?: string, endDate?: string, current?: boolean) {
+  const start = formatMonthYear(startDate);
+  const end = current ? "Present" : formatMonthYear(endDate);
+  if (start && end) return `${start} – ${end}`;
+  return start || end || "Undated";
+}
+
+function formatMonthYear(value?: string) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat("en-AU", {
+    month: "long",
+    year: "numeric",
+  }).format(parsed);
 }

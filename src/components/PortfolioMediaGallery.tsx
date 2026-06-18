@@ -5,6 +5,9 @@ import type { PortfolioMediaItem } from "../content/siteContent";
 type PortfolioMediaGalleryProps = {
   projectTitle: string;
   media: PortfolioMediaItem[];
+  primaryImage?: string;
+  galleryPaths?: string[];
+  documentUrl?: string;
   documentationUrl?: string;
   documentationAvailable?: boolean;
   documentationStatusNote?: string;
@@ -13,6 +16,9 @@ type PortfolioMediaGalleryProps = {
 export function PortfolioMediaGallery({
   projectTitle,
   media,
+  primaryImage,
+  galleryPaths = [],
+  documentUrl,
   documentationUrl,
   documentationAvailable = Boolean(documentationUrl),
   documentationStatusNote,
@@ -20,8 +26,35 @@ export function PortfolioMediaGallery({
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  const activeMedia = media[activeIndex] ?? media[0];
-  const hasMultipleMedia = media.length > 1;
+  const resolvedMedia = galleryPaths.length
+    ? galleryPaths.map((path, index) => ({
+        id: `${projectTitle}-${index}`,
+        index,
+        fileName: path.split("/").pop() || "",
+        src: path,
+        alt: projectTitle,
+        title: `${projectTitle} ${index + 1}`,
+        description: `Documentation view ${index + 1} for ${projectTitle}.`,
+        aspectRatio: 16 / 9,
+      }))
+    : media;
+  const primaryMedia =
+    primaryImage && !resolvedMedia.some((item) => item.src === primaryImage)
+      ? {
+          id: `${projectTitle}-hero`,
+          index: 0,
+          fileName: primaryImage.split("/").pop() || "",
+          src: primaryImage,
+          alt: projectTitle,
+          title: projectTitle,
+          description: `Primary project image for ${projectTitle}.`,
+          aspectRatio: 16 / 9,
+        }
+      : null;
+  const displayMedia = primaryMedia ? [primaryMedia, ...resolvedMedia] : resolvedMedia;
+  const activeMedia = displayMedia[activeIndex] ?? displayMedia[0];
+  const hasMultipleMedia = displayMedia.length > 1;
+  const projectDocumentUrl = documentUrl || documentationUrl;
 
   const viewportAspectRatio = useMemo(() => {
     if (!activeMedia) {
@@ -42,17 +75,17 @@ export function PortfolioMediaGallery({
       }
 
       if (event.key === "ArrowRight" && hasMultipleMedia) {
-        setActiveIndex((current) => (current + 1) % media.length);
+        setActiveIndex((current) => (current + 1) % displayMedia.length);
       }
 
       if (event.key === "ArrowLeft" && hasMultipleMedia) {
-        setActiveIndex((current) => (current - 1 + media.length) % media.length);
+        setActiveIndex((current) => (current - 1 + displayMedia.length) % displayMedia.length);
       }
     }
 
     window.addEventListener("keydown", handleKeydown);
     return () => window.removeEventListener("keydown", handleKeydown);
-  }, [hasMultipleMedia, lightboxOpen, media.length]);
+  }, [displayMedia.length, hasMultipleMedia, lightboxOpen]);
 
   if (!activeMedia) {
     return (
@@ -61,14 +94,14 @@ export function PortfolioMediaGallery({
           <div className="portfolio-gallery__toolbar">
             <p className="kicker">Project media</p>
             <div className="portfolio-gallery__actions">
-              {documentationUrl ? (
+              {projectDocumentUrl ? (
                 <a
                   className="button button--secondary"
-                  href={documentationUrl}
+                  href={projectDocumentUrl}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open document folder
+                  Open project document
                 </a>
               ) : documentationStatusNote ? (
                 <button
@@ -105,14 +138,14 @@ export function PortfolioMediaGallery({
           <div className="portfolio-gallery__toolbar">
             <p className="kicker">Project media</p>
             <div className="portfolio-gallery__actions">
-              {documentationUrl ? (
+              {projectDocumentUrl ? (
                 <a
                   className="button button--secondary"
-                  href={documentationUrl}
+                  href={projectDocumentUrl}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open document folder
+                  Open project document
                 </a>
               ) : documentationStatusNote ? (
                 <button
@@ -148,7 +181,7 @@ export function PortfolioMediaGallery({
                   aria-label="Previous project image"
                   className="gallery-nav gallery-nav--prev"
                   type="button"
-                  onClick={() => setActiveIndex((current) => (current - 1 + media.length) % media.length)}
+                  onClick={() => setActiveIndex((current) => (current - 1 + displayMedia.length) % displayMedia.length)}
                 >
                   ‹
                 </button>
@@ -156,7 +189,7 @@ export function PortfolioMediaGallery({
                   aria-label="Next project image"
                   className="gallery-nav gallery-nav--next"
                   type="button"
-                  onClick={() => setActiveIndex((current) => (current + 1) % media.length)}
+                  onClick={() => setActiveIndex((current) => (current + 1) % displayMedia.length)}
                 >
                   ›
                 </button>
@@ -173,13 +206,13 @@ export function PortfolioMediaGallery({
               ) : null}
             </div>
             <span>
-              {activeIndex + 1} / {media.length}
+              {activeIndex + 1} / {displayMedia.length}
             </span>
           </div>
 
           {hasMultipleMedia ? (
             <div className="gallery-dots" aria-label="Project media pagination">
-              {media.map((item, index) => (
+              {displayMedia.map((item, index) => (
                 <button
                   key={item.id}
                   aria-label={`View project image ${index + 1}`}
@@ -220,7 +253,7 @@ export function PortfolioMediaGallery({
                     aria-label="Previous lightbox image"
                     className="gallery-nav gallery-nav--prev"
                     type="button"
-                    onClick={() => setActiveIndex((current) => (current - 1 + media.length) % media.length)}
+                    onClick={() => setActiveIndex((current) => (current - 1 + displayMedia.length) % displayMedia.length)}
                   >
                     ‹
                   </button>
@@ -228,7 +261,7 @@ export function PortfolioMediaGallery({
                     aria-label="Next lightbox image"
                     className="gallery-nav gallery-nav--next"
                     type="button"
-                    onClick={() => setActiveIndex((current) => (current + 1) % media.length)}
+                    onClick={() => setActiveIndex((current) => (current + 1) % displayMedia.length)}
                   >
                     ›
                   </button>

@@ -6,12 +6,11 @@ import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
 import {
-  experienceItems,
   featuredEmployers,
-  homeSpotlightProjects,
   siteMeta,
 } from "../content/siteContent";
 import { getPortfolioSlug } from "../lib/portfolio";
+import { getProjectThumbnailUrl, usePublicSiteData } from "../lib/publicSiteData";
 
 const softwareCapabilities = [
   { name: "Autodesk Revit", score: 92, note: "Production documentation and coordination" },
@@ -28,8 +27,9 @@ const homeHeroSummary =
   "Documentation-led design review, drafting depth, and project evidence shaped across structural, architectural, urban, landscape, and infrastructure work.";
 
 export function HomePage() {
-  const spotlightProjects = homeSpotlightProjects;
-  const recentExperience = experienceItems.slice(0, 4);
+  const { projects, positions } = usePublicSiteData();
+  const spotlightProjects = projects.filter((project) => project.featured).slice(0, 3);
+  const recentExperience = positions.slice(0, 4);
 
   return (
     <>
@@ -93,7 +93,7 @@ export function HomePage() {
         <div className="project-grid project-grid--featured">
           {spotlightProjects.map((project) => (
             <article key={project.id} className="project-card">
-              <MediaFrame alt={project.title} src={project.image} />
+              <MediaFrame alt={project.title} src={getProjectThumbnailUrl(project)} />
               <div className="project-card__body">
                 <div className="project-card__topline">
                   <p>{project.client}</p>
@@ -165,19 +165,19 @@ export function HomePage() {
         <div className="timeline-list">
           {recentExperience.map((item) => {
             return (
-              <article key={`${item.company}-${item.period}`} className="timeline-card">
+              <article key={`${item.companyName}-${item.period || item.startDate}`} className="timeline-card">
                 <div className="timeline-card__meta">
-                  <span>{item.period}</span>
+                  <span>{item.period || formatPositionPeriod(item.startDate, item.endDate, item.current)}</span>
                   <small>{item.location}</small>
                   <div className="timeline-card__logo">
-                    <CompanyLogoMark company={item.company} variant="monochrome" />
+                    <CompanyLogoMark company={item.companyName} variant="monochrome" />
                   </div>
                 </div>
                 <div className="timeline-card__body">
                   <div className="timeline-card__heading">
                     <div>
-                      <h3>{item.company}</h3>
-                      <p>{item.role}</p>
+                      <h3>{item.companyName}</h3>
+                      <p>{item.title}</p>
                     </div>
                   </div>
                   <p>{item.summary}</p>
@@ -198,4 +198,21 @@ export function HomePage() {
       </Section>
     </>
   );
+}
+
+function formatPositionPeriod(startDate?: string, endDate?: string, current?: boolean) {
+  const start = formatMonthYear(startDate);
+  const end = current ? "Present" : formatMonthYear(endDate);
+  if (start && end) return `${start} – ${end}`;
+  return start || end || "Undated";
+}
+
+function formatMonthYear(value?: string) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return new Intl.DateTimeFormat("en-AU", {
+    month: "long",
+    year: "numeric",
+  }).format(parsed);
 }

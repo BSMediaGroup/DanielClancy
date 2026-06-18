@@ -1,28 +1,36 @@
 import { Link, Navigate, useParams } from "react-router-dom";
-import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
 import { PortfolioMediaGallery } from "../components/PortfolioMediaGallery";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { getSoftwareLogo } from "../content/brandAssets";
-import { portfolioArchive } from "../content/siteContent";
 import {
   getAdjacentPortfolioProjects,
   getDocumentationType,
   getPortfolioFamily,
-  getPortfolioProjectBySlug,
+  getPortfolioProjectBySlugFrom,
   getPortfolioSlug,
 } from "../lib/portfolio";
+import {
+  getPlatformIconPath,
+  getProjectCompanyLabel,
+  getProjectDocumentUrl,
+  getProjectGalleryUrls,
+  getProjectHeroUrl,
+  getProjectThumbnailUrl,
+  resolvePlatformByIdNameSlug,
+  usePublicSiteData,
+} from "../lib/publicSiteData";
 
 export function PortfolioDetailPage() {
   const { slug } = useParams();
-  const project = getPortfolioProjectBySlug(slug);
+  const { projects: portfolioArchive, companies, platforms } = usePublicSiteData();
+  const project = getPortfolioProjectBySlugFrom(portfolioArchive, slug);
 
   if (!project) {
     return <Navigate replace to="/portfolio" />;
   }
 
-  const { previousProject, nextProject } = getAdjacentPortfolioProjects(project);
+  const { previousProject, nextProject } = getAdjacentPortfolioProjects(project, portfolioArchive);
   const relatedProjects = portfolioArchive
     .filter(
       (item) => item.id !== project.id && getPortfolioFamily(item) === getPortfolioFamily(project),
@@ -35,7 +43,7 @@ export function PortfolioDetailPage() {
         title={project.title}
         description={project.summary}
         path={`/portfolio/${getPortfolioSlug(project)}`}
-        image={project.image}
+        image={getProjectThumbnailUrl(project)}
         type="article"
       />
 
@@ -44,9 +52,12 @@ export function PortfolioDetailPage() {
           <div className="detail-hero__media">
             <PortfolioMediaGallery
               documentationUrl={project.documentationUrl}
+              documentUrl={getProjectDocumentUrl(project)}
               documentationAvailable={project.documentationAvailable}
               documentationStatusNote={project.documentationStatusNote}
               media={project.media}
+              primaryImage={getProjectHeroUrl(project)}
+              galleryPaths={getProjectGalleryUrls(project)}
               projectTitle={project.title}
             />
           </div>
@@ -57,15 +68,15 @@ export function PortfolioDetailPage() {
             <p className="detail-hero__summary">{project.description}</p>
 
             <div className="logo-row">
-              <span className="logo-pill">
-                <CompanyLogoMark company={project.studio[0]} />
-                <small>{project.studio[0]}</small>
+              <span className="logo-pill logo-pill--text">
+                <small>{getProjectCompanyLabel(project, companies)}</small>
               </span>
               {project.software.map((item) => {
-                const logo = getSoftwareLogo(item);
+                const platform = resolvePlatformByIdNameSlug(platforms, item);
+                const logo = getPlatformIconPath(platform, item);
                 return logo ? (
-                  <span key={`${project.id}-${item}`} className="logo-pill">
-                    <img alt="" src={logo} />
+                  <span key={`${project.id}-${item}`} className="logo-pill" title={platform?.name || item}>
+                    <img alt={platform?.name || item} src={logo} />
                     <small>{item}</small>
                   </span>
                 ) : null;
@@ -165,9 +176,9 @@ export function PortfolioDetailPage() {
               {project.sourceFiles.length} retained source file
               {project.sourceFiles.length === 1 ? "" : "s"} support this public summary.
             </p>
-            {project.documentationUrl ? (
-              <a className="text-link" href={project.documentationUrl} target="_blank" rel="noreferrer">
-                Open project documents folder
+            {getProjectDocumentUrl(project) ? (
+              <a className="text-link" href={getProjectDocumentUrl(project)} target="_blank" rel="noreferrer">
+                Open project document
               </a>
             ) : project.documentationStatusNote ? (
               <span className="text-link text-link--disabled" title={project.documentationStatusNote}>
@@ -253,7 +264,7 @@ export function PortfolioDetailPage() {
                 className="project-card project-card--clickable"
                 to={`/portfolio/${getPortfolioSlug(item)}`}
               >
-                <MediaFrame alt={item.title} aspectRatio={1.58} src={item.image} />
+                <MediaFrame alt={item.title} aspectRatio={1.58} src={getProjectThumbnailUrl(item)} />
                 <div className="project-card__body">
                   <div className="project-card__topline">
                     <p>{item.client}</p>

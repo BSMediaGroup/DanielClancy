@@ -38,12 +38,16 @@ export function getPortfolioProjectBySlug(slug?: string) {
   return portfolioArchive.find((project) => getPortfolioSlug(project) === slug) ?? null;
 }
 
-export function getPortfolioProjectIndex(project: PortfolioItem) {
-  return portfolioArchive.findIndex((item) => item.id === project.id);
+export function getPortfolioProjectBySlugFrom(projects: PortfolioItem[], slug?: string) {
+  return projects.find((project) => getPortfolioSlug(project) === slug) ?? null;
 }
 
-export function getAdjacentPortfolioProjects(project: PortfolioItem) {
-  const index = getPortfolioProjectIndex(project);
+export function getPortfolioProjectIndex(project: PortfolioItem, projects = portfolioArchive) {
+  return projects.findIndex((item) => item.id === project.id);
+}
+
+export function getAdjacentPortfolioProjects(project: PortfolioItem, projects = portfolioArchive) {
+  const index = getPortfolioProjectIndex(project, projects);
 
   if (index === -1) {
     return {
@@ -53,13 +57,13 @@ export function getAdjacentPortfolioProjects(project: PortfolioItem) {
   }
 
   return {
-    previousProject: portfolioArchive[index - 1] ?? null,
-    nextProject: portfolioArchive[index + 1] ?? null,
+    previousProject: projects[index - 1] ?? null,
+    nextProject: projects[index + 1] ?? null,
   };
 }
 
-export function getSortedPortfolioFamilies() {
-  return Array.from(new Set(portfolioArchive.map((project) => getPortfolioFamily(project)))).sort(
+export function getSortedPortfolioFamilies(projects = portfolioArchive) {
+  return Array.from(new Set(projects.map((project) => getPortfolioFamily(project)))).sort(
     (left, right) => {
       const leftIndex = portfolioFamilyOrder.indexOf(left);
       const rightIndex = portfolioFamilyOrder.indexOf(right);

@@ -13,6 +13,8 @@ The visual system keeps the existing DanielClancy font pairing while tightening 
 
 The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collection-tables/WorkSet.csv` export instead of the previous hand-maintained project array.
 
+The CV, portfolio, project detail, company, platform/software, image, gallery, thumbnail, and document data now hydrate from the sanitized DanielClancy-Admin public site-data export when configured. The committed static fallback remains the current public source-derived model so the site still builds and renders when the admin API is unavailable.
+
 ## Route architecture
 
 ### Professional shell
@@ -101,6 +103,7 @@ Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. 
 Public build-time env:
 
 - `VITE_DC_AUTH_ORIGIN` - expected `https://admin.danielclancy.net`
+- `VITE_ADMIN_PUBLIC_SITE_DATA_URL` - optional sanitized public CMS export endpoint, recommended `https://admin.danielclancy.net/api/public/site-data`
 
 Contact Turnstile env:
 
@@ -167,9 +170,23 @@ Cloudflare setup checkpoint after this local scaffold:
 - Canonical portfolio media root: `cmsdata/wix/portfolio/`
 - Portfolio project PDFs under `cmsdata/wix/portfolio/` are source-only local archive material and should remain gitignored rather than tracked or deployed.
 - Local preview-only fallbacks for genuinely missing WorkSet exports: `public/media/portfolio/`
+- Public portfolio thumbnails: `public/media/portfolio/thumbs/`, addressed as clean paths such as `/media/portfolio/thumbs/example.webp`
+- Public portfolio gallery/hero media: `public/media/portfolio/`, addressed as clean paths such as `/media/portfolio/example.webp`
+- Public documents: `public/docs/`, addressed as clean paths such as `/docs/example.pdf`
 - Logo/social/software/company marks: `assets/logos/` and `assets/icons/`
 
-Project detail document actions temporarily route to a shared OneDrive folder until the later admin/data flow can provide exact individual cloud file links.
+Project detail document actions prefer a sanitized local `/docs/...` `documentPath` when one exists. Older OneDrive `documentationUrl` values remain as fallback source data until replaced by an admin-managed local document path.
+
+## Public site-data hydration
+
+- Client entrypoint: `src/lib/publicSiteData.tsx`
+- Static fallback: `src/data/public-site-fallback.ts`
+- Admin endpoint: `GET /api/public/site-data` from DanielClancy-Admin
+- Live env: `VITE_ADMIN_PUBLIC_SITE_DATA_URL=https://admin.danielclancy.net/api/public/site-data`
+
+The public site fetches only the sanitized public endpoint. It does not call `/api/admin/cms/*`, does not require an admin session, and does not receive account registry, auth/session, secret, KV, or overlay internals. If the env var is missing, fetch fails, the response is invalid, or a collection is missing, the app renders from the committed fallback model and safely fills missing live rows from fallback data.
+
+The normalized model preserves legacy project fields while accepting admin public fields such as `thumbnailPath`, `heroImage`, ordered `galleryPaths`, `documentPath`, `companyId`/`companyName`, `clientName`/`clientLabel`, `platformIds`, and `platformLabels`. Portfolio cards use `thumbnailPath` first, project detail uses `heroImage` or the first ordered gallery image, gallery ordering follows configured `galleryPaths`, company/studio displays as a text chip, and platform/software icons resolve to full-color SVG logo assets where available.
 
 ## Key implementation files
 
@@ -186,6 +203,8 @@ Project detail document actions temporarily route to a shared OneDrive folder un
   - `src/components/PortfolioMediaGallery.tsx`
   - `src/content/brandAssets.ts`
   - `src/content/workSetPortfolio.ts`
+  - `src/data/public-site-fallback.ts`
+  - `src/lib/publicSiteData.tsx`
   - `src/lib/watchFeed.ts`
   - `src/lib/portfolio.ts`
 - Pages:
@@ -275,9 +294,12 @@ DanielClancy/
 │  ├─ components/
 │  │  └─ PageVisitBeacon.tsx
 │  ├─ content/
+│  ├─ data/
+│  │  └─ public-site-fallback.ts
 │  ├─ lib/
 │  │  ├─ donate.ts
 │  │  ├─ portfolio.ts
+│  │  ├─ publicSiteData.tsx
 │  │  ├─ turnstile.tsx
 │  │  └─ watchFeed.ts
 │  ├─ pages/

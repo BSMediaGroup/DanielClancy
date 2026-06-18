@@ -1,5 +1,49 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Public Site-Data Hydration Milestone
+
+### Technical
+
+- Added a committed public site-data fallback model derived from the existing public portfolio/CV source data.
+- Added `PublicSiteDataProvider` and normalization helpers that fetch `VITE_ADMIN_PUBLIC_SITE_DATA_URL` when configured, validate `danielclancy-public-site-data.v1`, and fall back to static committed data when the env var is missing, fetch fails, response shape is invalid, or collections are incomplete.
+- Updated portfolio listing, project detail, gallery/lightbox, home spotlight, and CV chronology rendering to read normalized Projects, Companies, Platforms, and Positions.
+- Portfolio cards now resolve `thumbnailPath` first, then hero/gallery/static image fallback.
+- Project detail/gallery now uses `heroImage` or the first ordered `galleryPaths` image, preserves ordered gallery rendering, and prefers local `/docs/...` document links where present before older OneDrive fallback URLs.
+- Company/studio display on project cards/details is text-only; platform/software chips render full-color SVG logo images with tooltip/title labels.
+- CV positions resolve through hydrated Positions/Companies/Platforms while preserving existing static fallback facts.
+- The public site fetches only the sanitized public endpoint and does not call admin CMS endpoints or expose admin errors to visitors.
+- No CV/employment/company/software/project facts were invented.
+- Alerts editor remains removed/disabled in Admin; OAuth auto-promotion and manual env-backed admin access are unchanged.
+- StreamSuites and StreamSuites-Dashboard were not mutated.
+
+### Human-readable
+
+- DanielClancy.net can now hydrate project, company, software/platform, and CV position data from Admin public site-data when available.
+- The website still works fully from committed fallback data if Admin is down or the endpoint is not configured.
+
+### Files / areas changed
+
+- `src/app/App.tsx`
+- `src/components/PortfolioMediaGallery.tsx`
+- `src/data/public-site-fallback.ts`
+- `src/lib/portfolio.ts`
+- `src/lib/publicSiteData.tsx`
+- `src/pages/CvPage.tsx`
+- `src/pages/HomePage.tsx`
+- `src/pages/PortfolioDetailPage.tsx`
+- `src/pages/PortfolioPage.tsx`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Run `npm run check`, `npm run build`, and `git diff --check`.
+
+### Risks / follow-ups
+
+- Hosted Cloudflare Pages verification should confirm live CORS and `VITE_ADMIN_PUBLIC_SITE_DATA_URL=https://admin.danielclancy.net/api/public/site-data`.
+- Admin project rows that still contain filename-only gallery/document references continue to fall back to the committed static project media until clean `/media/portfolio/...` or `/docs/...` paths are configured.
+
 ## Emergency Auth Turnstile Removal And Alert Geo Context Milestone
 
 ### Technical

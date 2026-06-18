@@ -1,37 +1,41 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
-import { portfolioArchive, portfolioDisclaimer } from "../content/siteContent";
+import { shellAssets } from "../content/brandAssets";
+import { portfolioDisclaimer } from "../content/siteContent";
 import {
   getDocumentationType,
   getPortfolioFamily,
   getPortfolioSlug,
   getSortedPortfolioFamilies,
 } from "../lib/portfolio";
-
-const allDisciplines = Array.from(
-  new Set(
-    portfolioArchive.flatMap((project) =>
-      project.disciplines.filter((discipline) => discipline !== "General"),
-    ),
-  ),
-).sort((left, right) => left.localeCompare(right));
-
-const allSoftware = Array.from(new Set(portfolioArchive.flatMap((project) => project.software))).sort(
-  (left, right) => left.localeCompare(right),
-);
-
-const allFamilies = getSortedPortfolioFamilies();
+import {
+  getPlatformIconPath,
+  getProjectCompanyLabel,
+  getProjectThumbnailUrl,
+  resolvePlatformByIdNameSlug,
+  usePublicSiteData,
+} from "../lib/publicSiteData";
 
 export function PortfolioPage() {
+  const { projects: portfolioArchive, companies, platforms } = usePublicSiteData();
   const [scope, setScope] = useState<"all" | "featured">("all");
   const [family, setFamily] = useState("All families");
   const [discipline, setDiscipline] = useState("All disciplines");
   const [software, setSoftware] = useState("All software");
+  const allDisciplines = Array.from(
+    new Set(
+      portfolioArchive.flatMap((project) =>
+        project.disciplines.filter((item) => item !== "General"),
+      ),
+    ),
+  ).sort((left, right) => left.localeCompare(right));
+  const allSoftware = Array.from(new Set(portfolioArchive.flatMap((project) => project.software))).sort(
+    (left, right) => left.localeCompare(right),
+  );
+  const allFamilies = getSortedPortfolioFamilies(portfolioArchive);
 
   const visibleProjects = portfolioArchive.filter((project) => {
     if (scope === "featured" && !project.featured) {
@@ -206,7 +210,7 @@ export function PortfolioPage() {
                 className="project-card project-card--feature project-card--clickable"
                 to={`/portfolio/${getPortfolioSlug(project)}`}
               >
-                <MediaFrame alt={project.title} aspectRatio={1.58} src={project.image} />
+                <MediaFrame alt={project.title} aspectRatio={1.58} src={getProjectThumbnailUrl(project)} />
                 <div className="project-card__body">
                   <div className="project-card__topline">
                     <p>{project.client}</p>
@@ -219,15 +223,15 @@ export function PortfolioPage() {
                     <span>{getDocumentationType(project)}</span>
                   </div>
                   <div className="logo-row logo-row--small">
-                    <span className="logo-pill">
-                      <CompanyLogoMark company={project.studio[0]} />
-                      <small>{project.studio[0]}</small>
+                    <span className="logo-pill logo-pill--text">
+                      <small>{getProjectCompanyLabel(project, companies)}</small>
                     </span>
                     {project.software.slice(0, 2).map((item) => {
-                      const logo = getSoftwareLogo(item);
+                      const platform = resolvePlatformByIdNameSlug(platforms, item);
+                      const logo = getPlatformIconPath(platform, item);
                       return logo ? (
-                        <span key={`${project.id}-${item}`} className="logo-pill">
-                          <img alt="" src={logo} />
+                        <span key={`${project.id}-${item}`} className="logo-pill" title={platform?.name || item}>
+                          <img alt={platform?.name || item} src={logo} />
                           <small>{item}</small>
                         </span>
                       ) : null;
@@ -255,7 +259,7 @@ export function PortfolioPage() {
                 className="project-card project-card--clickable"
                 to={`/portfolio/${getPortfolioSlug(project)}`}
               >
-                <MediaFrame alt={project.title} aspectRatio={1.6} src={project.image} />
+                <MediaFrame alt={project.title} aspectRatio={1.6} src={getProjectThumbnailUrl(project)} />
                 <div className="project-card__body">
                   <div className="project-card__topline">
                     <p>{project.client}</p>
@@ -268,15 +272,15 @@ export function PortfolioPage() {
                     <span>{project.location ?? project.sector ?? "Project record"}</span>
                   </div>
                   <div className="logo-row logo-row--small">
-                    <span className="logo-pill">
-                      <CompanyLogoMark company={project.studio[0]} />
-                      <small>{project.studio[0]}</small>
+                    <span className="logo-pill logo-pill--text">
+                      <small>{getProjectCompanyLabel(project, companies)}</small>
                     </span>
                     {project.software.slice(0, 2).map((item) => {
-                      const logo = getSoftwareLogo(item);
+                      const platform = resolvePlatformByIdNameSlug(platforms, item);
+                      const logo = getPlatformIconPath(platform, item);
                       return logo ? (
-                        <span key={`${project.id}-${item}`} className="logo-pill">
-                          <img alt="" src={logo} />
+                        <span key={`${project.id}-${item}`} className="logo-pill" title={platform?.name || item}>
+                          <img alt={platform?.name || item} src={logo} />
                           <small>{item}</small>
                         </span>
                       ) : null;
