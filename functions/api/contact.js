@@ -264,6 +264,8 @@ export async function onRequestPost(context) {
     tags: ["contact", "danielclancy"],
     linkUrl: "https://admin.danielclancy.net/#/alerts",
     pagePath: submittedFrom,
+    pageUrl: submittedFrom.startsWith("http") ? submittedFrom : `https://danielclancy.net${submittedFrom.startsWith("/") ? submittedFrom : `/${submittedFrom}`}`,
+    pageTitle: "Contact",
     payload: {
       name,
       email,

@@ -1,5 +1,32 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Emergency Auth Turnstile Removal And Alert Geo Context Milestone
+
+### Technical
+
+- Removed Turnstile from the public login/signup modal and OAuth start buttons; manual email/password auth requests no longer include or require a Turnstile token.
+- Kept the public contact form Turnstile isolated in `src/pages/ContactPage.tsx` and `functions/api/contact.js`; auth no longer imports the React Turnstile component.
+- Expanded the public alert sender to forward sanitized Cloudflare request metadata, including host/origin, page/referrer fields, request method, client IP, user agent, browser/device/platform, timezone, colo, `geo.*`, and country flag.
+- Public contact and page_visit alert events remain event-only and continue stripping rule/configuration/manifest fields before posting to StreamSuites.
+
+### Human-readable
+
+- Public login/signup/OAuth no longer gets blocked by a fragile Turnstile token lifecycle.
+- Contact remains protected by Turnstile, and alert templates can now receive real Cloudflare location/client context.
+
+### Files / areas changed
+
+- `functions/_shared/alert-sender.js`
+- `functions/api/contact.js`
+- `functions/api/track/page-visit.js`
+- `src/components/PersonalHeaderAccount.tsx`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Run `node --check functions/_shared/alert-sender.js functions/api/contact.js functions/api/track/page-visit.js`, `npm run check`, `npm run build`, and `git diff --check`.
+
 ## Public Page-Visit Analytics Forwarding Milestone
 
 ### Technical

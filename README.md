@@ -67,6 +67,7 @@ Optional destination overrides:
 - `DANIELCLANCY_ALERT_INGEST_URL` - StreamSuites runtime/API `POST /api/alerts/danielclancy` endpoint for contact/page-visit alert delivery
 - `DANIELCLANCY_ALERT_INGEST_SECRET` - server-only shared secret matching the StreamSuites receiver
 - DanielClancy.net alert sender payloads are event-only; rule/configuration/preferences/manifest fields are stripped from nested payload/context data before posting to StreamSuites ingest.
+- Contact and page-visit alert events forward sanitized Cloudflare request metadata when available, including host/origin, page/referrer fields, request method, client IP, user agent, browser/device/platform, timezone, colo, `geo.city`, `geo.region`, `geo.region_code`, `geo.country`, `geo.country_code`, and derived country flag. Rule definitions are never sent.
 - `DANIELCLANCY_ADMIN_ANALYTICS_INGEST_URL` - DanielClancy-Admin `POST /api/analytics/ingest/page-visit` endpoint, expected `https://admin.danielclancy.net/api/analytics/ingest/page-visit`
 - `DANIELCLANCY_ANALYTICS_INGEST_SECRET` - server-only shared secret matching DanielClancy-Admin analytics ingest
 
@@ -76,7 +77,7 @@ Generate the alert ingest secret with:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-Use the same generated value in this sender repo and the StreamSuites runtime receiver environment. Do not expose or commit `RESEND_API_KEY`, `DC_TURNSTILE_SECRET_KEY`, or `DANIELCLANCY_ALERT_INGEST_SECRET`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured. A simple static/Vite dev server cannot run Pages Functions, so Turnstile may show an unavailable static-dev state until served through a Pages-compatible runtime with the env vars. Alert delivery failures are logged server-side and do not block contact delivery or page rendering.
+Use the same generated value in this sender repo and the StreamSuites runtime receiver environment. Do not expose or commit `RESEND_API_KEY`, `DC_TURNSTILE_SECRET_KEY`, or `DANIELCLANCY_ALERT_INGEST_SECRET`. `MAIL_FROM` may use the StreamSuites notify sender, and `MAIL_REPLY_TO` should remain Daniel's destination inbox unless a more specific destination variable is configured. A simple static/Vite dev server cannot run Pages Functions, so the contact Turnstile may show an unavailable static-dev state until served through a Pages-compatible runtime with the env vars. Alert delivery failures are logged server-side and do not block contact delivery or page rendering.
 
 Generate `DANIELCLANCY_ANALYTICS_INGEST_SECRET` separately unless intentionally reusing another generated secret:
 
@@ -91,7 +92,7 @@ Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. 
 - The personal-shell account widget opens a polished login/signup lightbox modal branded with `assets/logos/logo.webp`, GitHub, Google, Twitter/X, and collapsed email/password sections.
 - Sign in and Create account modes share the OAuth entry flow because provider login/signup both start through the same admin auth origin.
 - The public site does not verify admin passwords in browser code. Email/password and OAuth requests are sent to the DanielClancy-Admin Cloudflare Pages Functions auth origin.
-- The modal renders Cloudflare Turnstile before email/password auth or OAuth start. Tokens are sent to the admin auth origin for server-side Siteverify validation; the client widget alone is not treated as protection.
+- The modal does not render or require Cloudflare Turnstile for login, signup, or OAuth start. Turnstile is isolated to the public contact form only.
 - Email/password signup is scaffolded only. Until durable account storage exists, attempts return a clear storage-required message and do not store passwords client-side.
 - Public session-aware content remains future work. Signing in on the public site must not grant admin dashboard access unless the server-side admin session says the account is admin.
 - The surfaced modal copy stays user-facing and does not expose internal env/provider setup notes.
@@ -101,10 +102,10 @@ Public build-time env:
 
 - `VITE_DC_AUTH_ORIGIN` - expected `https://admin.danielclancy.net`
 
-Turnstile env:
+Contact Turnstile env:
 
 - `DC_TURNSTILE_SITE_KEY` - exposed only through the safe `/api/turnstile/config` Pages Function response
-- `DC_TURNSTILE_SECRET_KEY` - server-side only; missing production secrets fail protected endpoints closed
+- `DC_TURNSTILE_SECRET_KEY` - server-side only; required by `/api/contact`, not by login/signup/OAuth auth flows
 - `DC_TURNSTILE_DEV_BYPASS=false`
 
 Server-side admin auth env vars and OAuth redirect URIs live in the DanielClancy-Admin repo because the admin Pages Functions own password verification and session cookies.

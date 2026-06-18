@@ -136,11 +136,21 @@ export async function onRequestPost(context) {
     message: `Page visit: ${pagePath}`,
     tags: ["page_visit", "danielclancy"],
     pagePath,
+    pageUrl: analyticsEvent.page_url || `https://danielclancy.net${pagePath}`,
+    pageTitle: title,
+    referrer,
+    referrerHost: analyticsEvent.referrer_host,
+    browser: analyticsEvent.browser,
+    device: analyticsEvent.device,
+    platform: analyticsEvent.platform,
+    timezone: analyticsEvent.timezone,
     linkUrl: `https://danielclancy.net${pagePath}`,
     payload: {
       pagePath,
+      page_url: analyticsEvent.page_url || `https://danielclancy.net${pagePath}`,
       title,
       referrer,
+      referrer_host: analyticsEvent.referrer_host,
     },
   });
 

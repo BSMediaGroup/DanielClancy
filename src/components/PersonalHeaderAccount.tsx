@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { shellAssets, socialIcons } from "../content/brandAssets";
-import { TurnstileChallenge } from "../lib/turnstile";
 
 type AccountState =
   | {
@@ -46,9 +45,6 @@ export function PersonalHeaderAccount() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("Sign in or create an account for DanielClancy.net. Admin access is restricted.");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [turnstileTokenIssuedAt, setTurnstileTokenIssuedAt] = useState(0);
-  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const account = getAccountState(session);
   const usesIconAvatar = !account.isLoggedIn || !account.avatarSrc;
   const avatarSrc = account.isLoggedIn
@@ -65,17 +61,6 @@ export function PersonalHeaderAccount() {
 
   const heading = mode === "signin" ? "Sign in" : "Create account";
   const emailToggleLabel = mode === "signin" ? "Use email instead" : "Use email signup";
-
-  function resetTurnstile() {
-    setTurnstileToken("");
-    setTurnstileTokenIssuedAt(0);
-    setTurnstileResetKey((value) => value + 1);
-  }
-
-  const handleTurnstileTokenChange = useCallback((token: string) => {
-    setTurnstileToken(token);
-    setTurnstileTokenIssuedAt(token ? Date.now() : 0);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -107,10 +92,6 @@ export function PersonalHeaderAccount() {
       setStatus("Enter both email and password to continue.");
       return;
     }
-    if (!turnstileToken || !turnstileTokenIssuedAt) {
-      setStatus("Complete the security check before continuing.");
-      return;
-    }
     if (mode === "signup") {
       setIsSubmitting(true);
       setStatus("Email signup is not available yet.");
@@ -119,7 +100,7 @@ export function PersonalHeaderAccount() {
           method: "POST",
           credentials: "include",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, turnstileToken }),
+          body: JSON.stringify({ email }),
         });
         const payload = await response.json().catch(() => null);
         setStatus(payload?.message || "Email signup is not available yet.");
@@ -128,7 +109,6 @@ export function PersonalHeaderAccount() {
         setStatus("Email signup is not available yet.");
       } finally {
         setIsSubmitting(false);
-        resetTurnstile();
       }
       return;
     }
@@ -139,7 +119,7 @@ export function PersonalHeaderAccount() {
         method: "POST",
         credentials: "include",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password, turnstileToken }),
+        body: JSON.stringify({ email, password }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.session) {
@@ -157,18 +137,11 @@ export function PersonalHeaderAccount() {
       setStatus("Sign in is not reachable right now. Try again later.");
     } finally {
       setIsSubmitting(false);
-      resetTurnstile();
     }
   }
 
   function handleOAuthStart(href: string) {
-    if (!turnstileToken || !turnstileTokenIssuedAt) {
-      setStatus("Complete the security check before continuing with OAuth.");
-      return;
-    }
-    const url = new URL(href);
-    url.searchParams.set("turnstileToken", turnstileToken);
-    window.location.assign(url.toString());
+    window.location.assign(href);
   }
 
   async function handleLogout() {
@@ -242,12 +215,6 @@ export function PersonalHeaderAccount() {
                 ))}
               </div>
 
-              <TurnstileChallenge
-                actionLabel={mode === "signin" ? "sign in" : "create an account"}
-                resetKey={turnstileResetKey}
-                onTokenChange={handleTurnstileTokenChange}
-              />
-
               <div className="login-modal__divider"><span>or</span></div>
 
               <div className="login-modal__email">
@@ -275,7 +242,7 @@ export function PersonalHeaderAccount() {
                         autoComplete={mode === "signin" ? "current-password" : "new-password"}
                       />
                     </label>
-                    <button className="button button--primary" type="submit" disabled={isSubmitting || !turnstileToken}>
+                    <button className="button button--primary" type="submit" disabled={isSubmitting}>
                       {isSubmitting ? "Working..." : mode === "signin" ? "Sign in with email" : "Request email signup"}
                     </button>
                     {mode === "signup" ? (
