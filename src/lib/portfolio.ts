@@ -35,11 +35,13 @@ export function getPortfolioSlug(project: PortfolioItem) {
 }
 
 export function getPortfolioProjectBySlug(slug?: string) {
-  return portfolioArchive.find((project) => getPortfolioSlug(project) === slug) ?? null;
+  return getPortfolioProjectBySlugFrom(portfolioArchive, slug);
 }
 
 export function getPortfolioProjectBySlugFrom(projects: PortfolioItem[], slug?: string) {
-  return projects.find((project) => getPortfolioSlug(project) === slug) ?? null;
+  const key = normalizePortfolioRouteKey(slug || "");
+  if (!key) return null;
+  return projects.find((project) => getPortfolioLookupKeys(project).includes(key)) ?? null;
 }
 
 export function getPortfolioProjectIndex(project: PortfolioItem, projects = portfolioArchive) {
@@ -83,4 +85,30 @@ export function getSortedPortfolioFamilies(projects = portfolioArchive) {
       return leftIndex - rightIndex;
     },
   );
+}
+
+export function getPortfolioLookupKeys(project: PortfolioItem & Record<string, unknown>) {
+  const keys = [
+    project.slug,
+    project.id,
+    String(project.code || ""),
+    project.title,
+    lastPathSegment(String(project.livePage || "")),
+    lastPathSegment(String(project.path || "")),
+    lastPathSegment(String(project.url || "")),
+  ];
+  return Array.from(new Set(keys.map(normalizePortfolioRouteKey).filter(Boolean)));
+}
+
+export function normalizePortfolioRouteKey(value: string) {
+  return lastPathSegment(value)
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function lastPathSegment(value: string) {
+  const withoutQuery = value.trim().split("#")[0].split("?")[0];
+  return decodeURIComponent((withoutQuery.split("/").filter(Boolean).pop() || withoutQuery).trim());
 }

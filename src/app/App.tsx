@@ -20,6 +20,7 @@ export default function App() {
         <Route element={<ProfessionalShell />}>
           <Route index element={<HomePage />} />
           <Route path="/cv" element={<CvPage />} />
+          <Route path="/work" element={<PortfolioPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
           <Route path="/contact" element={<ContactPage />} />

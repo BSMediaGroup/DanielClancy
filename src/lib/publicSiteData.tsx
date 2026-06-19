@@ -12,12 +12,14 @@ import {
 type PublicSiteDataContextValue = {
   data: PublicSiteDataModel;
   status: "fallback" | "live" | "mixed";
+  loading: boolean;
   metadata: {
     source: PublicSiteDataModel["source"];
     revision?: string;
     publishedAt?: string | null;
     generatedAt?: string;
     usingFallback: boolean;
+    loading: boolean;
     error?: string;
   };
   projects: PublicProject[];
@@ -29,12 +31,14 @@ type PublicSiteDataContextValue = {
 const PublicSiteDataContext = createContext<PublicSiteDataContextValue>({
   data: publicSiteFallback,
   status: "fallback",
+  loading: false,
   metadata: {
     source: publicSiteFallback.source,
     revision: publicSiteFallback.revision,
     publishedAt: publicSiteFallback.publishedAt,
     generatedAt: publicSiteFallback.generatedAt,
     usingFallback: true,
+    loading: false,
   },
   projects: publicSiteFallback.collections.projects,
   companies: publicSiteFallback.collections.companies,
@@ -43,19 +47,28 @@ const PublicSiteDataContext = createContext<PublicSiteDataContextValue>({
 });
 
 const ADMIN_PUBLIC_SITE_DATA_URL = import.meta.env.VITE_ADMIN_PUBLIC_SITE_DATA_URL || "";
+let hasLoggedPublicDataDiagnostics = false;
 
 export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<PublicSiteDataModel>(publicSiteFallback);
+  const [loading, setLoading] = useState(Boolean(ADMIN_PUBLIC_SITE_DATA_URL));
 
   useEffect(() => {
     if (!ADMIN_PUBLIC_SITE_DATA_URL) {
-      if (import.meta.env.DEV) {
-        console.info("[DanielClancy] VITE_ADMIN_PUBLIC_SITE_DATA_URL is not configured; using committed public-site fallback data.");
-      }
+      logPublicDataDiagnostics({
+        source: publicSiteFallback.source,
+        revision: publicSiteFallback.revision,
+        publishedAt: publicSiteFallback.publishedAt,
+        generatedAt: publicSiteFallback.generatedAt,
+        usingFallback: true,
+        loading: false,
+        note: "VITE_ADMIN_PUBLIC_SITE_DATA_URL is not configured; using committed public-site fallback data.",
+      });
       return;
     }
 
     const controller = new AbortController();
+    setLoading(true);
     fetch(ADMIN_PUBLIC_SITE_DATA_URL, {
       method: "GET",
       headers: { accept: "application/json" },
@@ -66,29 +79,36 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
       .then((payload) => {
         const normalized = normalizePublicSiteData(payload, publicSiteFallback);
         setData(normalized);
-        if (import.meta.env.DEV) {
-          console.info("[DanielClancy] public site-data loaded", {
-            source: normalized.source,
-            revision: normalized.revision,
-            publishedAt: normalized.publishedAt,
-            generatedAt: normalized.generatedAt,
-            usingFallback: Boolean(normalized.usingFallback),
-          });
-        }
+        setLoading(false);
+        logPublicDataDiagnostics({
+          source: normalized.source,
+          revision: normalized.revision,
+          publishedAt: normalized.publishedAt,
+          generatedAt: normalized.generatedAt,
+          usingFallback: Boolean(normalized.usingFallback),
+          loading: false,
+          note: "public site-data loaded",
+        });
       })
       .catch((error: Error) => {
+        if (controller.signal.aborted) return;
         const fallback = {
           ...publicSiteFallback,
           usingFallback: true,
           error: safeErrorMessage(error),
         };
         setData(fallback);
-        if (import.meta.env.DEV) {
-          console.info("[DanielClancy] public site-data fetch failed; using committed fallback", {
-            error: fallback.error,
-            source: fallback.source,
-          });
-        }
+        setLoading(false);
+        logPublicDataDiagnostics({
+          source: fallback.source,
+          revision: fallback.revision,
+          publishedAt: fallback.publishedAt,
+          generatedAt: fallback.generatedAt,
+          usingFallback: true,
+          loading: false,
+          error: fallback.error,
+          note: "public site-data fetch failed; using committed fallback",
+        });
       });
 
     return () => controller.abort();
@@ -99,12 +119,14 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
     return {
       data,
       status,
+      loading,
       metadata: {
         source: data.source,
         revision: data.revision,
         publishedAt: data.publishedAt,
         generatedAt: data.generatedAt,
         usingFallback: Boolean(data.usingFallback || data.source === "static_fallback"),
+        loading,
         error: data.error,
       },
       projects: data.collections.projects,
@@ -112,7 +134,7 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
       platforms: data.collections.platforms,
       positions: data.collections.positions,
     };
-  }, [data]);
+  }, [data, loading]);
 
   return <PublicSiteDataContext.Provider value={value}>{children}</PublicSiteDataContext.Provider>;
 }
@@ -123,7 +145,11 @@ export function usePublicSiteData() {
 
 export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDataModel = publicSiteFallback): PublicSiteDataModel {
   if (!isRecord(payload) || payload.ok !== true || payload.schemaVersion !== "danielclancy-public-site-data.v1") {
-    return fallback;
+    return {
+      ...fallback,
+      usingFallback: true,
+      error: "invalid_public_site_data_response",
+    };
   }
 
   const rawCollections = isRecord(payload.collections) ? payload.collections : {};
@@ -152,7 +178,7 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
     source: normalizeSource(payload.source),
     revision: asString(payload.revision),
     publishedAt: asString(payload.publishedAt) || null,
-    usingFallback: false,
+    usingFallback: !projects.length || !normalizeRows(rawCollections.companies, normalizeCompany).length || !normalizeRows(rawCollections.platforms, normalizePlatform).length || !positions.length,
     collections: {
       projects: projects.length ? mergeProjects(fallbackProjects, projects) : fallbackProjects,
       companies: companies.length ? companies : fallbackCompanies,
@@ -225,11 +251,46 @@ export function getProjectHeroUrl(project: PublicProject) {
 }
 
 export function getProjectGalleryUrls(project: PublicProject) {
-  return (project.galleryPaths || []).filter(isCleanPublicPath);
+  return (project.galleryPaths || []).map(normalizePublicAssetPath).filter(Boolean);
 }
 
 export function getProjectDocumentUrl(project: PublicProject) {
-  return firstPath(project.documentPath?.startsWith("/docs/") ? project.documentPath : "", project.documentationUrl);
+  return firstPath(project.documentPath, project.documentationUrl);
+}
+
+export function getPublicProjectLookupKeys(project: Pick<PublicProject, "slug" | "id" | "title" | "code"> & Record<string, unknown>) {
+  const keys = [
+    project.slug,
+    project.id,
+    project.code,
+    project.title,
+    lastPathSegment(asString(project.livePage)),
+    lastPathSegment(asString(project.url)),
+    lastPathSegment(asString(project.path)),
+  ];
+  return Array.from(new Set(keys.map((key) => normalizePublicRouteKey(asString(key))).filter(Boolean)));
+}
+
+export function getPublicProjectByRouteKey(projects: PublicProject[], value?: string) {
+  const key = normalizePublicRouteKey(value || "");
+  if (!key) return null;
+  return projects.find((project) => getPublicProjectLookupKeys(project).includes(key)) || null;
+}
+
+export function normalizePublicRouteKey(value: string) {
+  return slugify(lastPathSegment(value));
+}
+
+export function normalizePublicAssetPath(value?: string) {
+  const text = asString(value).replace(/\\/g, "/");
+  if (!text || text.startsWith("../")) return "";
+  if (/^https?:\/\//i.test(text)) return text;
+  const withoutOrigin = text.replace(/^https?:\/\/[^/]+/i, "");
+  const stripped = withoutOrigin.replace(/^\.?\//, "").replace(/^\/+/, "");
+  if (stripped.startsWith("media/portfolio/") || stripped.startsWith("docs/")) {
+    return `/${stripped}`;
+  }
+  return "";
 }
 
 function normalizeProject(
@@ -239,8 +300,8 @@ function normalizeProject(
   platforms: PublicPlatform[],
 ): PublicProject | null {
   if (!isRecord(raw)) return null;
-  const slug = asString(raw.slug || raw.id);
-  const fallback = fallbackProjects.find((project) => project.slug === slug || project.id === slug);
+  const slug = normalizePublicRouteKey(asString(raw.slug || raw.id || raw.code || raw.title));
+  const fallback = getPublicProjectByRouteKey(fallbackProjects, slug);
   const title = asString(raw.title) || fallback?.title || "";
   if (!slug || !title) return null;
 
@@ -259,7 +320,7 @@ function normalizeProject(
     fallback?.companyName ||
     fallback?.studio[0] ||
     "";
-  const cleanGallery = arrayOfStrings(raw.galleryPaths || raw.gallery).filter(isCleanPublicPath);
+  const cleanGallery = arrayOfStrings(raw.galleryPaths || raw.gallery).map(normalizePublicAssetPath).filter(Boolean);
   const fallbackMedia = fallback?.media || [];
   const mediaSource = cleanGallery.length
     ? cleanGallery.map((path, index) => ({
@@ -276,7 +337,8 @@ function normalizeProject(
   const heroImage = firstPath(asString(raw.heroImage || raw.hero), cleanGallery[0], fallback?.heroImage, fallback?.image);
   const thumbnailPath = firstPath(asString(raw.thumbnailPath || raw.thumbnail), heroImage, cleanGallery[0], fallback?.thumbnailPath, fallback?.image);
   const documentPath = asString(raw.documentPath || raw.document);
-  const documentationUrl = documentPath.startsWith("/docs/") ? documentPath : asString(raw.documentationUrl) || fallback?.documentationUrl || "";
+  const cleanDocumentPath = normalizePublicAssetPath(documentPath);
+  const documentationUrl = cleanDocumentPath.startsWith("/docs/") ? cleanDocumentPath : firstPath(asString(raw.documentationUrl), fallback?.documentationUrl);
 
   return {
     ...(fallback || ({} as PublicProject)),
@@ -316,7 +378,7 @@ function normalizeProject(
     references: fallback?.references || [],
     detailNotes: fallback?.detailNotes || [],
     documentationUrl,
-    documentPath: documentPath.startsWith("/docs/") ? documentPath : fallback?.documentPath || "",
+    documentPath: cleanDocumentPath.startsWith("/docs/") ? cleanDocumentPath : fallback?.documentPath || "",
     documentationAvailable: Boolean(documentationUrl),
   };
 }
@@ -398,16 +460,25 @@ function normalizeAssets(raw: unknown, fallback: PublicSiteDataModel["assets"]) 
 function normalizeAssetRows(raw: unknown, fallback: Array<{ path: string; label?: string }>) {
   const rows = normalizeRows(raw, (item) => {
     if (!isRecord(item)) return null;
-    const path = asString(item.path);
-    return isCleanPublicPath(path) ? { path, label: asString(item.label) } : null;
+    const path = normalizePublicAssetPath(asString(item.path));
+    return path ? { path, label: asString(item.label) } : null;
   });
   return rows.length ? rows : fallback;
 }
 
 function mergeProjects(fallbackProjects: PublicProject[], liveProjects: PublicProject[]) {
-  const bySlug = new Map(fallbackProjects.map((project) => [project.slug, project]));
-  for (const project of liveProjects) bySlug.set(project.slug, project);
-  return Array.from(bySlug.values()).sort((left, right) => left.sortOrder - right.sortOrder || left.title.localeCompare(right.title));
+  const rows: PublicProject[] = [...fallbackProjects];
+  for (const project of liveProjects) {
+    const index = rows.findIndex((row) =>
+      getPublicProjectLookupKeys(row).some((key) => getPublicProjectLookupKeys(project).includes(key)),
+    );
+    if (index === -1) {
+      rows.push(project);
+    } else {
+      rows[index] = { ...rows[index], ...project };
+    }
+  }
+  return rows.sort((left, right) => left.sortOrder - right.sortOrder || left.title.localeCompare(right.title));
 }
 
 function mergeById<T extends { id: string; sortOrder?: number; name?: string; title?: string }>(fallbackRows: T[], liveRows: T[]) {
@@ -423,15 +494,41 @@ function normalizeRows<T>(value: unknown, normalize: (item: unknown) => T | null
 }
 
 function firstPath(...values: Array<string | undefined>) {
-  return values.find((value) => value && (isCleanPublicPath(value) || /^https?:\/\//i.test(value))) || "";
+  for (const value of values) {
+    const normalized = normalizePublicAssetPath(value);
+    if (normalized) return normalized;
+  }
+  return "";
 }
 
 function isCleanPublicPath(value?: string) {
-  return Boolean(value && (value.startsWith("/media/portfolio/") || value.startsWith("/docs/") || /^https?:\/\//i.test(value)));
+  return Boolean(normalizePublicAssetPath(value));
 }
 
 function fileNameFromPath(value: string) {
   return decodeURIComponent((value.split("/").pop() || "").split("?")[0].split("#")[0]);
+}
+
+function lastPathSegment(value: string) {
+  const text = asString(value);
+  if (!text) return "";
+  const withoutQuery = text.split("#")[0].split("?")[0];
+  return decodeURIComponent((withoutQuery.split("/").filter(Boolean).pop() || withoutQuery).trim());
+}
+
+function logPublicDataDiagnostics(details: {
+  source: PublicSiteDataModel["source"];
+  revision?: string;
+  publishedAt?: string | null;
+  generatedAt?: string;
+  usingFallback: boolean;
+  loading: boolean;
+  error?: string;
+  note: string;
+}) {
+  if (!import.meta.env.DEV || hasLoggedPublicDataDiagnostics) return;
+  hasLoggedPublicDataDiagnostics = true;
+  console.info("[DanielClancy] public site-data status", details);
 }
 
 function arrayOfStrings(value: unknown) {

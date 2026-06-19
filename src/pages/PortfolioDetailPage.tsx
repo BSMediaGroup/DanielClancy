@@ -1,4 +1,4 @@
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { MediaFrame } from "../components/MediaFrame";
 import { PortfolioMediaGallery } from "../components/PortfolioMediaGallery";
 import { Section } from "../components/Section";
@@ -23,11 +23,49 @@ import {
 
 export function PortfolioDetailPage() {
   const { slug } = useParams();
-  const { projects: portfolioArchive, companies, platforms } = usePublicSiteData();
+  const { projects: portfolioArchive, companies, platforms, loading, metadata } = usePublicSiteData();
   const project = getPortfolioProjectBySlugFrom(portfolioArchive, slug);
 
   if (!project) {
-    return <Navigate replace to="/portfolio" />;
+    return (
+      <>
+        <Seo
+          title={loading ? "Loading project" : "Project not found"}
+          description="Project archive lookup for Daniel Clancy."
+          path={`/portfolio/${slug || ""}`}
+        />
+        <section className="hero hero--subpage">
+          <div className="container hero-copy">
+            <p className="kicker">Project detail</p>
+            {loading ? (
+              <>
+                <h1>Checking the public project archive.</h1>
+                <p className="hero-copy__lead">
+                  The committed fallback archive is available immediately; the public data refresh is
+                  still resolving this project alias.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1>Project not found.</h1>
+                <p className="hero-copy__lead">
+                  No public fallback or published project record matches this route.
+                  {metadata.error ? ` Public data status: ${metadata.error}.` : ""}
+                </p>
+              </>
+            )}
+            <div className="hero-actions">
+              <Link className="button button--secondary" to="/portfolio">
+                Browse portfolio
+              </Link>
+              <Link className="button button--ghost" to="/contact">
+                Contact Daniel
+              </Link>
+            </div>
+          </div>
+        </section>
+      </>
+    );
   }
 
   const { previousProject, nextProject } = getAdjacentPortfolioProjects(project, portfolioArchive);
@@ -126,14 +164,14 @@ export function PortfolioDetailPage() {
                 ) : null}
                 <div>
                   <span>Media count</span>
-                  <strong>{project.media.length}</strong>
+                  <strong>{project.media?.length || 0}</strong>
                 </div>
               </div>
 
               <div className="detail-panel__notes surface surface--compact">
                 <p className="kicker">Archive notes</p>
                 <ul className="bullet-list">
-                  {project.detailNotes.map((note) => (
+                  {(project.detailNotes || []).map((note) => (
                     <li key={`${project.id}-${note}`}>{note}</li>
                   ))}
                 </ul>
@@ -161,7 +199,7 @@ export function PortfolioDetailPage() {
           <article className="surface">
             <p className="kicker">Scope and disciplines</p>
             <div className="tag-grid">
-              {Array.from(new Set(project.disciplines.concat(project.subtypes))).map((item) => (
+              {Array.from(new Set((project.disciplines || []).concat(project.subtypes || []))).map((item) => (
                 <span key={`${project.id}-${item}`} className="tag">
                   {item}
                 </span>
@@ -173,8 +211,8 @@ export function PortfolioDetailPage() {
             <p className="kicker">Project summary</p>
             <p>{project.description}</p>
             <p className="surface-note">
-              {project.sourceFiles.length} retained source file
-              {project.sourceFiles.length === 1 ? "" : "s"} support this public summary.
+              {(project.sourceFiles || []).length} retained source file
+              {(project.sourceFiles || []).length === 1 ? "" : "s"} support this public summary.
             </p>
             {getProjectDocumentUrl(project) ? (
               <a className="text-link" href={getProjectDocumentUrl(project)} target="_blank" rel="noreferrer">

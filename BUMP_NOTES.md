@@ -1,5 +1,50 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Direct Route Hydration Repair Milestone
+
+### Technical
+
+- Kept `PublicSiteDataProvider` fallback-first by initializing from `publicSiteFallback` synchronously, exposing `source`, `revision`, `publishedAt`, `usingFallback`, `loading`, and safe error metadata without blocking route rendering.
+- Hardened Admin live hydration so missing env, fetch failure, invalid responses, and missing collections preserve committed fallback Projects, Companies, Platforms, and Positions instead of emptying the public site.
+- Added normalized project route lookup for slug, ID, legacy code, title-derived aliases, and existing URL/path tail aliases so `/portfolio/<project-slug>` resolves from fallback before live fetch completion and remains stable after live fetch failure.
+- Replaced immediate project-detail redirect with a safe pending/not-found state so normal hydration no longer flashes or redirects away from fallback projects.
+- Added `/work` as a portfolio archive alias and preserved the existing Cloudflare Pages SPA fallback in `public/_redirects` (`/* /index.html 200`) for direct browser loads and refreshes.
+- Hardened public asset path normalization for root-relative `/media/portfolio/...` and `/docs/...` paths while preserving valid absolute URLs.
+- Expanded `tests/public-site-data-client.test.mjs` coverage around fallback-first initialization, missing/failed/invalid Admin data, merge semantics, route alias lookup, asset path safety, CV fallback records, and no admin-only field exposure.
+- DanielClancy-Admin site-data endpoint was read-only for this task; no public endpoint contract bug required Admin mutation.
+- No CV/project/company/software facts were invented.
+- Alerts editor remains removed/disabled in Admin.
+- StreamSuites and StreamSuites-Dashboard were not mutated.
+
+### Human-readable
+
+- Direct browser loads, refreshes, bookmarks, and shared links for public routes now render from committed fallback data first, then refresh with Admin-published data when configured.
+- Project detail pages no longer depend on prior Home navigation and no longer treat normal hydration as a missing project.
+
+### Files / areas changed
+
+- `src/app/App.tsx`
+- `src/lib/portfolio.ts`
+- `src/lib/publicSiteData.tsx`
+- `src/pages/PortfolioDetailPage.tsx`
+- `tests/public-site-data-client.test.mjs`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Passed `node --test tests/public-site-data-client.test.mjs`.
+- Passed `npm run check`.
+- Passed `npm run build`; Vite reported the existing large-chunk warning.
+- Passed production preview direct-route browser validation on `http://127.0.0.1:4174` for `/`, `/portfolio`, `/portfolio/proposed-retail-development-for-dawesville-iga`, `/portfolio/cue-roadhouse`, `/portfolio/redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south`, `/cv`, `/work`, and `/contact`.
+- Passed portfolio-to-detail click smoke from `/portfolio` to `/portfolio/redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south`.
+- Passed `git diff --check`; Git only reported line-ending normalization warnings for edited files.
+
+### Risks / follow-ups
+
+- Hosted Cloudflare Pages should still be verified after deploy for live CORS and the configured `VITE_ADMIN_PUBLIC_SITE_DATA_URL`.
+- Admin-published rows with unsupported relative media/doc paths will continue using committed fallback assets until the public endpoint emits clean `/media/portfolio/...`, `/docs/...`, or absolute URLs.
+
 ## Public Site-Data Revision Diagnostics / Fallback Rebuild Milestone
 
 ### Technical

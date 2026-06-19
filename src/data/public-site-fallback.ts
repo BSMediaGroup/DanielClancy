@@ -52,6 +52,9 @@ export type PublicPosition = {
 
 export type PublicProject = PortfolioItem & {
   code?: string;
+  category?: string;
+  discipline?: string;
+  tags?: string[];
   thumbnailPath?: string;
   heroImage?: string;
   galleryPaths?: string[];
@@ -137,12 +140,7 @@ const builtInFallback: PublicSiteDataModel = {
 };
 
 export const publicSiteFallback: PublicSiteDataModel = isGeneratedPublicSiteFallback(generatedFallback)
-  ? {
-      ...generatedFallback,
-      source: "static_fallback",
-      usingFallback: true,
-      warnings: Array.isArray(generatedFallback.warnings) ? generatedFallback.warnings : [],
-    }
+  ? normalizeGeneratedFallback(generatedFallback)
   : builtInFallback;
 
 function toFallbackProject(project: PortfolioItem): PublicProject {
@@ -205,8 +203,128 @@ function toFallbackPosition(item: ExperienceItem, index: number): PublicPosition
   };
 }
 
+function normalizeGeneratedFallback(value: PublicSiteDataModel): PublicSiteDataModel {
+  return {
+    ...value,
+    source: "static_fallback",
+    usingFallback: true,
+    collections: {
+      projects: value.collections.projects.map(normalizeGeneratedProject),
+      companies: value.collections.companies.length ? value.collections.companies : builtInFallback.collections.companies,
+      platforms: value.collections.platforms.length ? value.collections.platforms : builtInFallback.collections.platforms,
+      positions: value.collections.positions.length ? value.collections.positions : builtInFallback.collections.positions,
+    },
+    assets: {
+      portfolioThumbs: value.assets.portfolioThumbs.length ? value.assets.portfolioThumbs : builtInFallback.assets.portfolioThumbs,
+      portfolioImages: value.assets.portfolioImages.length ? value.assets.portfolioImages : builtInFallback.assets.portfolioImages,
+      docs: value.assets.docs.length ? value.assets.docs : builtInFallback.assets.docs,
+    },
+    warnings: Array.isArray(value.warnings) ? value.warnings : [],
+  };
+}
+
+function normalizeGeneratedProject(project: PublicProject): PublicProject {
+  const builtIn = portfolioArchive.find((item) => item.slug === project.slug || item.id === project.id);
+  const studio = arrayOfStrings(project.studio).length
+    ? arrayOfStrings(project.studio)
+    : arrayOfStrings(project.companyLabels).length
+      ? arrayOfStrings(project.companyLabels)
+      : project.companyName
+        ? [project.companyName]
+        : builtIn?.studio || [];
+  const software = arrayOfStrings(project.software).length
+    ? arrayOfStrings(project.software)
+    : arrayOfStrings(project.platformLabels).length
+      ? arrayOfStrings(project.platformLabels)
+      : builtIn?.software || [];
+  const disciplines = arrayOfStrings(project.disciplines).length
+    ? arrayOfStrings(project.disciplines)
+    : arrayOfStrings(project.tags).length
+      ? arrayOfStrings(project.tags)
+      : project.discipline || project.category
+        ? [String(project.discipline || project.category)]
+        : builtIn?.disciplines || ["General"];
+  const subtypes = arrayOfStrings(project.subtypes).length
+    ? arrayOfStrings(project.subtypes)
+    : arrayOfStrings(project.tags).filter((item) => !disciplines.includes(item));
+  const galleryPaths = arrayOfStrings(project.galleryPaths).map(cleanPublicPath).filter(Boolean);
+  const thumbnailPath = firstPublicPath(project.thumbnailPath, project.heroImage, galleryPaths[0], builtIn?.image);
+  const heroImage = firstPublicPath(project.heroImage, galleryPaths[0], builtIn?.image, thumbnailPath);
+  const media = galleryPaths.length
+    ? galleryPaths.map((path, index) => ({
+        id: `${project.slug}-gallery-${index}`,
+        index,
+        fileName: fileNameFromPath(path),
+        src: path,
+        alt: project.title,
+        title: `${project.title} ${index + 1}`,
+        description: `Documentation view ${index + 1} for ${project.title}.`,
+        aspectRatio: 16 / 9,
+      }))
+    : builtIn?.media || [];
+
+  return {
+    ...(builtIn || ({} as PublicProject)),
+    ...project,
+    id: project.id || project.slug,
+    slug: project.slug || project.id,
+    client: project.client || project.clientLabel || project.clientName || project.companyName || builtIn?.client || "Independent",
+    clientName: project.clientName || project.client || builtIn?.client,
+    clientLabel: project.clientLabel || project.clientName || project.client || builtIn?.client,
+    dateLabel: project.dateLabel || project.dates || builtIn?.dateLabel || "Undated",
+    year: project.year || builtIn?.year || "Undated",
+    studio,
+    software,
+    disciplines,
+    subtypes,
+    projectFamily: project.projectFamily || studio[0] || builtIn?.projectFamily,
+    documentationType: project.documentationType || project.category || project.discipline || builtIn?.documentationType,
+    constructionType: project.constructionType || project.sector || project.category || builtIn?.constructionType,
+    summary: project.summary || builtIn?.summary || "",
+    description: project.description || project.summary || builtIn?.description || "",
+    image: thumbnailPath || heroImage,
+    thumbnailPath,
+    heroImage,
+    galleryPaths,
+    media,
+    detailNotes: arrayOfStrings(project.detailNotes).length ? arrayOfStrings(project.detailNotes) : builtIn?.detailNotes || [],
+    sourceFiles: arrayOfStrings(project.sourceFiles).length ? arrayOfStrings(project.sourceFiles) : builtIn?.sourceFiles || [],
+    references: project.references?.length ? project.references : builtIn?.references || [],
+    documentationUrl: project.documentationUrl || builtIn?.documentationUrl || "",
+    documentPath: cleanPublicPath(project.documentPath),
+    documentationAvailable: Boolean(project.documentationUrl || cleanPublicPath(project.documentPath)),
+  };
+}
+
 function slugifyPlatform(value: string) {
   return slugify(value.replace(/^Autodesk /, ""));
+}
+
+function firstPublicPath(...values: Array<string | undefined>) {
+  for (const value of values) {
+    const clean = cleanPublicPath(value);
+    if (clean) return clean;
+  }
+  return "";
+}
+
+function cleanPublicPath(value?: string) {
+  const text = String(value || "").trim().replace(/\\/g, "/");
+  if (!text || text.startsWith("../")) return "";
+  if (/^https?:\/\//i.test(text)) return text;
+  const stripped = text.replace(/^\.?\//, "").replace(/^\/+/, "");
+  if (stripped.startsWith("media/portfolio/") || stripped.startsWith("docs/")) return `/${stripped}`;
+  return "";
+}
+
+function fileNameFromPath(value: string) {
+  return decodeURIComponent((value.split("/").pop() || "").split("?")[0].split("#")[0]);
+}
+
+function arrayOfStrings(value: unknown) {
+  if (Array.isArray(value)) return value.map((item) => String(item || "").trim()).filter(Boolean);
+  const single = String(value || "").trim();
+  return single ? [single] : [];
 }
 
 function slugify(value: string) {

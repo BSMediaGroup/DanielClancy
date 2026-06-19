@@ -23,6 +23,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | --- | --- | --- |
 | `/` | Professional landing page with selected work, software capability, and chronology preview | Yes |
 | `/cv` | PDF access and readable employment timeline | Yes |
+| `/work` | Portfolio archive alias for share/bookmark compatibility | Yes |
 | `/portfolio` | WorkSet-driven archive gallery and filtering surface | Yes |
 | `/portfolio/:slug` | Dedicated project detail route with gallery, lightbox, and prev/next navigation | Yes |
 | `/contact` | Professional contact page with live-ready form delivery | Yes |
@@ -41,6 +42,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 - Personal routes use `noindex, nofollow, noarchive`.
 - Personal routes still render Open Graph and Twitter preview metadata for link sharing.
 - `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
+- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with `/* /index.html 200`, so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/work`, `/cv`, and `/contact` serve the Vite app before React resolves the route.
 
 ## Contact delivery
 
@@ -184,17 +186,19 @@ Project detail document actions prefer a sanitized local `/docs/...` `documentPa
 - Admin endpoint: `GET /api/public/site-data` from DanielClancy-Admin
 - Live env: `VITE_ADMIN_PUBLIC_SITE_DATA_URL=https://admin.danielclancy.net/api/public/site-data`
 
-The public site fetches only the sanitized public endpoint. It does not call `/api/admin/cms/*`, does not require an admin session, and does not receive account registry, auth/session, secret, KV, or overlay internals. If the env var is missing, fetch fails, the response is invalid, or a collection is missing, the app renders from the committed fallback model and safely fills missing live rows from fallback data.
+The public site fetches only the sanitized public endpoint. It does not call `/api/admin/cms/*`, does not require an admin session, and does not receive account registry, auth/session, secret, KV, or overlay internals. The React provider initializes synchronously from the committed fallback model, so route rendering never depends on visiting Home first or waiting for Admin hydration. If the env var is missing, fetch fails, the response is invalid, or a collection is missing, the app keeps rendering from the committed fallback model and safely fills missing live rows from fallback data.
 
-The public client uses `cache: "no-store"` for runtime fetches and preserves internal source metadata: `source`, `revision`, `publishedAt`, `generatedAt`, `usingFallback`, and a safe error summary. Development builds log a compact diagnostic when the live endpoint is missing, loaded, or unavailable; production builds do not add noisy console output.
+The public client uses `cache: "no-store"` for runtime fetches and preserves internal source metadata: `source`, `revision`, `publishedAt`, `generatedAt`, `usingFallback`, `loading`, and a safe error summary. Development builds log one compact diagnostic when the live endpoint is missing, loaded, or unavailable; production builds do not add noisy console output.
 
 The normalized model preserves legacy project fields while accepting admin public fields such as `thumbnailPath`, `heroImage`, ordered `galleryPaths`, `documentPath`, `companyId`/`companyName`, `clientName`/`clientLabel`, `platformIds`, and `platformLabels`. Portfolio cards use `thumbnailPath` first, project detail uses `heroImage` or the first ordered gallery image, gallery ordering follows configured `galleryPaths`, company/studio displays as a text chip, and platform/software icons resolve to full-color SVG logo assets where available.
+
+Project detail routes resolve against the fallback archive immediately by normalized slug, ID, legacy code, title-derived key, and existing URL/path tail aliases. When Admin published data arrives, it merges into the fallback archive without dropping fallback-only projects; unknown project routes show a loading-safe state while live hydration is pending and only show Not Found after the live fetch has resolved or failed. Asset paths used by cards, heroes, galleries, and document links are kept root-relative for `/media/portfolio/...` and `/docs/...`, while absolute CDN/R2 URLs remain valid on nested direct routes.
 
 ### Public fallback rebuild
 
 Use `npm run data:rebuild` after Admin manifests change. The script reads, in order, the live URL from `VITE_ADMIN_PUBLIC_SITE_DATA_URL` when configured or local Admin manifests from `../DanielClancy-Admin`, then writes `src/data/public-site-fallback.generated.json`. `npm run data:check` reports stale generated fallback data without writing it. `npm run build:with-data` rebuilds the fallback then runs the normal build.
 
-Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site data, and a public refresh. Redeploy the public site only when `VITE_ADMIN_PUBLIC_SITE_DATA_URL`, committed fallback data, rendering code, or public assets changed.
+Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site data, and a public refresh; navigation from Home is not required. Redeploy the public site only when `VITE_ADMIN_PUBLIC_SITE_DATA_URL`, committed fallback data, rendering code, public assets, or Cloudflare routing files changed.
 
 ## Key implementation files
 
