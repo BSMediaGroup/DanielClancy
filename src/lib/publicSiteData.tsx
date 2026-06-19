@@ -12,6 +12,14 @@ import {
 type PublicSiteDataContextValue = {
   data: PublicSiteDataModel;
   status: "fallback" | "live" | "mixed";
+  metadata: {
+    source: PublicSiteDataModel["source"];
+    revision?: string;
+    publishedAt?: string | null;
+    generatedAt?: string;
+    usingFallback: boolean;
+    error?: string;
+  };
   projects: PublicProject[];
   companies: PublicCompany[];
   platforms: PublicPlatform[];
@@ -21,6 +29,13 @@ type PublicSiteDataContextValue = {
 const PublicSiteDataContext = createContext<PublicSiteDataContextValue>({
   data: publicSiteFallback,
   status: "fallback",
+  metadata: {
+    source: publicSiteFallback.source,
+    revision: publicSiteFallback.revision,
+    publishedAt: publicSiteFallback.publishedAt,
+    generatedAt: publicSiteFallback.generatedAt,
+    usingFallback: true,
+  },
   projects: publicSiteFallback.collections.projects,
   companies: publicSiteFallback.collections.companies,
   platforms: publicSiteFallback.collections.platforms,
@@ -34,6 +49,9 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!ADMIN_PUBLIC_SITE_DATA_URL) {
+      if (import.meta.env.DEV) {
+        console.info("[DanielClancy] VITE_ADMIN_PUBLIC_SITE_DATA_URL is not configured; using committed public-site fallback data.");
+      }
       return;
     }
 
@@ -41,15 +59,36 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
     fetch(ADMIN_PUBLIC_SITE_DATA_URL, {
       method: "GET",
       headers: { accept: "application/json" },
+      cache: "no-store",
       signal: controller.signal,
     })
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error("public_site_data_fetch_failed"))))
       .then((payload) => {
         const normalized = normalizePublicSiteData(payload, publicSiteFallback);
         setData(normalized);
+        if (import.meta.env.DEV) {
+          console.info("[DanielClancy] public site-data loaded", {
+            source: normalized.source,
+            revision: normalized.revision,
+            publishedAt: normalized.publishedAt,
+            generatedAt: normalized.generatedAt,
+            usingFallback: Boolean(normalized.usingFallback),
+          });
+        }
       })
-      .catch(() => {
-        setData(publicSiteFallback);
+      .catch((error: Error) => {
+        const fallback = {
+          ...publicSiteFallback,
+          usingFallback: true,
+          error: safeErrorMessage(error),
+        };
+        setData(fallback);
+        if (import.meta.env.DEV) {
+          console.info("[DanielClancy] public site-data fetch failed; using committed fallback", {
+            error: fallback.error,
+            source: fallback.source,
+          });
+        }
       });
 
     return () => controller.abort();
@@ -60,6 +99,14 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
     return {
       data,
       status,
+      metadata: {
+        source: data.source,
+        revision: data.revision,
+        publishedAt: data.publishedAt,
+        generatedAt: data.generatedAt,
+        usingFallback: Boolean(data.usingFallback || data.source === "static_fallback"),
+        error: data.error,
+      },
       projects: data.collections.projects,
       companies: data.collections.companies,
       platforms: data.collections.platforms,
@@ -102,7 +149,10 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
   return {
     schemaVersion: "danielclancy-public-site-data.v1",
     generatedAt: asString(payload.generatedAt) || fallback.generatedAt,
-    source: asString(payload.source) === "admin_kv_reconciled" ? "admin_kv_reconciled" : "admin_baseline_reconciled",
+    source: normalizeSource(payload.source),
+    revision: asString(payload.revision),
+    publishedAt: asString(payload.publishedAt) || null,
+    usingFallback: false,
     collections: {
       projects: projects.length ? mergeProjects(fallbackProjects, projects) : fallbackProjects,
       companies: companies.length ? companies : fallbackCompanies,
@@ -112,6 +162,19 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
     assets: normalizeAssets(payload.assets, fallback.assets),
     warnings: Array.isArray(payload.warnings) ? payload.warnings.map(asString).filter(Boolean) : [],
   };
+}
+
+function normalizeSource(value: unknown): PublicSiteDataModel["source"] {
+  const source = asString(value);
+  if (source === "published_kv_snapshot" || source === "live_reconciled_fallback" || source === "baseline_fallback" || source === "admin_kv_reconciled" || source === "admin_baseline_reconciled" || source === "mixed_fallback") {
+    return source;
+  }
+  return "baseline_fallback";
+}
+
+function safeErrorMessage(error: unknown) {
+  const text = error instanceof Error ? error.message : String(error || "");
+  return text.slice(0, 160) || "public_site_data_fetch_failed";
 }
 
 export function resolveCompanyByIdNameSlug(

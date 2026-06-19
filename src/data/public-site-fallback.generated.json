@@ -1,0 +1,3322 @@
+{
+  "schemaVersion": "danielclancy-public-site-data.v1",
+  "generatedAt": "2026-06-19T02:04:30.923Z",
+  "source": "static_fallback",
+  "revision": "rev-65c42b75333d0796",
+  "publishedAt": null,
+  "collections": {
+    "projects": [
+      {
+        "id": "proposed-retail-development-for-dawesville-iga",
+        "slug": "proposed-retail-development-for-dawesville-iga",
+        "title": "Dawesville IGA",
+        "client": "Dawesville 3 Pty Ltd",
+        "category": "Structural",
+        "discipline": "Structural",
+        "status": "published",
+        "visibility": "public",
+        "year": "2012",
+        "dateLabel": "January 2012",
+        "featured": false,
+        "role": null,
+        "summary": "Structural engineering documentation including footing and ground slab plans, strip footings, pad footings, wall panel base fixing details, slab control joints, and typical concrete panel elevations...",
+        "description": "Structural engineering documentation including footing and ground slab plans, strip footings, pad footings, wall panel base fixing details, slab control joints, and typical concrete panel elevations for a proposed retail development. Drawings show reinforcement details, construction notes, and typical sections for the main building structure.",
+        "heroImage": "",
+        "thumbnailPath": "",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/proposed-retail-development-for-dawesville-iga",
+        "tags": [
+          "Retail building structural works",
+          "Structural"
+        ],
+        "studio": [
+          "ACCE"
+        ],
+        "software": [
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Dawesville IGA_Page_1.jpg",
+          "Dawesville IGA_Page_2.jpg",
+          "Dawesville IGA_Page_3.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "acce"
+        ],
+        "companyLabels": [
+          "ACCE"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Dawesville IGA",
+          "normalizedId": "proposed-retail-development-for-dawesville-iga"
+        },
+        "sortOrder": 10,
+        "clientName": "Dawesville 3 Pty Ltd",
+        "clientLabel": "Dawesville 3 Pty Ltd",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "proposed-retail-development-for-dawesville-iga",
+        "companyId": "acce",
+        "companyName": "ACCE",
+        "dates": "January 2012",
+        "location": ""
+      },
+      {
+        "id": "cue-roadhouse",
+        "slug": "cue-roadhouse",
+        "title": "Cue Roadhouse",
+        "client": "Riley Consulting",
+        "category": "Civil / Transport",
+        "discipline": "Civil, Transport",
+        "status": "published",
+        "visibility": "public",
+        "year": "2016",
+        "dateLabel": "December 2016",
+        "featured": false,
+        "role": null,
+        "summary": "Civil and landscape design drawings for the Cue Roadhouse redevelopment along Austin Street in Cue WA. The documents illustrate site layout new sealed roadways car parking...",
+        "description": "Civil and landscape design drawings for the Cue Roadhouse redevelopment along Austin Street in Cue WA. The documents illustrate site layout new sealed roadways car parking 24 bays kerbing upgrades new footpaths landscaped entry statements site vehicle movement paths fuel tank placement fencing and stormwater elements. The plans also include a general arrangement location plan and intersection upgrade works for Marshall Street.",
+        "heroImage": "/media/portfolio/cue-roadhouse.jpg",
+        "thumbnailPath": "/media/portfolio/cue-roadhouse.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/cue-roadhouse",
+        "tags": [
+          "Roadhouse site upgrade and civil works",
+          "Civil",
+          "Transport"
+        ],
+        "studio": [],
+        "software": [
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "CUE ROADHOUSE_Page_1.jpg",
+          "CUE ROADHOUSE_Page_2.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [],
+        "companyLabels": [],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Cue Roadhouse",
+          "normalizedId": "cue-roadhouse"
+        },
+        "sortOrder": 20,
+        "clientName": "Riley Consulting",
+        "clientLabel": "Riley Consulting",
+        "studioSourceValue": "Riley Consulting",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "cue-roadhouse",
+        "companyId": "",
+        "companyName": "",
+        "dates": "December 2016",
+        "location": ""
+      },
+      {
+        "id": "redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south",
+        "slug": "redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south",
+        "title": "Redevelopment of Highway Service Center Pheasants Nest (M31) North & South",
+        "client": "Ampol Australia Petroleum Pty Ltd",
+        "category": "Architectural / Civil / Landscape",
+        "discipline": "Architectural, Civil, Landscape",
+        "status": "published",
+        "visibility": "public",
+        "year": "2021",
+        "dateLabel": "April 2021",
+        "featured": true,
+        "role": null,
+        "summary": "Design documentation for the redevelopment of the Pheasants Nest Southbound Highway Service Centre along the M31 Hume Highway. The drawing set includes demolition, site analysis, detailed...",
+        "description": "Design documentation for the redevelopment of the Pheasants Nest Southbound Highway Service Centre along the M31 Hume Highway. The drawing set includes demolition, site analysis, detailed site layout, zoning plans, architectural canopy plans, building layouts, elevations, roof plans, signage layouts, and civil/landscape coordination elements. Work includes reconfiguration of parking, drive-thru lanes, heavy vehicle refuelling, car refuelling canopies, bio-treatment basins, pedestrian circulation, building upgrades, and integrated landscape areas.",
+        "heroImage": "/media/portfolio/pheasants-nest.jpg",
+        "thumbnailPath": "/media/portfolio/pheasants-nest.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south",
+        "tags": [
+          "Highway service centre redevelopment",
+          "Architectural",
+          "Civil",
+          "Landscape"
+        ],
+        "studio": [
+          "Richmond+Ross"
+        ],
+        "software": [
+          "Revit",
+          "AutoCAD",
+          "Autodesk Revit",
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "010.PNG",
+          "PNN_AR_DA_Page_29.jpg",
+          "PNN_AR_DA_Page_17.jpg",
+          "PNN_AR_DA_Page_21.jpg",
+          "004.PNG",
+          "PNN_AR_DA_Page_31.jpg",
+          "PNN_AR_DA_Page_32.jpg",
+          "008.PNG",
+          "011.PNG",
+          "PNN_AR_DA_Page_25.jpg",
+          "007.PNG",
+          "009.PNG",
+          "005.PNG",
+          "006.PNG",
+          "001.PNG",
+          "003.PNG",
+          "002.PNG",
+          "012.PNG",
+          "013.PNG",
+          "014.PNG",
+          "PNN_AR_DA_Page_30.jpg",
+          "PNN_AR_DA_Page_34.jpg",
+          "PNN_AR_DA_Page_26.jpg",
+          "PNN_AR_DA_Page_27.jpg",
+          "PNN_AR_DA_Page_22.jpg",
+          "PNN_AR_DA_Page_33.jpg",
+          "PNN_AR_DA_Page_24.jpg",
+          "PNN_AR_DA_Page_18.jpg",
+          "PNN_AR_DA_Page_20.jpg",
+          "PNN_AR_DA_Page_16.jpg",
+          "PNN_AR_DA_Page_15.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T12:37:11.672Z",
+        "companyIds": [
+          "richmond-ross"
+        ],
+        "companyLabels": [
+          "Richmond+Ross"
+        ],
+        "platformIds": [
+          "autodesk-revit",
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Revit",
+          "AutoCAD",
+          "Autodesk Revit",
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "existing admin baseline",
+          "rawValue": "Redevelopment of Highway Service Center Pheasants Nest (M31) North & South",
+          "normalizedId": "redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south"
+        },
+        "sortOrder": 30,
+        "location": "Hume Hwy & M31, Berrima NSW 2577, Australia",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south",
+        "companyId": "richmond-ross",
+        "companyName": "Richmond+Ross",
+        "clientName": "Ampol Australia Petroleum Pty Ltd",
+        "clientLabel": "Ampol Australia Petroleum Pty Ltd",
+        "dates": "April 2021"
+      },
+      {
+        "id": "proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112",
+        "slug": "proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112",
+        "title": "Jull Street Boundary Realignment",
+        "client": "MRA (Now DevelopmentWA)",
+        "category": "Civil / Urban Planning",
+        "discipline": "Civil, Urban Planning",
+        "status": "published",
+        "visibility": "public",
+        "year": "2016",
+        "dateLabel": "March 2016",
+        "featured": false,
+        "role": null,
+        "summary": "General arrangement and amalgamation plan showing the proposed boundary re-alignment of Lot 1 at 234 Jull Street, Armadale. Includes existing and proposed lot boundaries, easements, reserves,...",
+        "description": "General arrangement and amalgamation plan showing the proposed boundary re-alignment of Lot 1 at 234 Jull Street, Armadale. Includes existing and proposed lot boundaries, easements, reserves, surface contours, services, and surrounding road context such as Commerce Ave, Fourth Rd, Jull St, and Armadale Station. The drawing identifies consolidation of the right-of-way, total area calculations, and the proposed WAPC application area.",
+        "heroImage": "",
+        "thumbnailPath": "",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112",
+        "tags": [
+          "Boundary re-alignment and amalgamation works",
+          "Civil",
+          "Urban Planning"
+        ],
+        "studio": [
+          "DC Design Studio"
+        ],
+        "software": [
+          "AutoCAD",
+          "QGIS",
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Jull Street Boundary Realignment.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T12:37:11.672Z",
+        "companyIds": [
+          "dc-design-studio"
+        ],
+        "companyLabels": [
+          "DC Design Studio"
+        ],
+        "platformIds": [
+          "autodesk-autocad",
+          "qgis"
+        ],
+        "platformLabels": [
+          "AutoCAD",
+          "QGIS",
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "existing admin baseline",
+          "rawValue": "Jull Street Boundary Realignment",
+          "normalizedId": "proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112"
+        },
+        "sortOrder": 40,
+        "location": "234 Jull St, Armadale WA 6112, Australia",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112",
+        "companyId": "dc-design-studio",
+        "companyName": "DC Design Studio",
+        "clientName": "MRA (Now DevelopmentWA)",
+        "clientLabel": "MRA (Now DevelopmentWA)",
+        "dates": "March 2016"
+      },
+      {
+        "id": "curtin-creative-quarter-misc-details",
+        "slug": "curtin-creative-quarter-misc-details",
+        "title": "Curtin Creative Quarter",
+        "client": "Curtin University",
+        "category": "Landscape / Architectural",
+        "discipline": "Landscape, Architectural",
+        "status": "published",
+        "visibility": "public",
+        "year": "2017",
+        "dateLabel": "March 2017",
+        "featured": true,
+        "role": null,
+        "summary": "A detailed set of architectural and landscape construction drawings for the Curtin Creative Quarter. The documentation includes sections, elevations, footing plans, canopy details, deck structures, timber...",
+        "description": "A detailed set of architectural and landscape construction drawings for the Curtin Creative Quarter. The documentation includes sections, elevations, footing plans, canopy details, deck structures, timber seating, trellis screens, study pod components, container gallery details, garden bed and planting details, paving layouts, and sports court/deck interface details. The drawings provide fabrication notes, structural connections, material specifications, and construction requirements for built landscape elements across the precinct.",
+        "heroImage": "/media/portfolio/curtin-creative-quarter.png",
+        "thumbnailPath": "/media/portfolio/curtin-creative-quarter.png",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/curtin-creative-quarter-misc-details",
+        "tags": [
+          "Public realm landscape structures and amenities",
+          "Landscape",
+          "Architectural"
+        ],
+        "studio": [
+          "Place Laboratory"
+        ],
+        "software": [
+          "Autodesk AutoCAD",
+          "Autodesk Revit",
+          "Trimble SketchUp"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_03.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_24.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_25.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_23.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_22.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_21.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_20.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_19.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_18.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_14.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_17.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_16.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_15.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_11.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_13.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_12.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_09.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_10.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_08.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_07.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_05.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_06.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_01.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_02.jpg",
+          "CURTIN CREATIVE QUARTER - MISC DETAILS_Page_04.jpg",
+          "Curtin Creative Quarter_Page_29.jpg",
+          "Curtin Creative Quarter_Page_02.jpg",
+          "Curtin Creative Quarter_Page_39.jpg",
+          "Curtin Creative Quarter_Page_01.jpg",
+          "Curtin Creative Quarter_Page_38.jpg",
+          "Curtin Creative Quarter_Page_37.jpg",
+          "Curtin Creative Quarter_Page_36.jpg",
+          "Curtin Creative Quarter_Page_35.jpg",
+          "Curtin Creative Quarter_Page_34.jpg",
+          "Curtin Creative Quarter_Page_32.jpg",
+          "Curtin Creative Quarter_Page_33.jpg",
+          "Curtin Creative Quarter_Page_31.jpg",
+          "Curtin Creative Quarter_Page_30.jpg",
+          "Curtin Creative Quarter_Page_28.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "place-laboratory"
+        ],
+        "companyLabels": [
+          "Place Laboratory"
+        ],
+        "platformIds": [
+          "autodesk-autocad",
+          "autodesk-revit",
+          "trimble-sketchup"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD",
+          "Autodesk Revit",
+          "Trimble SketchUp"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Curtin Creative Quarter",
+          "normalizedId": "curtin-creative-quarter-misc-details"
+        },
+        "sortOrder": 50,
+        "clientName": "Curtin University",
+        "clientLabel": "Curtin University",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "curtin-creative-quarter-misc-details",
+        "companyId": "place-laboratory",
+        "companyName": "Place Laboratory",
+        "dates": "March 2017",
+        "location": ""
+      },
+      {
+        "id": "lot-500-eighth-road-land-resumption",
+        "slug": "lot-500-eighth-road-land-resumption",
+        "title": "Eighth Road Land Resumption",
+        "client": "MRA (Now DevelopmentWA)",
+        "category": "Civil / Urban Planning",
+        "discipline": "Civil, Urban Planning",
+        "status": "published",
+        "visibility": "public",
+        "year": "2016",
+        "dateLabel": "January 2016",
+        "featured": false,
+        "role": null,
+        "summary": "General arrangement plan illustrating the proposed land resumption area for Lot 500 on Eighth Road. Includes boundary extents, resumption area measurements, building footprint, and contextual location...",
+        "description": "General arrangement plan illustrating the proposed land resumption area for Lot 500 on Eighth Road. Includes boundary extents, resumption area measurements, building footprint, and contextual location plan prepared for informational purposes only.",
+        "heroImage": "",
+        "thumbnailPath": "",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/lot-500-eighth-road-land-resumption",
+        "tags": [
+          "Land resumption works",
+          "Civil",
+          "Urban Planning"
+        ],
+        "studio": [
+          "DC Design Studio"
+        ],
+        "software": [
+          "Autodesk AutoCAD",
+          "QGIS"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Eighth Road Land Resumption.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "dc-design-studio"
+        ],
+        "companyLabels": [
+          "DC Design Studio"
+        ],
+        "platformIds": [
+          "autodesk-autocad",
+          "qgis"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD",
+          "QGIS"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Eighth Road Land Resumption",
+          "normalizedId": "lot-500-eighth-road-land-resumption"
+        },
+        "sortOrder": 60,
+        "clientName": "MRA (Now DevelopmentWA)",
+        "clientLabel": "MRA (Now DevelopmentWA)",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "lot-500-eighth-road-land-resumption",
+        "companyId": "dc-design-studio",
+        "companyName": "DC Design Studio",
+        "dates": "January 2016",
+        "location": ""
+      },
+      {
+        "id": "cockburn-coast",
+        "slug": "cockburn-coast",
+        "title": "Cockburn Coast Streetscapes",
+        "client": "LandCorp (Now DevelopmentWA)",
+        "category": "Landscape / Civil",
+        "discipline": "Landscape, Civil",
+        "status": "published",
+        "visibility": "public",
+        "year": "2015",
+        "dateLabel": "March 2015",
+        "featured": true,
+        "role": null,
+        "summary": "Technical landscape and civil documentation showing streetscape layouts, tree planting, paving treatments, verge works and boundary fence details for the Cockburn Coast development area. Drawings include...",
+        "description": "Technical landscape and civil documentation showing streetscape layouts, tree planting, paving treatments, verge works and boundary fence details for the Cockburn Coast development area. Drawings include multiple stage extents, planting layouts, and detailed fence plan and elevation.",
+        "heroImage": "",
+        "thumbnailPath": "",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/cockburn-coast",
+        "tags": [
+          "Public-realm streetscape works",
+          "Landscape",
+          "Civil"
+        ],
+        "studio": [
+          "Urbis"
+        ],
+        "software": [
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Cockburn Coast_Page_1.jpg",
+          "Cockburn Coast_Page_3.jpg",
+          "Cockburn Coast_Page_2.jpg",
+          "Cockburn Coast_Page_5.jpg",
+          "Cockburn Coast_Page_4.jpg",
+          "Cockburn Coast_Page_6.jpg",
+          "Cockburn Coast_Page_7.jpg",
+          "Cockburn Coast_Page_09.jpg",
+          "Cockburn Coast_Page_08.jpg",
+          "Cockburn Coast_Page_10.jpg",
+          "Cockburn Coast_Page_11.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "urbis"
+        ],
+        "companyLabels": [
+          "Urbis"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Cockburn Coast Streetscapes",
+          "normalizedId": "cockburn-coast"
+        },
+        "sortOrder": 70,
+        "clientName": "LandCorp (Now DevelopmentWA)",
+        "clientLabel": "LandCorp (Now DevelopmentWA)",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "cockburn-coast",
+        "companyId": "urbis",
+        "companyName": "Urbis",
+        "dates": "March 2015",
+        "location": ""
+      },
+      {
+        "id": "spratt-residence-proposed-addition",
+        "slug": "spratt-residence-proposed-addition",
+        "title": "Spratt Residence - Proposed Addition",
+        "client": "C & J Spratt",
+        "category": "Architectural",
+        "discipline": "Architectural",
+        "status": "published",
+        "visibility": "public",
+        "year": "2012",
+        "dateLabel": "July 2012",
+        "featured": false,
+        "role": null,
+        "summary": "Architectural drawings for a residential extension to the Spratt home in Thornlie WA. The set includes a site plan new living and alfresco layouts roof plan...",
+        "description": "Architectural drawings for a residential extension to the Spratt home in Thornlie WA. The set includes a site plan new living and alfresco layouts roof plan structural notes and material specifications. Sections A and B illustrate the connection between the new addition and the existing structure while detail sheets show footing conditions retaining wall interfaces slab details new trusses steelwork and wall junction construction. The drawings document modifications to roof geometry new sliding doors and windows alfresco areas and structural upgrades required for the addition.",
+        "heroImage": "/media/portfolio/spratt-residence.jpg",
+        "thumbnailPath": "/media/portfolio/spratt-residence.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/spratt-residence-proposed-addition",
+        "tags": [
+          "Residential building extension",
+          "Architectural"
+        ],
+        "studio": [
+          "DC Design Studio"
+        ],
+        "software": [
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Spratt Residence_Page_1.jpg",
+          "Spratt Residence_Page_2.jpg",
+          "Spratt Residence_Page_3.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "dc-design-studio"
+        ],
+        "companyLabels": [
+          "DC Design Studio"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Spratt Residence - Proposed Addition",
+          "normalizedId": "spratt-residence-proposed-addition"
+        },
+        "sortOrder": 80,
+        "clientName": "C & J Spratt",
+        "clientLabel": "C & J Spratt",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "spratt-residence-proposed-addition",
+        "companyId": "dc-design-studio",
+        "companyName": "DC Design Studio",
+        "dates": "July 2012",
+        "location": ""
+      },
+      {
+        "id": "upss-homebush-nsw",
+        "slug": "upss-homebush-nsw",
+        "title": "UPSS Homebush, NSW",
+        "client": "Ampol Australia Petroleum Pty Ltd",
+        "category": "Civil",
+        "discipline": "Civil",
+        "status": "published",
+        "visibility": "public",
+        "year": "2021",
+        "dateLabel": "March 2021",
+        "featured": false,
+        "role": null,
+        "summary": "Civil engineering drawings for an Ampol service station located at the corner of Parramatta Road and Courallie Ave, Homebush. The set includes existing site layout, proposed...",
+        "description": "Civil engineering drawings for an Ampol service station located at the corner of Parramatta Road and Courallie Ave, Homebush. The set includes existing site layout, proposed underground fuel storage tanks, proposed fuel system configuration, tanker vehicle swept-path analysis, and a preliminary KDR assessment. The drawings document modifications to site infrastructure, access points, canopy areas, underground tank locations, and fuel distribution elements.",
+        "heroImage": "/media/portfolio/upss-homebush.jpg",
+        "thumbnailPath": "/media/portfolio/upss-homebush.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/upss-homebush-nsw",
+        "tags": [
+          "Service station fuel system upgrade",
+          "Civil"
+        ],
+        "studio": [
+          "Richmond+Ross"
+        ],
+        "software": [
+          "AutoCAD",
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "UPSS HOMEBUSH(C)_Page_2.jpg",
+          "UPSS HOMEBUSH(C)_Page_1.jpg",
+          "UPSS HOMEBUSH(C)_Page_3.jpg",
+          "UPSS HOMEBUSH(C)_Page_4.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T12:37:11.672Z",
+        "companyIds": [
+          "richmond-ross"
+        ],
+        "companyLabels": [
+          "Richmond+Ross"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "AutoCAD",
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "existing admin baseline",
+          "rawValue": "UPSS Homebush, NSW",
+          "normalizedId": "upss-homebush-nsw"
+        },
+        "sortOrder": 90,
+        "location": "Parramatta Rd & Courallie Ave, Homebush West NSW 2127, Australia",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "upss-homebush-nsw",
+        "companyId": "richmond-ross",
+        "companyName": "Richmond+Ross",
+        "clientName": "Ampol Australia Petroleum Pty Ltd",
+        "clientLabel": "Ampol Australia Petroleum Pty Ltd",
+        "dates": "March 2021"
+      },
+      {
+        "id": "wungong-urban-water-master-plan",
+        "slug": "wungong-urban-water-master-plan",
+        "title": "Wungong Urban Water Master Plan",
+        "client": "MRA (Now DevelopmentWA)",
+        "category": "Urban Planning / Landscape / Civil",
+        "discipline": "Urban Planning, Landscape, Civil",
+        "status": "published",
+        "visibility": "public",
+        "year": "2016",
+        "dateLabel": "April 2016",
+        "featured": true,
+        "role": null,
+        "summary": "A master planning drawing for the Wungong Urban Water project in Haynes WA. The sheet presents an annotated master plan including road hierarchy land use zoning...",
+        "description": "A master planning drawing for the Wungong Urban Water project in Haynes WA. The sheet presents an annotated master plan including road hierarchy land use zoning wetlands waterways living streams floodplain extents buffers conservation areas Aboriginal heritage sites schools community facilities activity centres and infrastructure reserves. The plan incorporates multiple gazetted amendments and includes a detailed legend outlining planning categories environmental constraints development areas and interface treatments.",
+        "heroImage": "/media/portfolio/wungong-master-plan.jpg",
+        "thumbnailPath": "/media/portfolio/wungong-master-plan.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/wungong-urban-water-master-plan",
+        "tags": [
+          "Urban water master planning",
+          "Urban Planning",
+          "Landscape",
+          "Civil"
+        ],
+        "studio": [
+          "DC Design Studio"
+        ],
+        "software": [
+          "Autodesk AutoCAD",
+          "QGIS"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Wungong%20Urban%20Water%20Master%20Plan.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "dc-design-studio"
+        ],
+        "companyLabels": [
+          "DC Design Studio"
+        ],
+        "platformIds": [
+          "autodesk-autocad",
+          "qgis"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD",
+          "QGIS"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Wungong Urban Water Master Plan",
+          "normalizedId": "wungong-urban-water-master-plan"
+        },
+        "sortOrder": 100,
+        "clientName": "MRA (Now DevelopmentWA)",
+        "clientLabel": "MRA (Now DevelopmentWA)",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "wungong-urban-water-master-plan",
+        "companyId": "dc-design-studio",
+        "companyName": "DC Design Studio",
+        "dates": "April 2016",
+        "location": ""
+      },
+      {
+        "id": "upss-beacon-hill-nsw",
+        "slug": "upss-beacon-hill-nsw",
+        "title": "UPSS Beacon Hill, NSW",
+        "client": "Ampol Australia Petroleum Pty Ltd",
+        "category": "Civil",
+        "discipline": "Civil",
+        "status": "published",
+        "visibility": "public",
+        "year": "2021",
+        "dateLabel": "March 2021",
+        "featured": false,
+        "role": null,
+        "summary": "Civil engineering layout and assessment drawings for an Ampol service station at the corner of Warringah Rd and Cornish Ave, Beacon Hill. The set documents the...",
+        "description": "Civil engineering layout and assessment drawings for an Ampol service station at the corner of Warringah Rd and Cornish Ave, Beacon Hill. The set documents the existing site layout, proposed underground fuel storage tanks and associated fuel system, tanker vehicle tracking, temporary shoring, and a preliminary kiosk and canopy redevelopment arrangement, supporting UPSS and KDR assessments.",
+        "heroImage": "/media/portfolio/upss-beacon-hill.jpg",
+        "thumbnailPath": "/media/portfolio/upss-beacon-hill.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/upss-beacon-hill-nsw",
+        "tags": [
+          "Service station fuel system upgrade",
+          "Civil"
+        ],
+        "studio": [
+          "Richmond+Ross"
+        ],
+        "software": [
+          "AutoCAD",
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "UPSS BEACON HILL(C)_Page_1.jpg",
+          "UPSS BEACON HILL(C)_Page_2.jpg",
+          "UPSS BEACON HILL(C)_Page_4.jpg",
+          "UPSS BEACON HILL(C)_Page_3.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T12:37:11.672Z",
+        "companyIds": [
+          "richmond-ross"
+        ],
+        "companyLabels": [
+          "Richmond+Ross"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "AutoCAD",
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "existing admin baseline",
+          "rawValue": "UPSS Beacon Hill, NSW",
+          "normalizedId": "upss-beacon-hill-nsw"
+        },
+        "sortOrder": 110,
+        "location": "Warringah Rd & Cornish Ave, Beacon Hill NSW 2100, Australia",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "upss-beacon-hill-nsw",
+        "companyId": "richmond-ross",
+        "companyName": "Richmond+Ross",
+        "clientName": "Ampol Australia Petroleum Pty Ltd",
+        "clientLabel": "Ampol Australia Petroleum Pty Ltd",
+        "dates": "March 2021"
+      },
+      {
+        "id": "henry-street-residence-structural-documentation",
+        "slug": "henry-street-residence-structural-documentation",
+        "title": "Henry Street Residence - Structural Documentation",
+        "client": "KTAP Construction",
+        "category": "Structural",
+        "discipline": "Structural",
+        "status": "published",
+        "visibility": "public",
+        "year": "2013",
+        "dateLabel": "April 2013",
+        "featured": false,
+        "role": null,
+        "summary": "A structural engineering drawing set for a multi-unit residential development on Henry Street in Fremantle WA. The package includes ground slab and footing layouts suspended slab...",
+        "description": "A structural engineering drawing set for a multi-unit residential development on Henry Street in Fremantle WA. The package includes ground slab and footing layouts suspended slab plans roof steel framing layouts and various structural details including screen walls brick piers slab steps anchor details steel post connections and wall junction sections. The drawings include structural notes material specifications reinforcement details and stair sections.",
+        "heroImage": "",
+        "thumbnailPath": "",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/henry-street-residence-structural-documentation",
+        "tags": [
+          "Residential multi-unit structural slab and footing design",
+          "Structural"
+        ],
+        "studio": [
+          "ACCE"
+        ],
+        "software": [
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Henry Street Residence_Page_3.jpg",
+          "Henry Street Residence_Page_1.jpg",
+          "Henry Street Residence_Page_6.jpg",
+          "Henry Street Residence_Page_2.jpg",
+          "Henry Street Residence_Page_4.jpg",
+          "Henry Street Residence_Page_5.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "acce"
+        ],
+        "companyLabels": [
+          "ACCE"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Henry Street Residence - Structural Documentation",
+          "normalizedId": "henry-street-residence-structural-documentation"
+        },
+        "sortOrder": 120,
+        "clientName": "KTAP Construction",
+        "clientLabel": "KTAP Construction",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "henry-street-residence-structural-documentation",
+        "companyId": "acce",
+        "companyName": "ACCE",
+        "dates": "April 2013",
+        "location": ""
+      },
+      {
+        "id": "lake-joondalup-baptist-college-new-arts-building-structural-plans",
+        "slug": "lake-joondalup-baptist-college-new-arts-building-structural-plans",
+        "title": "Lake Joondalup Baptist College",
+        "client": "Buchan Group",
+        "category": "Structural",
+        "discipline": "Structural",
+        "status": "published",
+        "visibility": "public",
+        "year": "2013",
+        "dateLabel": "August 2013",
+        "featured": true,
+        "role": null,
+        "summary": "Structural engineering drawings for a new arts building including footing and ground slab plans, strip footings, pad footings, retaining walls, control joints, stair and ramp details,...",
+        "description": "Structural engineering drawings for a new arts building including footing and ground slab plans, strip footings, pad footings, retaining walls, control joints, stair and ramp details, prestressed Deltacore suspended slab layout, roof steel layout, structural sections, and steel connection details. Documentation provides reinforcement notes, typical sections, and structural coordination for the new campus facility.",
+        "heroImage": "/media/portfolio/lake-joondalup-baptist-college.jpg",
+        "thumbnailPath": "/media/portfolio/lake-joondalup-baptist-college.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/lake-joondalup-baptist-college-new-arts-building-structural-plans",
+        "tags": [
+          "Educational building structural works",
+          "Structural"
+        ],
+        "studio": [
+          "ACCE"
+        ],
+        "software": [
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Lake Joondalup Baptist College_Page_4.jpg",
+          "Lake Joondalup Baptist College_Page_3.jpg",
+          "Lake Joondalup Baptist College_Page_1.jpg",
+          "Lake Joondalup Baptist College_Page_2.jpg",
+          "Lake Joondalup Baptist College_Page_5.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "acce"
+        ],
+        "companyLabels": [
+          "ACCE"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Lake Joondalup Baptist College",
+          "normalizedId": "lake-joondalup-baptist-college-new-arts-building-structural-plans"
+        },
+        "sortOrder": 130,
+        "clientName": "Buchan Group",
+        "clientLabel": "Buchan Group",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "lake-joondalup-baptist-college-new-arts-building-structural-plans",
+        "companyId": "acce",
+        "companyName": "ACCE",
+        "dates": "August 2013",
+        "location": ""
+      },
+      {
+        "id": "cottesloe-beach-house-landscape-design",
+        "slug": "cottesloe-beach-house-landscape-design",
+        "title": "Cottesloe Beach House - Landscape Design",
+        "client": "Minderoo Foundation",
+        "category": "Landscape / Architectural",
+        "discipline": "Landscape, Architectural",
+        "status": "published",
+        "visibility": "public",
+        "year": "2017",
+        "dateLabel": "August 2017",
+        "featured": true,
+        "role": null,
+        "summary": "Comprehensive landscape architecture documentation for the redevelopment of the Cottesloe Beach House at 1 Rosendo Street. The package includes general notes lower ground ground and first...",
+        "description": "Comprehensive landscape architecture documentation for the redevelopment of the Cottesloe Beach House at 1 Rosendo Street. The package includes general notes lower ground ground and first floor landscape plans detailed levels and grading softscape layouts tree pit construction rooftop planting systems and extensive tree transplanting specifications. Sections and elevations illustrate retaining structures design levels heritage interfaces and the relationship between planting beds and architectural elements.",
+        "heroImage": "",
+        "thumbnailPath": "",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/cottesloe-beach-house-landscape-design",
+        "tags": [
+          "Residential landscape redevelopment",
+          "Landscape",
+          "Architectural"
+        ],
+        "studio": [
+          "Place Laboratory"
+        ],
+        "software": [
+          "Autodesk AutoCAD",
+          "Autodesk Revit",
+          "Trimble SketchUp"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Cottesloe Beach House_Page_8.jpg",
+          "Cottesloe Beach House_Page_3.jpg",
+          "Cottesloe Beach House_Page_2.jpg",
+          "Cottesloe Beach House_Page_4.jpg",
+          "Cottesloe Beach House_Page_7.jpg",
+          "Cottesloe Beach House_Page_6.jpg",
+          "Cottesloe Beach House_Page_5.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "place-laboratory"
+        ],
+        "companyLabels": [
+          "Place Laboratory"
+        ],
+        "platformIds": [
+          "autodesk-autocad",
+          "autodesk-revit",
+          "trimble-sketchup"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD",
+          "Autodesk Revit",
+          "Trimble SketchUp"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Cottesloe Beach House - Landscape Design",
+          "normalizedId": "cottesloe-beach-house-landscape-design"
+        },
+        "sortOrder": 140,
+        "clientName": "Minderoo Foundation",
+        "clientLabel": "Minderoo Foundation",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "cottesloe-beach-house-landscape-design",
+        "companyId": "place-laboratory",
+        "companyName": "Place Laboratory",
+        "dates": "August 2017",
+        "location": ""
+      },
+      {
+        "id": "upss-wyoming-nsw",
+        "slug": "upss-wyoming-nsw",
+        "title": "UPSS Wyoming, NSW",
+        "client": "Ampol Australia Petroleum Pty Ltd",
+        "category": "Civil",
+        "discipline": "Civil",
+        "status": "published",
+        "visibility": "public",
+        "year": "2021",
+        "dateLabel": "March 2021",
+        "featured": false,
+        "role": null,
+        "summary": "Civil engineering drawings for an Ampol service station located at the intersection of Pacific Highway and Henry Parry Drive in Wyoming. The set includes existing site...",
+        "description": "Civil engineering drawings for an Ampol service station located at the intersection of Pacific Highway and Henry Parry Drive in Wyoming. The set includes existing site layout, proposed underground fuel storage tanks, redesigned vehicle circulation, tanker vehicle tracking paths, and a preliminary kiosk/canopy redevelopment arrangement. Documentation covers UPSS assessment, proposed fuel system layout, fill points, canopy areas, and vehicle entry/exit configurations.",
+        "heroImage": "/media/portfolio/upss-wyoming.jpg",
+        "thumbnailPath": "/media/portfolio/upss-wyoming.jpg",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/upss-wyoming-nsw",
+        "tags": [
+          "Service station fuel system upgrade",
+          "Civil"
+        ],
+        "studio": [
+          "Richmond+Ross"
+        ],
+        "software": [
+          "AutoCAD",
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "UPSS WYOMING(C)_Page_4.jpg",
+          "UPSS WYOMING(C)_Page_3.jpg",
+          "UPSS WYOMING(C)_Page_1.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T12:37:11.672Z",
+        "companyIds": [
+          "richmond-ross"
+        ],
+        "companyLabels": [
+          "Richmond+Ross"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "AutoCAD",
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "existing admin baseline",
+          "rawValue": "UPSS Wyoming, NSW",
+          "normalizedId": "upss-wyoming-nsw"
+        },
+        "sortOrder": 150,
+        "location": "Pacific Hwy, Wyoming NSW 2250, Australia",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "upss-wyoming-nsw",
+        "companyId": "richmond-ross",
+        "companyName": "Richmond+Ross",
+        "clientName": "Ampol Australia Petroleum Pty Ltd",
+        "clientLabel": "Ampol Australia Petroleum Pty Ltd",
+        "dates": "March 2021"
+      },
+      {
+        "id": "geraldton-fire-station-structural-documentation",
+        "slug": "geraldton-fire-station-structural-documentation",
+        "title": "Geraldton Fire Station - Structural Documentation",
+        "client": "FESA (Now Department of Fire and Emergency Services)",
+        "category": "Structural",
+        "discipline": "Structural",
+        "status": "published",
+        "visibility": "public",
+        "year": "2012",
+        "dateLabel": "August 2012",
+        "featured": false,
+        "role": null,
+        "summary": "A detailed structural engineering documentation package for the Geraldton Fire Station including mezzanine beam plans roof framing layouts pad footings structural bracing block screen walls and...",
+        "description": "A detailed structural engineering documentation package for the Geraldton Fire Station including mezzanine beam plans roof framing layouts pad footings structural bracing block screen walls and various roof and slab connection details. The drawings include structural notes design loads steelwork details flybrace arrangements bracing specifications and cross sections required for new works and retrofits.",
+        "heroImage": "",
+        "thumbnailPath": "",
+        "galleryPaths": [],
+        "documentPath": "",
+        "documentationUrl": "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz",
+        "livePage": "/portfolio/geraldton-fire-station-structural-documentation",
+        "tags": [
+          "Fire station structural upgrades and extensions",
+          "Structural"
+        ],
+        "studio": [
+          "ACCE"
+        ],
+        "software": [
+          "Autodesk AutoCAD"
+        ],
+        "sourceFolder": "cmsdata/wix/collection-tables/WorkSet.csv",
+        "sourceFiles": [
+          "Geraldton Fire Station_Page_3.jpg",
+          "Geraldton Fire Station_Page_2.jpg",
+          "Geraldton Fire Station_Page_1.jpg",
+          "Geraldton Fire Station_Page_4.jpg"
+        ],
+        "sourceConfidence": "Medium",
+        "sourceUpdatedAt": null,
+        "updatedAt": "2026-06-18T15:13:52.384Z",
+        "companyIds": [
+          "acce"
+        ],
+        "companyLabels": [
+          "ACCE"
+        ],
+        "platformIds": [
+          "autodesk-autocad"
+        ],
+        "platformLabels": [
+          "Autodesk AutoCAD"
+        ],
+        "provenance": {
+          "sourceFile": "cmsdata/wix/collection-tables/WorkSet.csv",
+          "sourceField": "projectTitle/Project Page (Item)",
+          "rawValue": "Geraldton Fire Station - Structural Documentation",
+          "normalizedId": "geraldton-fire-station-structural-documentation"
+        },
+        "sortOrder": 160,
+        "clientName": "FESA (Now Department of Fire and Emergency Services)",
+        "clientLabel": "FESA (Now Department of Fire and Emergency Services)",
+        "baselineProtected": true,
+        "baselineVersion": "public-projects-baseline-2026-06-14",
+        "source": "public_baseline",
+        "code": "geraldton-fire-station-structural-documentation",
+        "companyId": "acce",
+        "companyName": "ACCE",
+        "dates": "August 2012",
+        "location": ""
+      }
+    ],
+    "companies": [
+      {
+        "id": "richmond-ross",
+        "slug": "richmond-ross",
+        "name": "Richmond+Ross",
+        "logoPath": "./assets/logos/company-richmondross-0.svg",
+        "location": "Crows Nest, NSW",
+        "website": "https://www.richmondross.com.au/",
+        "description": "Richmond + Ross have over 30 years of experience in the design of retail facilities, including shopping centres, fast food, public domain, bulk fuel & retail, 5 star & tourism, institutional and industrial projects. The scale and type of retail developments range from simple 75m² standalone tenancies all the way through to 50,000+m²Regional Centres",
+        "details": "Richmond + Ross have over 30 years of experience in the design of retail facilities, including shopping centres, fast food, public domain, bulk fuel & retail, 5 star & tourism, institutional and industrial projects. The scale and type of retail developments range from simple 75m² standalone tenancies all the way through to 50,000+m²Regional Centres",
+        "status": "active",
+        "sortOrder": 10
+      },
+      {
+        "id": "meriton-group",
+        "slug": "meriton-group",
+        "name": "Meriton Group",
+        "logoPath": "",
+        "location": "Sydney, NSW",
+        "website": "https://www.meriton.com.au/",
+        "description": "Established in 1963, Meriton has made a significant impact on the Australian landscape. The private company has designed, developed and built more than 75,000 apartments and some of the tallest residential towers across the east coast of Australia. Meriton has spearheaded the apartment revolution with sophisticated, high-quality apartments. Its founder and managing director, billionaire property entrepreneur Harry Triguboff, is still passionately involved in the design and construction of all projects",
+        "details": "Established in 1963, Meriton has made a significant impact on the Australian landscape. The private company has designed, developed and built more than 75,000 apartments and some of the tallest residential towers across the east coast of Australia. Meriton has spearheaded the apartment revolution with sophisticated, high-quality apartments. Its founder and managing director, billionaire property entrepreneur Harry Triguboff, is still passionately involved in the design and construction of all projects",
+        "status": "active",
+        "sortOrder": 20
+      },
+      {
+        "id": "leffler-simes-architects",
+        "slug": "leffler-simes-architects",
+        "name": "Leffler Simes Architects",
+        "logoPath": "./assets/logos/company-lefflersimes-0.svg",
+        "location": "Melbourne, VIC",
+        "website": "https://www.lefflersimes.com.au/",
+        "description": "Leffler Simes Architects (LSA) is well recognised as one of Australia’s leading architectural practices with offices in Sydney, Melbourne and Brisbane. Established in the late 1960s, Leffler Simes was at the forefront of the dramatic expansion of the retail sector throughout Australia and designed a majority of the large shopping centres built at this time. With a solid retail pedigree founded in the 1970s and 80s, Leffler Simes have maintained a role as a major retail practice since.",
+        "details": "Leffler Simes Architects (LSA) is well recognised as one of Australia’s leading architectural practices with offices in Sydney, Melbourne and Brisbane. Established in the late 1960s, Leffler Simes was at the forefront of the dramatic expansion of the retail sector throughout Australia and designed a majority of the large shopping centres built at this time. With a solid retail pedigree founded in the 1970s and 80s, Leffler Simes have maintained a role as a major retail practice since.",
+        "status": "active",
+        "sortOrder": 30
+      },
+      {
+        "id": "fleetwood-australia",
+        "slug": "fleetwood-australia",
+        "name": "Fleetwood Australia",
+        "logoPath": "",
+        "location": "Melbourne, VIC",
+        "website": "https://www.fleetwood.com.au/",
+        "description": "At Fleetwood, we come together with a shared purpose: to make a positive difference wherever Australians live, work and explore. Established in 1964, we’ve been at the forefront of Australia’s modular construction and RV industries, delivering solutions that support growing communities. Guided by our values, we deliver innovative solutions that help people and businesses thrive.",
+        "details": "At Fleetwood, we come together with a shared purpose: to make a positive difference wherever Australians live, work and explore. Established in 1964, we’ve been at the forefront of Australia’s modular construction and RV industries, delivering solutions that support growing communities. Guided by our values, we deliver innovative solutions that help people and businesses thrive.",
+        "status": "active",
+        "sortOrder": 40
+      },
+      {
+        "id": "place-laboratory",
+        "slug": "place-laboratory",
+        "name": "Place Laboratory",
+        "logoPath": "./assets/logos/company-placelab-0.svg",
+        "location": "Perth, WA",
+        "website": "https://www.placelaboratory.com/",
+        "description": "At PLACE Laboratory we believe that the public realm is the stage for life. When the public realm is designed well, the combinations and possibilities of life’s acts are infinite. The interplay between buildings and open space sets the stage. We do not advocate design for designs sake. We believe the role of the designer is to interpret the cultural underpinnings of a society and give life and meaning in three dimensions to the physical form of space. Spaces, which are engaging, meaningful, delightful, walkable, welcoming, attractive and vital. Places that exhibit the qualities of good design have great social, economic and environmental value. They bring positive tangible results that are increasingly being recognised by the urban development industry.",
+        "details": "At PLACE Laboratory we believe that the public realm is the stage for life. When the public realm is designed well, the combinations and possibilities of life’s acts are infinite. The interplay between buildings and open space sets the stage. We do not advocate design for designs sake. We believe the role of the designer is to interpret the cultural underpinnings of a society and give life and meaning in three dimensions to the physical form of space. Spaces, which are engaging, meaningful, delightful, walkable, welcoming, attractive and vital. Places that exhibit the qualities of good design have great social, economic and environmental value. They bring positive tangible results that are increasingly being recognised by the urban development industry.",
+        "status": "active",
+        "sortOrder": 50
+      },
+      {
+        "id": "dc-design-studio",
+        "slug": "dc-design-studio",
+        "name": "DC Design Studio",
+        "logoPath": "./assets/logos/company-dcdesignstudio-0.svg",
+        "location": "Perth, WA",
+        "website": "https://danielclancy.net",
+        "description": "DC Design Studio is a boutique design documentation consultancy based in the Perth Central Business District. It offers a diverse range of design documentation solutions for any sized project. Whether you require a quick and simple 2D CAD Sketch for a custom part manufacture or a full scale discipline specific set of building plans, or even a simple Business card graphic or promotional banner, DC Design Studio utilizes a range of Industry standard software and computer hardware to achieve timely results",
+        "details": "DC Design Studio is a boutique design documentation consultancy based in the Perth Central Business District. It offers a diverse range of design documentation solutions for any sized project. Whether you require a quick and simple 2D CAD Sketch for a custom part manufacture or a full scale discipline specific set of building plans, or even a simple Business card graphic or promotional banner, DC Design Studio utilizes a range of Industry standard software and computer hardware to achieve timely results",
+        "status": "active",
+        "sortOrder": 60
+      },
+      {
+        "id": "urbis",
+        "slug": "urbis",
+        "name": "Urbis",
+        "logoPath": "./assets/logos/company-urbis-0.svg",
+        "location": "Perth, WA",
+        "website": "https://urbis.com.au/",
+        "description": "Urbis is a professional consulting firm operating in Australia, Asia and the Middle East advising on the use, development, investment and governance of property, cities and communities. Urbis operates at the forefront of urban and societal change and provides multi-disciplinary capability through recruiting and retaining the most talented people providing collaborative professional services",
+        "details": "Urbis is a professional consulting firm operating in Australia, Asia and the Middle East advising on the use, development, investment and governance of property, cities and communities. Urbis operates at the forefront of urban and societal change and provides multi-disciplinary capability through recruiting and retaining the most talented people providing collaborative professional services",
+        "status": "active",
+        "sortOrder": 70
+      },
+      {
+        "id": "acce",
+        "slug": "acce",
+        "name": "ACCE",
+        "logoPath": "./assets/logos/company-acce-0.svg",
+        "location": "Como, WA",
+        "website": "https://www.acce.net.au/",
+        "description": "Since its establishment in 1980, Andreotta Cardenosa Consulting Engineers have been providing the construction industry with quality personal service and expertise in the structural discipline. The firm has extensive experience in residential, commercial, industrial and institutional structures, providing them with the ability to manage all projects with efficiency and precision",
+        "details": "Since its establishment in 1980, Andreotta Cardenosa Consulting Engineers have been providing the construction industry with quality personal service and expertise in the structural discipline. The firm has extensive experience in residential, commercial, industrial and institutional structures, providing them with the ability to manage all projects with efficiency and precision",
+        "status": "active",
+        "sortOrder": 80
+      },
+      {
+        "id": "ghd",
+        "slug": "ghd",
+        "name": "GHD",
+        "logoPath": "./assets/logos/company-ghd-0.svg",
+        "location": "Geraldton & Perth, WA",
+        "website": "https://www.ghd.com/",
+        "description": "GHD is a large, international professional services company providing a vast range of services all over the globe in property and buildings, energy and resources, mining and industry, water, transportation",
+        "details": "GHD is a large, international professional services company providing a vast range of services all over the globe in property and buildings, energy and resources, mining and industry, water, transportation",
+        "status": "active",
+        "sortOrder": 90
+      }
+    ],
+    "platforms": [
+      {
+        "id": "autodesk-autocad",
+        "slug": "autodesk-autocad",
+        "name": "Autodesk AutoCAD",
+        "vendor": "Autodesk",
+        "company": "Autodesk",
+        "logoPath": "./assets/logos/software-autocad.svg",
+        "website": "",
+        "status": "active",
+        "sortOrder": 10
+      },
+      {
+        "id": "autodesk-revit",
+        "slug": "autodesk-revit",
+        "name": "Autodesk Revit",
+        "vendor": "Autodesk",
+        "company": "Autodesk",
+        "logoPath": "./assets/logos/software-revit.svg",
+        "website": "",
+        "status": "active",
+        "sortOrder": 20
+      },
+      {
+        "id": "adobe-creative-cloud",
+        "slug": "adobe-creative-cloud",
+        "name": "Adobe Creative Cloud",
+        "vendor": "Adobe",
+        "company": "Adobe",
+        "logoPath": "./assets/logos/software-creativecloud.svg",
+        "website": "",
+        "status": "active",
+        "sortOrder": 30
+      },
+      {
+        "id": "trimble-sketchup",
+        "slug": "trimble-sketchup",
+        "name": "Trimble SketchUp",
+        "vendor": "Trimble",
+        "company": "Trimble",
+        "logoPath": "./assets/logos/software-sketchup.svg",
+        "website": "",
+        "status": "active",
+        "sortOrder": 40
+      },
+      {
+        "id": "microsoft-office",
+        "slug": "microsoft-office",
+        "name": "Microsoft Office",
+        "vendor": "Microsoft",
+        "company": "Microsoft",
+        "logoPath": "./assets/logos/software-office365.svg",
+        "website": "",
+        "status": "active",
+        "sortOrder": 50
+      },
+      {
+        "id": "qgis",
+        "slug": "qgis",
+        "name": "QGIS",
+        "vendor": "QGIS",
+        "company": "QGIS",
+        "logoPath": "./assets/logos/software-qgis.svg",
+        "website": "",
+        "status": "active",
+        "sortOrder": 60
+      }
+    ],
+    "positions": [
+      {
+        "id": "richmond-ross-revit-draftsperson-and-technician",
+        "slug": "richmond-ross-revit-draftsperson-and-technician",
+        "title": "Revit Draftsperson & Technician",
+        "companyId": "richmond-ross",
+        "companyName": "Richmond+Ross",
+        "location": "Crows Nest, NSW",
+        "startDate": "2019-10-01",
+        "endDate": "2021-11-01",
+        "current": false,
+        "summary": "Richmond + Ross have over 30 years of experience in the design of retail facilities, including shopping centres, fast food, public domain, bulk fuel & retail, 5 star & tourism, institutional and industrial projects. The scale and type of retail developments range from simple 75m² standalone tenancies all the way through to 50,000+m²Regional Centres",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [
+          "autodesk-revit"
+        ],
+        "status": "active",
+        "sortOrder": 10
+      },
+      {
+        "id": "meriton-group-structural-revit-draftsman",
+        "slug": "meriton-group-structural-revit-draftsman",
+        "title": "Structural Revit Draftsman",
+        "companyId": "meriton-group",
+        "companyName": "Meriton Group",
+        "location": "Sydney, NSW",
+        "startDate": "2019-03-01",
+        "endDate": "2019-05-01",
+        "current": false,
+        "summary": "Established in 1963, Meriton has made a significant impact on the Australian landscape. The private company has designed, developed and built more than 75,000 apartments and some of the tallest residential towers across the east coast of Australia. Meriton has spearheaded the apartment revolution with sophisticated, high-quality apartments. Its founder and managing director, billionaire property entrepreneur Harry Triguboff, is still passionately involved in the design and construction of all projects",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [
+          "autodesk-revit"
+        ],
+        "status": "active",
+        "sortOrder": 20
+      },
+      {
+        "id": "leffler-simes-architects-architectural-revit-draftsman",
+        "slug": "leffler-simes-architects-architectural-revit-draftsman",
+        "title": "Architectural Revit Draftsman",
+        "companyId": "leffler-simes-architects",
+        "companyName": "Leffler Simes Architects",
+        "location": "Melbourne, VIC",
+        "startDate": "2018-09-01",
+        "endDate": "2018-11-01",
+        "current": false,
+        "summary": "Leffler Simes Architects (LSA) is well recognised as one of Australia’s leading architectural practices with offices in Sydney, Melbourne and Brisbane. Established in the late 1960s, Leffler Simes was at the forefront of the dramatic expansion of the retail sector throughout Australia and designed a majority of the large shopping centres built at this time. With a solid retail pedigree founded in the 1970s and 80s, Leffler Simes have maintained a role as a major retail practice since.",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [
+          "autodesk-revit"
+        ],
+        "status": "active",
+        "sortOrder": 30
+      },
+      {
+        "id": "fleetwood-australia-revit-draftsperson",
+        "slug": "fleetwood-australia-revit-draftsperson",
+        "title": "Revit Draftsperson",
+        "companyId": "fleetwood-australia",
+        "companyName": "Fleetwood Australia",
+        "location": "Melbourne, VIC",
+        "startDate": "2018-07-01",
+        "endDate": "2018-08-01",
+        "current": false,
+        "summary": "At Fleetwood, we come together with a shared purpose: to make a positive difference wherever Australians live, work and explore. Established in 1964, we’ve been at the forefront of Australia’s modular construction and RV industries, delivering solutions that support growing communities. Guided by our values, we deliver innovative solutions that help people and businesses thrive.",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [
+          "autodesk-revit"
+        ],
+        "status": "active",
+        "sortOrder": 40
+      },
+      {
+        "id": "place-laboratory-drafstman",
+        "slug": "place-laboratory-drafstman",
+        "title": "Drafstman",
+        "companyId": "place-laboratory",
+        "companyName": "Place Laboratory",
+        "location": "Perth, WA",
+        "startDate": "2017-01-01",
+        "endDate": "2018-01-01",
+        "current": false,
+        "summary": "At PLACE Laboratory we believe that the public realm is the stage for life. When the public realm is designed well, the combinations and possibilities of life’s acts are infinite. The interplay between buildings and open space sets the stage. We do not advocate design for designs sake. We believe the role of the designer is to interpret the cultural underpinnings of a society and give life and meaning in three dimensions to the physical form of space. Spaces, which are engaging, meaningful, delightful, walkable, welcoming, attractive and vital. Places that exhibit the qualities of good design have great social, economic and environmental value. They bring positive tangible results that are increasingly being recognised by the urban development industry.",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [],
+        "status": "active",
+        "sortOrder": 50
+      },
+      {
+        "id": "dc-design-studio-design-consultant",
+        "slug": "dc-design-studio-design-consultant",
+        "title": "Design Consultant",
+        "companyId": "dc-design-studio",
+        "companyName": "DC Design Studio",
+        "location": "Perth, WA",
+        "startDate": "2015-06-01",
+        "endDate": "2018-05-01",
+        "current": false,
+        "summary": "DC Design Studio is a boutique design documentation consultancy based in the Perth Central Business District. It offers a diverse range of design documentation solutions for any sized project. Whether you require a quick and simple 2D CAD Sketch for a custom part manufacture or a full scale discipline specific set of building plans, or even a simple Business card graphic or promotional banner, DC Design Studio utilizes a range of Industry standard software and computer hardware to achieve timely results",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [],
+        "status": "active",
+        "sortOrder": 60
+      },
+      {
+        "id": "urbis-drafting-technician",
+        "slug": "urbis-drafting-technician",
+        "title": "Drafting Technician",
+        "companyId": "urbis",
+        "companyName": "Urbis",
+        "location": "Perth, WA",
+        "startDate": "2014-08-01",
+        "endDate": "2015-06-01",
+        "current": false,
+        "summary": "Urbis is a professional consulting firm operating in Australia, Asia and the Middle East advising on the use, development, investment and governance of property, cities and communities. Urbis operates at the forefront of urban and societal change and provides multi-disciplinary capability through recruiting and retaining the most talented people providing collaborative professional services",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [],
+        "status": "active",
+        "sortOrder": 70
+      },
+      {
+        "id": "acce-structural-draftsman",
+        "slug": "acce-structural-draftsman",
+        "title": "Structural Draftsman",
+        "companyId": "acce",
+        "companyName": "ACCE",
+        "location": "Como, WA",
+        "startDate": "2012-01-01",
+        "endDate": "2014-03-01",
+        "current": false,
+        "summary": "Since its establishment in 1980, Andreotta Cardenosa Consulting Engineers have been providing the construction industry with quality personal service and expertise in the structural discipline. The firm has extensive experience in residential, commercial, industrial and institutional structures, providing them with the ability to manage all projects with efficiency and precision",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [],
+        "status": "active",
+        "sortOrder": 80
+      },
+      {
+        "id": "ghd-draftsman",
+        "slug": "ghd-draftsman",
+        "title": "Draftsman",
+        "companyId": "ghd",
+        "companyName": "GHD",
+        "location": "Geraldton & Perth, WA",
+        "startDate": "2008-08-01",
+        "endDate": "2011-11-01",
+        "current": false,
+        "summary": "GHD is a large, international professional services company providing a vast range of services all over the globe in property and buildings, energy and resources, mining and industry, water, transportation",
+        "responsibilities": [],
+        "highlights": [],
+        "platformIds": [],
+        "status": "active",
+        "sortOrder": 90
+      }
+    ]
+  },
+  "assets": {
+    "portfolioThumbs": [
+      {
+        "id": "thumbnail:aqwest-thumb.webp",
+        "type": "thumbnail",
+        "filename": "aqwest-thumb.webp",
+        "path": "/media/portfolio/thumbs/aqwest-thumb.webp",
+        "label": "Aqwest Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 49738,
+        "updatedAt": "2026-06-19T00:30:25.544Z"
+      },
+      {
+        "id": "thumbnail:cockburn-coast-details-thumb.webp",
+        "type": "thumbnail",
+        "filename": "cockburn-coast-details-thumb.webp",
+        "path": "/media/portfolio/thumbs/cockburn-coast-details-thumb.webp",
+        "label": "Cockburn Coast Details Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 54926,
+        "updatedAt": "2026-06-18T19:36:02.020Z"
+      },
+      {
+        "id": "thumbnail:cottesloe-beach-house-thumb.webp",
+        "type": "thumbnail",
+        "filename": "cottesloe-beach-house-thumb.webp",
+        "path": "/media/portfolio/thumbs/cottesloe-beach-house-thumb.webp",
+        "label": "Cottesloe Beach House Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 121242,
+        "updatedAt": "2026-06-18T15:06:23.354Z"
+      },
+      {
+        "id": "thumbnail:cue-roadhouse-thumb.webp",
+        "type": "thumbnail",
+        "filename": "cue-roadhouse-thumb.webp",
+        "path": "/media/portfolio/thumbs/cue-roadhouse-thumb.webp",
+        "label": "Cue Roadhouse Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 192952,
+        "updatedAt": "2026-06-18T19:21:18.594Z"
+      },
+      {
+        "id": "thumbnail:curtin-creative-quarter-bus-stand.webp",
+        "type": "thumbnail",
+        "filename": "curtin-creative-quarter-bus-stand.webp",
+        "path": "/media/portfolio/thumbs/curtin-creative-quarter-bus-stand.webp",
+        "label": "Curtin Creative Quarter Bus Stand",
+        "mime": "image/webp",
+        "sizeBytes": 56252,
+        "updatedAt": "2026-06-18T19:40:15.863Z"
+      },
+      {
+        "id": "thumbnail:eighth-rd.jpg",
+        "type": "thumbnail",
+        "filename": "eighth-rd.jpg",
+        "path": "/media/portfolio/thumbs/eighth-rd.jpg",
+        "label": "Eighth Rd",
+        "mime": "image/jpeg",
+        "sizeBytes": 313413,
+        "updatedAt": "2026-06-18T19:25:59.191Z"
+      },
+      {
+        "id": "thumbnail:fesa-fire-thumb.webp",
+        "type": "thumbnail",
+        "filename": "fesa-fire-thumb.webp",
+        "path": "/media/portfolio/thumbs/fesa-fire-thumb.webp",
+        "label": "Fesa Fire Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 71418,
+        "updatedAt": "2026-06-16T15:28:23.940Z"
+      },
+      {
+        "id": "thumbnail:gardencity-thumb.webp",
+        "type": "thumbnail",
+        "filename": "gardencity-thumb.webp",
+        "path": "/media/portfolio/thumbs/gardencity-thumb.webp",
+        "label": "Gardencity Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 59760,
+        "updatedAt": "2026-06-18T19:17:04.096Z"
+      },
+      {
+        "id": "thumbnail:henry-st-thumb.webp",
+        "type": "thumbnail",
+        "filename": "henry-st-thumb.webp",
+        "path": "/media/portfolio/thumbs/henry-st-thumb.webp",
+        "label": "Henry St Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 100896,
+        "updatedAt": "2026-06-19T00:47:03.029Z"
+      },
+      {
+        "id": "thumbnail:jull-st.jpg",
+        "type": "thumbnail",
+        "filename": "jull-st.jpg",
+        "path": "/media/portfolio/thumbs/jull-st.jpg",
+        "label": "Jull St",
+        "mime": "image/jpeg",
+        "sizeBytes": 624707,
+        "updatedAt": "2026-06-18T19:25:28.295Z"
+      },
+      {
+        "id": "thumbnail:luxxman-thumb.webp",
+        "type": "thumbnail",
+        "filename": "luxxman-thumb.webp",
+        "path": "/media/portfolio/thumbs/luxxman-thumb.webp",
+        "label": "Luxxman Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 179764,
+        "updatedAt": "2026-06-19T00:49:50.107Z"
+      },
+      {
+        "id": "thumbnail:petric-thumb.webp",
+        "type": "thumbnail",
+        "filename": "petric-thumb.webp",
+        "path": "/media/portfolio/thumbs/petric-thumb.webp",
+        "label": "Petric Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 52006,
+        "updatedAt": "2026-06-19T00:56:50.593Z"
+      },
+      {
+        "id": "thumbnail:pheasants-nest-thumb.webp",
+        "type": "thumbnail",
+        "filename": "pheasants-nest-thumb.webp",
+        "path": "/media/portfolio/thumbs/pheasants-nest-thumb.webp",
+        "label": "Pheasants Nest Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 77186,
+        "updatedAt": "2026-06-18T14:14:53.415Z"
+      },
+      {
+        "id": "thumbnail:rgp6-gatehouse-details-thumb.webp",
+        "type": "thumbnail",
+        "filename": "rgp6-gatehouse-details-thumb.webp",
+        "path": "/media/portfolio/thumbs/rgp6-gatehouse-details-thumb.webp",
+        "label": "Rgp6 Gatehouse Details Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 80052,
+        "updatedAt": "2026-06-19T00:40:16.712Z"
+      },
+      {
+        "id": "thumbnail:rowell-thumb.webp",
+        "type": "thumbnail",
+        "filename": "rowell-thumb.webp",
+        "path": "/media/portfolio/thumbs/rowell-thumb.webp",
+        "label": "Rowell Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 105552,
+        "updatedAt": "2026-06-19T00:54:21.759Z"
+      },
+      {
+        "id": "thumbnail:south-perth-promenade-thumb.webp",
+        "type": "thumbnail",
+        "filename": "south-perth-promenade-thumb.webp",
+        "path": "/media/portfolio/thumbs/south-perth-promenade-thumb.webp",
+        "label": "South Perth Promenade Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 72854,
+        "updatedAt": "2026-06-18T19:36:37.208Z"
+      },
+      {
+        "id": "thumbnail:spratt-thumb.webp",
+        "type": "thumbnail",
+        "filename": "spratt-thumb.webp",
+        "path": "/media/portfolio/thumbs/spratt-thumb.webp",
+        "label": "Spratt Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 99784,
+        "updatedAt": "2026-06-19T00:58:17.441Z"
+      },
+      {
+        "id": "thumbnail:thumb-dawesville.webp",
+        "type": "thumbnail",
+        "filename": "thumb-dawesville.webp",
+        "path": "/media/portfolio/thumbs/thumb-dawesville.webp",
+        "label": "Thumb Dawesville",
+        "mime": "image/webp",
+        "sizeBytes": 60682,
+        "updatedAt": "2026-06-18T13:45:28.073Z"
+      },
+      {
+        "id": "thumbnail:upss-beacon-hill.webp",
+        "type": "thumbnail",
+        "filename": "upss-beacon-hill.webp",
+        "path": "/media/portfolio/thumbs/upss-beacon-hill.webp",
+        "label": "Upss Beacon Hill",
+        "mime": "image/webp",
+        "sizeBytes": 80526,
+        "updatedAt": "2026-06-16T15:31:58.648Z"
+      },
+      {
+        "id": "thumbnail:upss-brownsville.webp",
+        "type": "thumbnail",
+        "filename": "upss-brownsville.webp",
+        "path": "/media/portfolio/thumbs/upss-brownsville.webp",
+        "label": "Upss Brownsville",
+        "mime": "image/webp",
+        "sizeBytes": 41310,
+        "updatedAt": "2026-06-16T15:32:50.006Z"
+      },
+      {
+        "id": "thumbnail:upss-grafton.webp",
+        "type": "thumbnail",
+        "filename": "upss-grafton.webp",
+        "path": "/media/portfolio/thumbs/upss-grafton.webp",
+        "label": "Upss Grafton",
+        "mime": "image/webp",
+        "sizeBytes": 74622,
+        "updatedAt": "2026-06-16T15:31:38.159Z"
+      },
+      {
+        "id": "thumbnail:upss-homebush.webp",
+        "type": "thumbnail",
+        "filename": "upss-homebush.webp",
+        "path": "/media/portfolio/thumbs/upss-homebush.webp",
+        "label": "Upss Homebush",
+        "mime": "image/webp",
+        "sizeBytes": 39502,
+        "updatedAt": "2026-06-16T15:32:30.915Z"
+      },
+      {
+        "id": "thumbnail:upss-north-richmond.webp",
+        "type": "thumbnail",
+        "filename": "upss-north-richmond.webp",
+        "path": "/media/portfolio/thumbs/upss-north-richmond.webp",
+        "label": "Upss North Richmond",
+        "mime": "image/webp",
+        "sizeBytes": 93368,
+        "updatedAt": "2026-06-16T15:32:14.917Z"
+      },
+      {
+        "id": "thumbnail:upss-wyoming.webp",
+        "type": "thumbnail",
+        "filename": "upss-wyoming.webp",
+        "path": "/media/portfolio/thumbs/upss-wyoming.webp",
+        "label": "Upss Wyoming",
+        "mime": "image/webp",
+        "sizeBytes": 70426,
+        "updatedAt": "2026-06-16T15:31:13.909Z"
+      },
+      {
+        "id": "thumbnail:wungong-masterplan-thumb.webp",
+        "type": "thumbnail",
+        "filename": "wungong-masterplan-thumb.webp",
+        "path": "/media/portfolio/thumbs/wungong-masterplan-thumb.webp",
+        "label": "Wungong Masterplan Thumb",
+        "mime": "image/webp",
+        "sizeBytes": 208336,
+        "updatedAt": "2026-06-18T14:00:35.259Z"
+      }
+    ],
+    "portfolioImages": [
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p1.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p1.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p1.webp",
+        "label": "Aqwest Bcp Laboratory P1",
+        "mime": "image/webp",
+        "sizeBytes": 308972,
+        "updatedAt": "2026-06-19T00:30:51.004Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p2.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p2.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p2.webp",
+        "label": "Aqwest Bcp Laboratory P2",
+        "mime": "image/webp",
+        "sizeBytes": 389106,
+        "updatedAt": "2026-06-19T00:31:10.245Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p3.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p3.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p3.webp",
+        "label": "Aqwest Bcp Laboratory P3",
+        "mime": "image/webp",
+        "sizeBytes": 328190,
+        "updatedAt": "2026-06-19T00:31:30.863Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p4.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p4.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p4.webp",
+        "label": "Aqwest Bcp Laboratory P4",
+        "mime": "image/webp",
+        "sizeBytes": 229574,
+        "updatedAt": "2026-06-19T00:31:51.510Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p5.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p5.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p5.webp",
+        "label": "Aqwest Bcp Laboratory P5",
+        "mime": "image/webp",
+        "sizeBytes": 464602,
+        "updatedAt": "2026-06-19T00:32:11.891Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p6.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p6.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p6.webp",
+        "label": "Aqwest Bcp Laboratory P6",
+        "mime": "image/webp",
+        "sizeBytes": 273398,
+        "updatedAt": "2026-06-19T00:32:37.597Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p7.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p7.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p7.webp",
+        "label": "Aqwest Bcp Laboratory P7",
+        "mime": "image/webp",
+        "sizeBytes": 161368,
+        "updatedAt": "2026-06-19T00:33:36.998Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory-p8.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory-p8.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory-p8.webp",
+        "label": "Aqwest Bcp Laboratory P8",
+        "mime": "image/webp",
+        "sizeBytes": 188056,
+        "updatedAt": "2026-06-19T00:36:26.277Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory.jpg",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory.jpg",
+        "path": "/media/portfolio/aqwest-bcp-laboratory.jpg",
+        "label": "Aqwest Bcp Laboratory",
+        "mime": "image/jpeg",
+        "sizeBytes": 693035,
+        "updatedAt": "2026-04-18T15:22:38.676Z"
+      },
+      {
+        "id": "portfolio_image:aqwest-bcp-laboratory.webp",
+        "type": "portfolio_image",
+        "filename": "aqwest-bcp-laboratory.webp",
+        "path": "/media/portfolio/aqwest-bcp-laboratory.webp",
+        "label": "Aqwest Bcp Laboratory",
+        "mime": "image/webp",
+        "sizeBytes": 289870,
+        "updatedAt": "2026-05-01T16:17:31.339Z"
+      },
+      {
+        "id": "portfolio_image:cockburn-coast-details-000.webp",
+        "type": "portfolio_image",
+        "filename": "cockburn-coast-details-000.webp",
+        "path": "/media/portfolio/cockburn-coast-details-000.webp",
+        "label": "Cockburn Coast Details 000",
+        "mime": "image/webp",
+        "sizeBytes": 973998,
+        "updatedAt": "2026-06-18T19:35:40.938Z"
+      },
+      {
+        "id": "portfolio_image:cockburn-coast-details-930.webp",
+        "type": "portfolio_image",
+        "filename": "cockburn-coast-details-930.webp",
+        "path": "/media/portfolio/cockburn-coast-details-930.webp",
+        "label": "Cockburn Coast Details 930",
+        "mime": "image/webp",
+        "sizeBytes": 671912,
+        "updatedAt": "2026-06-18T19:31:29.936Z"
+      },
+      {
+        "id": "portfolio_image:cockburn-coast-details-931.webp",
+        "type": "portfolio_image",
+        "filename": "cockburn-coast-details-931.webp",
+        "path": "/media/portfolio/cockburn-coast-details-931.webp",
+        "label": "Cockburn Coast Details 931",
+        "mime": "image/webp",
+        "sizeBytes": 1113234,
+        "updatedAt": "2026-06-18T19:31:01.402Z"
+      },
+      {
+        "id": "portfolio_image:cockburn-coast-details-932.webp",
+        "type": "portfolio_image",
+        "filename": "cockburn-coast-details-932.webp",
+        "path": "/media/portfolio/cockburn-coast-details-932.webp",
+        "label": "Cockburn Coast Details 932",
+        "mime": "image/webp",
+        "sizeBytes": 721612,
+        "updatedAt": "2026-06-18T19:29:04.302Z"
+      },
+      {
+        "id": "portfolio_image:cockburn-coast-details-933.webp",
+        "type": "portfolio_image",
+        "filename": "cockburn-coast-details-933.webp",
+        "path": "/media/portfolio/cockburn-coast-details-933.webp",
+        "label": "Cockburn Coast Details 933",
+        "mime": "image/webp",
+        "sizeBytes": 1076666,
+        "updatedAt": "2026-06-18T19:30:00.473Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p1.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p1.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p1.webp",
+        "label": "Cottesloe Beach House P1",
+        "mime": "image/webp",
+        "sizeBytes": 2037828,
+        "updatedAt": "2026-06-18T14:59:26.766Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p10.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p10.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p10.webp",
+        "label": "Cottesloe Beach House P10",
+        "mime": "image/webp",
+        "sizeBytes": 1305532,
+        "updatedAt": "2026-06-18T15:05:22.458Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p2.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p2.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p2.webp",
+        "label": "Cottesloe Beach House P2",
+        "mime": "image/webp",
+        "sizeBytes": 1222358,
+        "updatedAt": "2026-06-18T15:00:31.937Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p3.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p3.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p3.webp",
+        "label": "Cottesloe Beach House P3",
+        "mime": "image/webp",
+        "sizeBytes": 866216,
+        "updatedAt": "2026-06-18T15:00:56.613Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p4.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p4.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p4.webp",
+        "label": "Cottesloe Beach House P4",
+        "mime": "image/webp",
+        "sizeBytes": 933010,
+        "updatedAt": "2026-06-18T15:01:29.012Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p5.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p5.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p5.webp",
+        "label": "Cottesloe Beach House P5",
+        "mime": "image/webp",
+        "sizeBytes": 2359698,
+        "updatedAt": "2026-06-18T15:03:18.994Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p6.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p6.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p6.webp",
+        "label": "Cottesloe Beach House P6",
+        "mime": "image/webp",
+        "sizeBytes": 1438482,
+        "updatedAt": "2026-06-18T15:03:51.572Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p7.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p7.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p7.webp",
+        "label": "Cottesloe Beach House P7",
+        "mime": "image/webp",
+        "sizeBytes": 1713320,
+        "updatedAt": "2026-06-18T15:04:17.669Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p8.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p8.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p8.webp",
+        "label": "Cottesloe Beach House P8",
+        "mime": "image/webp",
+        "sizeBytes": 1738892,
+        "updatedAt": "2026-06-18T15:04:37.089Z"
+      },
+      {
+        "id": "portfolio_image:cottesloe-beach-house-p9.webp",
+        "type": "portfolio_image",
+        "filename": "cottesloe-beach-house-p9.webp",
+        "path": "/media/portfolio/cottesloe-beach-house-p9.webp",
+        "label": "Cottesloe Beach House P9",
+        "mime": "image/webp",
+        "sizeBytes": 1443994,
+        "updatedAt": "2026-06-18T15:05:02.147Z"
+      },
+      {
+        "id": "portfolio_image:cue-roadhouse-p1.jpg",
+        "type": "portfolio_image",
+        "filename": "cue-roadhouse-p1.jpg",
+        "path": "/media/portfolio/cue-roadhouse-p1.jpg",
+        "label": "Cue Roadhouse P1",
+        "mime": "image/jpeg",
+        "sizeBytes": 1548671,
+        "updatedAt": "2026-06-18T19:20:18.459Z"
+      },
+      {
+        "id": "portfolio_image:cue-roadhouse-p1.webp",
+        "type": "portfolio_image",
+        "filename": "cue-roadhouse-p1.webp",
+        "path": "/media/portfolio/cue-roadhouse-p1.webp",
+        "label": "Cue Roadhouse P1",
+        "mime": "image/webp",
+        "sizeBytes": 2527906,
+        "updatedAt": "2026-06-18T19:21:52.125Z"
+      },
+      {
+        "id": "portfolio_image:cue-roadhouse-p2.jpg",
+        "type": "portfolio_image",
+        "filename": "cue-roadhouse-p2.jpg",
+        "path": "/media/portfolio/cue-roadhouse-p2.jpg",
+        "label": "Cue Roadhouse P2",
+        "mime": "image/jpeg",
+        "sizeBytes": 1548671,
+        "updatedAt": "2026-06-18T19:24:28.020Z"
+      },
+      {
+        "id": "portfolio_image:cue-roadhouse-p2.webp",
+        "type": "portfolio_image",
+        "filename": "cue-roadhouse-p2.webp",
+        "path": "/media/portfolio/cue-roadhouse-p2.webp",
+        "label": "Cue Roadhouse P2",
+        "mime": "image/webp",
+        "sizeBytes": 1789048,
+        "updatedAt": "2026-06-18T19:22:42.029Z"
+      },
+      {
+        "id": "portfolio_image:curtin-canopy.png",
+        "type": "portfolio_image",
+        "filename": "curtin-canopy.png",
+        "path": "/media/portfolio/curtin-canopy.png",
+        "label": "Curtin Canopy",
+        "mime": "image/png",
+        "sizeBytes": 1034523,
+        "updatedAt": "2026-04-18T15:25:50.004Z"
+      },
+      {
+        "id": "portfolio_image:curtin-canopy.webp",
+        "type": "portfolio_image",
+        "filename": "curtin-canopy.webp",
+        "path": "/media/portfolio/curtin-canopy.webp",
+        "label": "Curtin Canopy",
+        "mime": "image/webp",
+        "sizeBytes": 148322,
+        "updatedAt": "2026-05-01T16:17:13.165Z"
+      },
+      {
+        "id": "portfolio_image:curtin-container-gallery.jpg",
+        "type": "portfolio_image",
+        "filename": "curtin-container-gallery.jpg",
+        "path": "/media/portfolio/curtin-container-gallery.jpg",
+        "label": "Curtin Container Gallery",
+        "mime": "image/jpeg",
+        "sizeBytes": 442715,
+        "updatedAt": "2026-05-01T16:25:49.090Z"
+      },
+      {
+        "id": "portfolio_image:curtin-container-gallery.webp",
+        "type": "portfolio_image",
+        "filename": "curtin-container-gallery.webp",
+        "path": "/media/portfolio/curtin-container-gallery.webp",
+        "label": "Curtin Container Gallery",
+        "mime": "image/webp",
+        "sizeBytes": 223084,
+        "updatedAt": "2026-05-01T16:16:19.742Z"
+      },
+      {
+        "id": "portfolio_image:curtin-creative-quarter-bus-stand.webp",
+        "type": "portfolio_image",
+        "filename": "curtin-creative-quarter-bus-stand.webp",
+        "path": "/media/portfolio/curtin-creative-quarter-bus-stand.webp",
+        "label": "Curtin Creative Quarter Bus Stand",
+        "mime": "image/webp",
+        "sizeBytes": 981986,
+        "updatedAt": "2026-06-18T19:39:37.338Z"
+      },
+      {
+        "id": "portfolio_image:curtin-creative-quarter.png",
+        "type": "portfolio_image",
+        "filename": "curtin-creative-quarter.png",
+        "path": "/media/portfolio/curtin-creative-quarter.png",
+        "label": "Curtin Creative Quarter",
+        "mime": "image/png",
+        "sizeBytes": 360288,
+        "updatedAt": "2026-04-18T15:24:51.615Z"
+      },
+      {
+        "id": "portfolio_image:curtin-creative-quarter.webp",
+        "type": "portfolio_image",
+        "filename": "curtin-creative-quarter.webp",
+        "path": "/media/portfolio/curtin-creative-quarter.webp",
+        "label": "Curtin Creative Quarter",
+        "mime": "image/webp",
+        "sizeBytes": 83528,
+        "updatedAt": "2026-05-01T16:14:30.645Z"
+      },
+      {
+        "id": "portfolio_image:curtin-study-pod.png",
+        "type": "portfolio_image",
+        "filename": "curtin-study-pod.png",
+        "path": "/media/portfolio/curtin-study-pod.png",
+        "label": "Curtin Study Pod",
+        "mime": "image/png",
+        "sizeBytes": 141567,
+        "updatedAt": "2026-05-01T16:19:11.469Z"
+      },
+      {
+        "id": "portfolio_image:curtin-study-pod.webp",
+        "type": "portfolio_image",
+        "filename": "curtin-study-pod.webp",
+        "path": "/media/portfolio/curtin-study-pod.webp",
+        "label": "Curtin Study Pod",
+        "mime": "image/webp",
+        "sizeBytes": 125078,
+        "updatedAt": "2026-05-01T16:19:08.805Z"
+      },
+      {
+        "id": "portfolio_image:dawesville-p1.webp",
+        "type": "portfolio_image",
+        "filename": "dawesville-p1.webp",
+        "path": "/media/portfolio/dawesville-p1.webp",
+        "label": "Dawesville P1",
+        "mime": "image/webp",
+        "sizeBytes": 764548,
+        "updatedAt": "2026-06-18T13:46:38.116Z"
+      },
+      {
+        "id": "portfolio_image:dawesville-p2.webp",
+        "type": "portfolio_image",
+        "filename": "dawesville-p2.webp",
+        "path": "/media/portfolio/dawesville-p2.webp",
+        "label": "Dawesville P2",
+        "mime": "image/webp",
+        "sizeBytes": 1237154,
+        "updatedAt": "2026-06-18T13:47:20.742Z"
+      },
+      {
+        "id": "portfolio_image:dawesville-p3.webp",
+        "type": "portfolio_image",
+        "filename": "dawesville-p3.webp",
+        "path": "/media/portfolio/dawesville-p3.webp",
+        "label": "Dawesville P3",
+        "mime": "image/webp",
+        "sizeBytes": 861774,
+        "updatedAt": "2026-06-18T13:47:47.829Z"
+      },
+      {
+        "id": "portfolio_image:eastern-creek.png",
+        "type": "portfolio_image",
+        "filename": "eastern-creek.png",
+        "path": "/media/portfolio/eastern-creek.png",
+        "label": "Eastern Creek",
+        "mime": "image/png",
+        "sizeBytes": 588854,
+        "updatedAt": "2026-04-18T15:25:50.004Z"
+      },
+      {
+        "id": "portfolio_image:eastern-creek.webp",
+        "type": "portfolio_image",
+        "filename": "eastern-creek.webp",
+        "path": "/media/portfolio/eastern-creek.webp",
+        "label": "Eastern Creek",
+        "mime": "image/webp",
+        "sizeBytes": 150428,
+        "updatedAt": "2026-05-01T16:14:57.514Z"
+      },
+      {
+        "id": "portfolio_image:eighth-rd.jpg",
+        "type": "portfolio_image",
+        "filename": "eighth-rd.jpg",
+        "path": "/media/portfolio/eighth-rd.jpg",
+        "label": "Eighth Rd",
+        "mime": "image/jpeg",
+        "sizeBytes": 313413,
+        "updatedAt": "2026-06-18T19:26:07.748Z"
+      },
+      {
+        "id": "portfolio_image:fesa-fire01.webp",
+        "type": "portfolio_image",
+        "filename": "fesa-fire01.webp",
+        "path": "/media/portfolio/fesa-fire01.webp",
+        "label": "Fesa Fire01",
+        "mime": "image/webp",
+        "sizeBytes": 521934,
+        "updatedAt": "2026-06-18T14:04:19.661Z"
+      },
+      {
+        "id": "portfolio_image:fesa-fire02.webp",
+        "type": "portfolio_image",
+        "filename": "fesa-fire02.webp",
+        "path": "/media/portfolio/fesa-fire02.webp",
+        "label": "Fesa Fire02",
+        "mime": "image/webp",
+        "sizeBytes": 627236,
+        "updatedAt": "2026-06-18T14:04:38.840Z"
+      },
+      {
+        "id": "portfolio_image:fesa-fire03.webp",
+        "type": "portfolio_image",
+        "filename": "fesa-fire03.webp",
+        "path": "/media/portfolio/fesa-fire03.webp",
+        "label": "Fesa Fire03",
+        "mime": "image/webp",
+        "sizeBytes": 564996,
+        "updatedAt": "2026-06-18T14:03:45.081Z"
+      },
+      {
+        "id": "portfolio_image:fesa-fire04.webp",
+        "type": "portfolio_image",
+        "filename": "fesa-fire04.webp",
+        "path": "/media/portfolio/fesa-fire04.webp",
+        "label": "Fesa Fire04",
+        "mime": "image/webp",
+        "sizeBytes": 910164,
+        "updatedAt": "2026-06-18T14:03:17.959Z"
+      },
+      {
+        "id": "portfolio_image:gardencity-p1.webp",
+        "type": "portfolio_image",
+        "filename": "gardencity-p1.webp",
+        "path": "/media/portfolio/gardencity-p1.webp",
+        "label": "Gardencity P1",
+        "mime": "image/webp",
+        "sizeBytes": 878752,
+        "updatedAt": "2026-06-18T19:14:48.597Z"
+      },
+      {
+        "id": "portfolio_image:gardencity-p2.webp",
+        "type": "portfolio_image",
+        "filename": "gardencity-p2.webp",
+        "path": "/media/portfolio/gardencity-p2.webp",
+        "label": "Gardencity P2",
+        "mime": "image/webp",
+        "sizeBytes": 411166,
+        "updatedAt": "2026-06-18T19:15:23.786Z"
+      },
+      {
+        "id": "portfolio_image:gardencity-p3.webp",
+        "type": "portfolio_image",
+        "filename": "gardencity-p3.webp",
+        "path": "/media/portfolio/gardencity-p3.webp",
+        "label": "Gardencity P3",
+        "mime": "image/webp",
+        "sizeBytes": 1369766,
+        "updatedAt": "2026-06-18T19:13:47.785Z"
+      },
+      {
+        "id": "portfolio_image:gardencity-p4.webp",
+        "type": "portfolio_image",
+        "filename": "gardencity-p4.webp",
+        "path": "/media/portfolio/gardencity-p4.webp",
+        "label": "Gardencity P4",
+        "mime": "image/webp",
+        "sizeBytes": 1209284,
+        "updatedAt": "2026-06-18T19:13:19.648Z"
+      },
+      {
+        "id": "portfolio_image:gardencity-p5.webp",
+        "type": "portfolio_image",
+        "filename": "gardencity-p5.webp",
+        "path": "/media/portfolio/gardencity-p5.webp",
+        "label": "Gardencity P5",
+        "mime": "image/webp",
+        "sizeBytes": 1175348,
+        "updatedAt": "2026-06-18T19:12:45.204Z"
+      },
+      {
+        "id": "portfolio_image:gardencity-p6.webp",
+        "type": "portfolio_image",
+        "filename": "gardencity-p6.webp",
+        "path": "/media/portfolio/gardencity-p6.webp",
+        "label": "Gardencity P6",
+        "mime": "image/webp",
+        "sizeBytes": 1050014,
+        "updatedAt": "2026-06-18T19:14:14.710Z"
+      },
+      {
+        "id": "portfolio_image:henry-st-p1.webp",
+        "type": "portfolio_image",
+        "filename": "henry-st-p1.webp",
+        "path": "/media/portfolio/henry-st-p1.webp",
+        "label": "Henry St P1",
+        "mime": "image/webp",
+        "sizeBytes": 1389430,
+        "updatedAt": "2026-06-19T00:44:35.354Z"
+      },
+      {
+        "id": "portfolio_image:henry-st-p2.webp",
+        "type": "portfolio_image",
+        "filename": "henry-st-p2.webp",
+        "path": "/media/portfolio/henry-st-p2.webp",
+        "label": "Henry St P2",
+        "mime": "image/webp",
+        "sizeBytes": 842928,
+        "updatedAt": "2026-06-19T00:42:13.562Z"
+      },
+      {
+        "id": "portfolio_image:henry-st-p3.webp",
+        "type": "portfolio_image",
+        "filename": "henry-st-p3.webp",
+        "path": "/media/portfolio/henry-st-p3.webp",
+        "label": "Henry St P3",
+        "mime": "image/webp",
+        "sizeBytes": 1395882,
+        "updatedAt": "2026-06-19T00:42:32.970Z"
+      },
+      {
+        "id": "portfolio_image:henry-st-p4.webp",
+        "type": "portfolio_image",
+        "filename": "henry-st-p4.webp",
+        "path": "/media/portfolio/henry-st-p4.webp",
+        "label": "Henry St P4",
+        "mime": "image/webp",
+        "sizeBytes": 737698,
+        "updatedAt": "2026-06-19T00:43:14.392Z"
+      },
+      {
+        "id": "portfolio_image:henry-st-p5.webp",
+        "type": "portfolio_image",
+        "filename": "henry-st-p5.webp",
+        "path": "/media/portfolio/henry-st-p5.webp",
+        "label": "Henry St P5",
+        "mime": "image/webp",
+        "sizeBytes": 600542,
+        "updatedAt": "2026-06-19T00:43:31.721Z"
+      },
+      {
+        "id": "portfolio_image:henry-st-p6.webp",
+        "type": "portfolio_image",
+        "filename": "henry-st-p6.webp",
+        "path": "/media/portfolio/henry-st-p6.webp",
+        "label": "Henry St P6",
+        "mime": "image/webp",
+        "sizeBytes": 1104124,
+        "updatedAt": "2026-06-19T00:43:48.591Z"
+      },
+      {
+        "id": "portfolio_image:jull-st.jpg",
+        "type": "portfolio_image",
+        "filename": "jull-st.jpg",
+        "path": "/media/portfolio/jull-st.jpg",
+        "label": "Jull St",
+        "mime": "image/jpeg",
+        "sizeBytes": 624707,
+        "updatedAt": "2026-06-18T19:25:15.146Z"
+      },
+      {
+        "id": "portfolio_image:lake-joondalup-baptist-college.jpg",
+        "type": "portfolio_image",
+        "filename": "lake-joondalup-baptist-college.jpg",
+        "path": "/media/portfolio/lake-joondalup-baptist-college.jpg",
+        "label": "Lake Joondalup Baptist College",
+        "mime": "image/jpeg",
+        "sizeBytes": 791672,
+        "updatedAt": "2026-04-18T15:22:38.676Z"
+      },
+      {
+        "id": "portfolio_image:lake-joondalup-baptist-college.webp",
+        "type": "portfolio_image",
+        "filename": "lake-joondalup-baptist-college.webp",
+        "path": "/media/portfolio/lake-joondalup-baptist-college.webp",
+        "label": "Lake Joondalup Baptist College",
+        "mime": "image/webp",
+        "sizeBytes": 449510,
+        "updatedAt": "2026-05-01T16:15:16.866Z"
+      },
+      {
+        "id": "portfolio_image:luxxman-p1.webp",
+        "type": "portfolio_image",
+        "filename": "luxxman-p1.webp",
+        "path": "/media/portfolio/luxxman-p1.webp",
+        "label": "Luxxman P1",
+        "mime": "image/webp",
+        "sizeBytes": 179764,
+        "updatedAt": "2026-06-19T00:50:28.154Z"
+      },
+      {
+        "id": "portfolio_image:luxxman-p2.webp",
+        "type": "portfolio_image",
+        "filename": "luxxman-p2.webp",
+        "path": "/media/portfolio/luxxman-p2.webp",
+        "label": "Luxxman P2",
+        "mime": "image/webp",
+        "sizeBytes": 901916,
+        "updatedAt": "2026-06-19T00:50:55.939Z"
+      },
+      {
+        "id": "portfolio_image:luxxman-p3.webp",
+        "type": "portfolio_image",
+        "filename": "luxxman-p3.webp",
+        "path": "/media/portfolio/luxxman-p3.webp",
+        "label": "Luxxman P3",
+        "mime": "image/webp",
+        "sizeBytes": 670410,
+        "updatedAt": "2026-06-19T00:51:21.710Z"
+      },
+      {
+        "id": "portfolio_image:luxxman-p4.webp",
+        "type": "portfolio_image",
+        "filename": "luxxman-p4.webp",
+        "path": "/media/portfolio/luxxman-p4.webp",
+        "label": "Luxxman P4",
+        "mime": "image/webp",
+        "sizeBytes": 553258,
+        "updatedAt": "2026-06-19T00:51:44.237Z"
+      },
+      {
+        "id": "portfolio_image:luxxman-p5.webp",
+        "type": "portfolio_image",
+        "filename": "luxxman-p5.webp",
+        "path": "/media/portfolio/luxxman-p5.webp",
+        "label": "Luxxman P5",
+        "mime": "image/webp",
+        "sizeBytes": 303308,
+        "updatedAt": "2026-06-19T00:52:10.489Z"
+      },
+      {
+        "id": "portfolio_image:luxxman-p7.webp",
+        "type": "portfolio_image",
+        "filename": "luxxman-p7.webp",
+        "path": "/media/portfolio/luxxman-p7.webp",
+        "label": "Luxxman P7",
+        "mime": "image/webp",
+        "sizeBytes": 399142,
+        "updatedAt": "2026-06-19T00:48:54.806Z"
+      },
+      {
+        "id": "portfolio_image:petric-p1.webp",
+        "type": "portfolio_image",
+        "filename": "petric-p1.webp",
+        "path": "/media/portfolio/petric-p1.webp",
+        "label": "Petric P1",
+        "mime": "image/webp",
+        "sizeBytes": 1248998,
+        "updatedAt": "2026-06-19T00:57:34.269Z"
+      },
+      {
+        "id": "portfolio_image:petric-p2.webp",
+        "type": "portfolio_image",
+        "filename": "petric-p2.webp",
+        "path": "/media/portfolio/petric-p2.webp",
+        "label": "Petric P2",
+        "mime": "image/webp",
+        "sizeBytes": 1214466,
+        "updatedAt": "2026-06-19T00:57:14.585Z"
+      },
+      {
+        "id": "portfolio_image:petric-p3.webp",
+        "type": "portfolio_image",
+        "filename": "petric-p3.webp",
+        "path": "/media/portfolio/petric-p3.webp",
+        "label": "Petric P3",
+        "mime": "image/webp",
+        "sizeBytes": 1243906,
+        "updatedAt": "2026-06-19T00:56:26.698Z"
+      },
+      {
+        "id": "portfolio_image:petric-p4.webp",
+        "type": "portfolio_image",
+        "filename": "petric-p4.webp",
+        "path": "/media/portfolio/petric-p4.webp",
+        "label": "Petric P4",
+        "mime": "image/webp",
+        "sizeBytes": 659170,
+        "updatedAt": "2026-06-19T00:55:59.963Z"
+      },
+      {
+        "id": "portfolio_image:pheasants-nest.jpg",
+        "type": "portfolio_image",
+        "filename": "pheasants-nest.jpg",
+        "path": "/media/portfolio/pheasants-nest.jpg",
+        "label": "Pheasants Nest",
+        "mime": "image/jpeg",
+        "sizeBytes": 1351461,
+        "updatedAt": "2026-05-01T16:14:15.324Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-01.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_01.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_01.webp",
+        "label": "PNN AR DA Page 01",
+        "mime": "image/webp",
+        "sizeBytes": 1063686,
+        "updatedAt": "2026-06-18T14:37:47.139Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-02.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_02.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_02.webp",
+        "label": "PNN AR DA Page 02",
+        "mime": "image/webp",
+        "sizeBytes": 2054218,
+        "updatedAt": "2026-06-18T14:41:26.994Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-03.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_03.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_03.webp",
+        "label": "PNN AR DA Page 03",
+        "mime": "image/webp",
+        "sizeBytes": 1264252,
+        "updatedAt": "2026-06-18T14:45:35.338Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-04.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_04.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_04.webp",
+        "label": "PNN AR DA Page 04",
+        "mime": "image/webp",
+        "sizeBytes": 2871020,
+        "updatedAt": "2026-06-18T14:52:35.589Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-05.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_05.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_05.webp",
+        "label": "PNN AR DA Page 05",
+        "mime": "image/webp",
+        "sizeBytes": 1461722,
+        "updatedAt": "2026-06-18T14:49:05.016Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-06.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_06.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_06.webp",
+        "label": "PNN AR DA Page 06",
+        "mime": "image/webp",
+        "sizeBytes": 2073380,
+        "updatedAt": "2026-06-18T14:50:57.356Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-07.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_07.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_07.webp",
+        "label": "PNN AR DA Page 07",
+        "mime": "image/webp",
+        "sizeBytes": 1176586,
+        "updatedAt": "2026-06-18T14:50:40.536Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-08.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_08.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_08.webp",
+        "label": "PNN AR DA Page 08",
+        "mime": "image/webp",
+        "sizeBytes": 2456710,
+        "updatedAt": "2026-06-18T14:51:33.466Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-11.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_11.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_11.webp",
+        "label": "PNN AR DA Page 11",
+        "mime": "image/webp",
+        "sizeBytes": 1019936,
+        "updatedAt": "2026-06-18T14:50:06.115Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-12.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_12.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_12.webp",
+        "label": "PNN AR DA Page 12",
+        "mime": "image/webp",
+        "sizeBytes": 947426,
+        "updatedAt": "2026-06-18T14:40:02.715Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-14.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_14.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_14.webp",
+        "label": "PNN AR DA Page 14",
+        "mime": "image/webp",
+        "sizeBytes": 948750,
+        "updatedAt": "2026-06-18T14:51:15.147Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-15.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_15.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_15.webp",
+        "label": "PNN AR DA Page 15",
+        "mime": "image/webp",
+        "sizeBytes": 1270260,
+        "updatedAt": "2026-06-18T14:52:51.886Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-17.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_17.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_17.webp",
+        "label": "PNN AR DA Page 17",
+        "mime": "image/webp",
+        "sizeBytes": 851866,
+        "updatedAt": "2026-06-18T14:46:16.238Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-18.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_18.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_18.webp",
+        "label": "PNN AR DA Page 18",
+        "mime": "image/webp",
+        "sizeBytes": 1141138,
+        "updatedAt": "2026-06-18T14:42:51.837Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-20.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_20.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_20.webp",
+        "label": "PNN AR DA Page 20",
+        "mime": "image/webp",
+        "sizeBytes": 433592,
+        "updatedAt": "2026-06-18T14:45:54.677Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-21.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_21.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_21.webp",
+        "label": "PNN AR DA Page 21",
+        "mime": "image/webp",
+        "sizeBytes": 737788,
+        "updatedAt": "2026-06-18T14:44:58.716Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-22.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_22.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_22.webp",
+        "label": "PNN AR DA Page 22",
+        "mime": "image/webp",
+        "sizeBytes": 658778,
+        "updatedAt": "2026-06-18T14:43:41.698Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-24.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_24.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_24.webp",
+        "label": "PNN AR DA Page 24",
+        "mime": "image/webp",
+        "sizeBytes": 491592,
+        "updatedAt": "2026-06-18T14:42:25.242Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-25.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_25.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_25.webp",
+        "label": "PNN AR DA Page 25",
+        "mime": "image/webp",
+        "sizeBytes": 1152242,
+        "updatedAt": "2026-06-18T14:44:07.146Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-26.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_26.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_26.webp",
+        "label": "PNN AR DA Page 26",
+        "mime": "image/webp",
+        "sizeBytes": 1393544,
+        "updatedAt": "2026-06-18T14:48:42.870Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-27.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_27.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_27.webp",
+        "label": "PNN AR DA Page 27",
+        "mime": "image/webp",
+        "sizeBytes": 715528,
+        "updatedAt": "2026-06-18T14:50:22.719Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-29.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_29.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_29.webp",
+        "label": "PNN AR DA Page 29",
+        "mime": "image/webp",
+        "sizeBytes": 1564388,
+        "updatedAt": "2026-06-18T14:43:19.263Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-30.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_30.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_30.webp",
+        "label": "PNN AR DA Page 30",
+        "mime": "image/webp",
+        "sizeBytes": 769202,
+        "updatedAt": "2026-06-18T14:51:51.213Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-31.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_31.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_31.webp",
+        "label": "PNN AR DA Page 31",
+        "mime": "image/webp",
+        "sizeBytes": 1086030,
+        "updatedAt": "2026-06-18T14:52:13.491Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-32.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_32.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_32.webp",
+        "label": "PNN AR DA Page 32",
+        "mime": "image/webp",
+        "sizeBytes": 1606398,
+        "updatedAt": "2026-06-18T14:45:17.373Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-33.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_33.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_33.webp",
+        "label": "PNN AR DA Page 33",
+        "mime": "image/webp",
+        "sizeBytes": 983558,
+        "updatedAt": "2026-06-18T14:46:34.598Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-34.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_34.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_34.webp",
+        "label": "PNN AR DA Page 34",
+        "mime": "image/webp",
+        "sizeBytes": 713118,
+        "updatedAt": "2026-06-18T14:42:15.407Z"
+      },
+      {
+        "id": "portfolio_image:pnn-ar-da-page-35.webp",
+        "type": "portfolio_image",
+        "filename": "PNN_AR_DA_Page_35.webp",
+        "path": "/media/portfolio/PNN_AR_DA_Page_35.webp",
+        "label": "PNN AR DA Page 35",
+        "mime": "image/webp",
+        "sizeBytes": 2153292,
+        "updatedAt": "2026-06-18T14:39:36.827Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-000.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-000.webp",
+        "path": "/media/portfolio/pnn-xx-000.webp",
+        "label": "Pnn Xx 000",
+        "mime": "image/webp",
+        "sizeBytes": 47372,
+        "updatedAt": "2026-06-18T14:20:23.419Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-001.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-001.webp",
+        "path": "/media/portfolio/pnn-xx-001.webp",
+        "label": "Pnn Xx 001",
+        "mime": "image/webp",
+        "sizeBytes": 318764,
+        "updatedAt": "2026-06-18T14:20:49.416Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-002.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-002.webp",
+        "path": "/media/portfolio/pnn-xx-002.webp",
+        "label": "Pnn Xx 002",
+        "mime": "image/webp",
+        "sizeBytes": 179624,
+        "updatedAt": "2026-06-18T14:21:18.637Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-003.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-003.webp",
+        "path": "/media/portfolio/pnn-xx-003.webp",
+        "label": "Pnn Xx 003",
+        "mime": "image/webp",
+        "sizeBytes": 127894,
+        "updatedAt": "2026-06-18T14:21:35.140Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-004.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-004.webp",
+        "path": "/media/portfolio/pnn-xx-004.webp",
+        "label": "Pnn Xx 004",
+        "mime": "image/webp",
+        "sizeBytes": 72612,
+        "updatedAt": "2026-06-18T14:21:58.647Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-005.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-005.webp",
+        "path": "/media/portfolio/pnn-xx-005.webp",
+        "label": "Pnn Xx 005",
+        "mime": "image/webp",
+        "sizeBytes": 63494,
+        "updatedAt": "2026-06-18T14:22:17.206Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-006.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-006.webp",
+        "path": "/media/portfolio/pnn-xx-006.webp",
+        "label": "Pnn Xx 006",
+        "mime": "image/webp",
+        "sizeBytes": 134394,
+        "updatedAt": "2026-06-18T14:33:22.832Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-007.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-007.webp",
+        "path": "/media/portfolio/pnn-xx-007.webp",
+        "label": "Pnn Xx 007",
+        "mime": "image/webp",
+        "sizeBytes": 114230,
+        "updatedAt": "2026-06-18T14:33:41.549Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-008.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-008.webp",
+        "path": "/media/portfolio/pnn-xx-008.webp",
+        "label": "Pnn Xx 008",
+        "mime": "image/webp",
+        "sizeBytes": 290996,
+        "updatedAt": "2026-06-18T14:33:58.105Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-009.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-009.webp",
+        "path": "/media/portfolio/pnn-xx-009.webp",
+        "label": "Pnn Xx 009",
+        "mime": "image/webp",
+        "sizeBytes": 117430,
+        "updatedAt": "2026-06-18T14:34:16.168Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-010.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-010.webp",
+        "path": "/media/portfolio/pnn-xx-010.webp",
+        "label": "Pnn Xx 010",
+        "mime": "image/webp",
+        "sizeBytes": 147564,
+        "updatedAt": "2026-06-18T14:34:35.233Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-011.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-011.webp",
+        "path": "/media/portfolio/pnn-xx-011.webp",
+        "label": "Pnn Xx 011",
+        "mime": "image/webp",
+        "sizeBytes": 258628,
+        "updatedAt": "2026-06-18T14:34:51.840Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-012.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-012.webp",
+        "path": "/media/portfolio/pnn-xx-012.webp",
+        "label": "Pnn Xx 012",
+        "mime": "image/webp",
+        "sizeBytes": 271308,
+        "updatedAt": "2026-06-18T14:35:06.797Z"
+      },
+      {
+        "id": "portfolio_image:pnn-xx-013.webp",
+        "type": "portfolio_image",
+        "filename": "pnn-xx-013.webp",
+        "path": "/media/portfolio/pnn-xx-013.webp",
+        "label": "Pnn Xx 013",
+        "mime": "image/webp",
+        "sizeBytes": 244184,
+        "updatedAt": "2026-06-18T14:35:24.192Z"
+      },
+      {
+        "id": "portfolio_image:rgp6-gatehouse-details-p1.webp",
+        "type": "portfolio_image",
+        "filename": "rgp6-gatehouse-details-p1.webp",
+        "path": "/media/portfolio/rgp6-gatehouse-details-p1.webp",
+        "label": "Rgp6 Gatehouse Details P1",
+        "mime": "image/webp",
+        "sizeBytes": 1389866,
+        "updatedAt": "2026-06-19T00:39:46.201Z"
+      },
+      {
+        "id": "portfolio_image:rgp6-gatehouse-details-p2.webp",
+        "type": "portfolio_image",
+        "filename": "rgp6-gatehouse-details-p2.webp",
+        "path": "/media/portfolio/rgp6-gatehouse-details-p2.webp",
+        "label": "Rgp6 Gatehouse Details P2",
+        "mime": "image/webp",
+        "sizeBytes": 682800,
+        "updatedAt": "2026-06-19T00:40:39.223Z"
+      },
+      {
+        "id": "portfolio_image:rowell-residence-p3.webp",
+        "type": "portfolio_image",
+        "filename": "rowell-residence-p3.webp",
+        "path": "/media/portfolio/rowell-residence-p3.webp",
+        "label": "Rowell Residence P3",
+        "mime": "image/webp",
+        "sizeBytes": 4955604,
+        "updatedAt": "2026-06-19T00:53:31.552Z"
+      },
+      {
+        "id": "portfolio_image:rowell-residence-p4.webp",
+        "type": "portfolio_image",
+        "filename": "rowell-residence-p4.webp",
+        "path": "/media/portfolio/rowell-residence-p4.webp",
+        "label": "Rowell Residence P4",
+        "mime": "image/webp",
+        "sizeBytes": 1745804,
+        "updatedAt": "2026-06-19T00:55:29.910Z"
+      },
+      {
+        "id": "portfolio_image:rowell-residence.jpg",
+        "type": "portfolio_image",
+        "filename": "rowell-residence.jpg",
+        "path": "/media/portfolio/rowell-residence.jpg",
+        "label": "Rowell Residence",
+        "mime": "image/jpeg",
+        "sizeBytes": 650988,
+        "updatedAt": "2026-05-01T16:22:11.590Z"
+      },
+      {
+        "id": "portfolio_image:south-perth-promenade-909.webp",
+        "type": "portfolio_image",
+        "filename": "south-perth-promenade-909.webp",
+        "path": "/media/portfolio/south-perth-promenade-909.webp",
+        "label": "South Perth Promenade 909",
+        "mime": "image/webp",
+        "sizeBytes": 662298,
+        "updatedAt": "2026-06-18T19:37:58.813Z"
+      },
+      {
+        "id": "portfolio_image:south-perth-promenade-910.webp",
+        "type": "portfolio_image",
+        "filename": "south-perth-promenade-910.webp",
+        "path": "/media/portfolio/south-perth-promenade-910.webp",
+        "label": "South Perth Promenade 910",
+        "mime": "image/webp",
+        "sizeBytes": 1288570,
+        "updatedAt": "2026-06-18T19:37:34.963Z"
+      },
+      {
+        "id": "portfolio_image:south-perth-promenade-911.webp",
+        "type": "portfolio_image",
+        "filename": "south-perth-promenade-911.webp",
+        "path": "/media/portfolio/south-perth-promenade-911.webp",
+        "label": "South Perth Promenade 911",
+        "mime": "image/webp",
+        "sizeBytes": 634326,
+        "updatedAt": "2026-06-18T19:33:39.307Z"
+      },
+      {
+        "id": "portfolio_image:south-perth-promenade-912.webp",
+        "type": "portfolio_image",
+        "filename": "south-perth-promenade-912.webp",
+        "path": "/media/portfolio/south-perth-promenade-912.webp",
+        "label": "South Perth Promenade 912",
+        "mime": "image/webp",
+        "sizeBytes": 565352,
+        "updatedAt": "2026-06-18T19:38:38.901Z"
+      },
+      {
+        "id": "portfolio_image:south-perth-promenade-914.webp",
+        "type": "portfolio_image",
+        "filename": "south-perth-promenade-914.webp",
+        "path": "/media/portfolio/south-perth-promenade-914.webp",
+        "label": "South Perth Promenade 914",
+        "mime": "image/webp",
+        "sizeBytes": 420162,
+        "updatedAt": "2026-06-18T19:38:18.001Z"
+      },
+      {
+        "id": "portfolio_image:south-perth-promenade-9xx.webp",
+        "type": "portfolio_image",
+        "filename": "south-perth-promenade-9xx.webp",
+        "path": "/media/portfolio/south-perth-promenade-9xx.webp",
+        "label": "South Perth Promenade 9xx",
+        "mime": "image/webp",
+        "sizeBytes": 350110,
+        "updatedAt": "2026-06-18T19:34:18.771Z"
+      },
+      {
+        "id": "portfolio_image:spratt-residence-p1.webp",
+        "type": "portfolio_image",
+        "filename": "spratt-residence-p1.webp",
+        "path": "/media/portfolio/spratt-residence-p1.webp",
+        "label": "Spratt Residence P1",
+        "mime": "image/webp",
+        "sizeBytes": 1530994,
+        "updatedAt": "2026-06-19T00:58:41.316Z"
+      },
+      {
+        "id": "portfolio_image:spratt-residence-p2.webp",
+        "type": "portfolio_image",
+        "filename": "spratt-residence-p2.webp",
+        "path": "/media/portfolio/spratt-residence-p2.webp",
+        "label": "Spratt Residence P2",
+        "mime": "image/webp",
+        "sizeBytes": 679426,
+        "updatedAt": "2026-06-19T00:59:03.149Z"
+      },
+      {
+        "id": "portfolio_image:spratt-residence-p3.webp",
+        "type": "portfolio_image",
+        "filename": "spratt-residence-p3.webp",
+        "path": "/media/portfolio/spratt-residence-p3.webp",
+        "label": "Spratt Residence P3",
+        "mime": "image/webp",
+        "sizeBytes": 887180,
+        "updatedAt": "2026-06-19T00:59:16.696Z"
+      },
+      {
+        "id": "portfolio_image:spratt-residence.jpg",
+        "type": "portfolio_image",
+        "filename": "spratt-residence.jpg",
+        "path": "/media/portfolio/spratt-residence.jpg",
+        "label": "Spratt Residence",
+        "mime": "image/jpeg",
+        "sizeBytes": 1258922,
+        "updatedAt": "2026-05-01T16:16:50.706Z"
+      },
+      {
+        "id": "portfolio_image:spratt-residence.webp",
+        "type": "portfolio_image",
+        "filename": "spratt-residence.webp",
+        "path": "/media/portfolio/spratt-residence.webp",
+        "label": "Spratt Residence",
+        "mime": "image/webp",
+        "sizeBytes": 459564,
+        "updatedAt": "2026-05-01T16:16:47.057Z"
+      },
+      {
+        "id": "portfolio_image:upss-beacon-hill.jpg",
+        "type": "portfolio_image",
+        "filename": "upss-beacon-hill.jpg",
+        "path": "/media/portfolio/upss-beacon-hill.jpg",
+        "label": "Upss Beacon Hill",
+        "mime": "image/jpeg",
+        "sizeBytes": 607556,
+        "updatedAt": "2026-04-18T15:22:38.676Z"
+      },
+      {
+        "id": "portfolio_image:upss-beacon-hill.webp",
+        "type": "portfolio_image",
+        "filename": "upss-beacon-hill.webp",
+        "path": "/media/portfolio/upss-beacon-hill.webp",
+        "label": "Upss Beacon Hill",
+        "mime": "image/webp",
+        "sizeBytes": 474370,
+        "updatedAt": "2026-05-01T16:19:26.948Z"
+      },
+      {
+        "id": "portfolio_image:upss-brownsville.jpg",
+        "type": "portfolio_image",
+        "filename": "upss-brownsville.jpg",
+        "path": "/media/portfolio/upss-brownsville.jpg",
+        "label": "Upss Brownsville",
+        "mime": "image/jpeg",
+        "sizeBytes": 684557,
+        "updatedAt": "2026-05-01T16:20:11.805Z"
+      },
+      {
+        "id": "portfolio_image:upss-brownsville.webp",
+        "type": "portfolio_image",
+        "filename": "upss-brownsville.webp",
+        "path": "/media/portfolio/upss-brownsville.webp",
+        "label": "Upss Brownsville",
+        "mime": "image/webp",
+        "sizeBytes": 165490,
+        "updatedAt": "2026-05-01T16:19:47.098Z"
+      },
+      {
+        "id": "portfolio_image:upss-grafton.jpg",
+        "type": "portfolio_image",
+        "filename": "upss-grafton.jpg",
+        "path": "/media/portfolio/upss-grafton.jpg",
+        "label": "Upss Grafton",
+        "mime": "image/jpeg",
+        "sizeBytes": 546995,
+        "updatedAt": "2026-04-18T15:22:38.676Z"
+      },
+      {
+        "id": "portfolio_image:upss-grafton.webp",
+        "type": "portfolio_image",
+        "filename": "upss-grafton.webp",
+        "path": "/media/portfolio/upss-grafton.webp",
+        "label": "Upss Grafton",
+        "mime": "image/webp",
+        "sizeBytes": 395314,
+        "updatedAt": "2026-05-01T16:18:22.653Z"
+      },
+      {
+        "id": "portfolio_image:upss-homebush.jpg",
+        "type": "portfolio_image",
+        "filename": "upss-homebush.jpg",
+        "path": "/media/portfolio/upss-homebush.jpg",
+        "label": "Upss Homebush",
+        "mime": "image/jpeg",
+        "sizeBytes": 660433,
+        "updatedAt": "2026-05-01T16:21:02.340Z"
+      },
+      {
+        "id": "portfolio_image:upss-homebush.webp",
+        "type": "portfolio_image",
+        "filename": "upss-homebush.webp",
+        "path": "/media/portfolio/upss-homebush.webp",
+        "label": "Upss Homebush",
+        "mime": "image/webp",
+        "sizeBytes": 156370,
+        "updatedAt": "2026-05-01T16:20:58.884Z"
+      },
+      {
+        "id": "portfolio_image:upss-north-richmond.jpg",
+        "type": "portfolio_image",
+        "filename": "upss-north-richmond.jpg",
+        "path": "/media/portfolio/upss-north-richmond.jpg",
+        "label": "Upss North Richmond",
+        "mime": "image/jpeg",
+        "sizeBytes": 613243,
+        "updatedAt": "2026-04-18T15:22:38.676Z"
+      },
+      {
+        "id": "portfolio_image:upss-north-richmond.webp",
+        "type": "portfolio_image",
+        "filename": "upss-north-richmond.webp",
+        "path": "/media/portfolio/upss-north-richmond.webp",
+        "label": "Upss North Richmond",
+        "mime": "image/webp",
+        "sizeBytes": 485588,
+        "updatedAt": "2026-05-01T16:17:47.296Z"
+      },
+      {
+        "id": "portfolio_image:upss-wyoming.jpg",
+        "type": "portfolio_image",
+        "filename": "upss-wyoming.jpg",
+        "path": "/media/portfolio/upss-wyoming.jpg",
+        "label": "Upss Wyoming",
+        "mime": "image/jpeg",
+        "sizeBytes": 521051,
+        "updatedAt": "2026-04-18T15:22:38.676Z"
+      },
+      {
+        "id": "portfolio_image:upss-wyoming.webp",
+        "type": "portfolio_image",
+        "filename": "upss-wyoming.webp",
+        "path": "/media/portfolio/upss-wyoming.webp",
+        "label": "Upss Wyoming",
+        "mime": "image/webp",
+        "sizeBytes": 365440,
+        "updatedAt": "2026-05-01T16:18:41.289Z"
+      },
+      {
+        "id": "portfolio_image:wungong-masterplan-p1.webp",
+        "type": "portfolio_image",
+        "filename": "wungong-masterplan-p1.webp",
+        "path": "/media/portfolio/wungong-masterplan-p1.webp",
+        "label": "Wungong Masterplan P1",
+        "mime": "image/webp",
+        "sizeBytes": 5539144,
+        "updatedAt": "2026-06-18T13:59:56.897Z"
+      }
+    ],
+    "docs": [
+      {
+        "id": "document_pdf:daniel-clancy-cv-2026-light.pdf",
+        "type": "document_pdf",
+        "filename": "Daniel_Clancy_CV_2026_Light.pdf",
+        "path": "/docs/Daniel_Clancy_CV_2026_Light.pdf",
+        "label": "Daniel Clancy CV 2026 Light",
+        "mime": "application/pdf",
+        "sizeBytes": 773458,
+        "updatedAt": "2026-04-26T21:58:10.716Z"
+      },
+      {
+        "id": "document_pdf:daniel-clancy-cv-2026.pdf",
+        "type": "document_pdf",
+        "filename": "Daniel_Clancy_CV_2026.pdf",
+        "path": "/docs/Daniel_Clancy_CV_2026.pdf",
+        "label": "Daniel Clancy CV 2026",
+        "mime": "application/pdf",
+        "sizeBytes": 612996,
+        "updatedAt": "2026-04-26T21:52:20.952Z"
+      }
+    ]
+  },
+  "warnings": [
+    "admin_kv_unavailable_reconciled_baseline_returned",
+    "fallback_rebuilt_from:local:..\\DanielClancy-Admin"
+  ]
+}

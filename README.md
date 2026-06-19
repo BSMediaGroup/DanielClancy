@@ -186,7 +186,15 @@ Project detail document actions prefer a sanitized local `/docs/...` `documentPa
 
 The public site fetches only the sanitized public endpoint. It does not call `/api/admin/cms/*`, does not require an admin session, and does not receive account registry, auth/session, secret, KV, or overlay internals. If the env var is missing, fetch fails, the response is invalid, or a collection is missing, the app renders from the committed fallback model and safely fills missing live rows from fallback data.
 
+The public client uses `cache: "no-store"` for runtime fetches and preserves internal source metadata: `source`, `revision`, `publishedAt`, `generatedAt`, `usingFallback`, and a safe error summary. Development builds log a compact diagnostic when the live endpoint is missing, loaded, or unavailable; production builds do not add noisy console output.
+
 The normalized model preserves legacy project fields while accepting admin public fields such as `thumbnailPath`, `heroImage`, ordered `galleryPaths`, `documentPath`, `companyId`/`companyName`, `clientName`/`clientLabel`, `platformIds`, and `platformLabels`. Portfolio cards use `thumbnailPath` first, project detail uses `heroImage` or the first ordered gallery image, gallery ordering follows configured `galleryPaths`, company/studio displays as a text chip, and platform/software icons resolve to full-color SVG logo assets where available.
+
+### Public fallback rebuild
+
+Use `npm run data:rebuild` after Admin manifests change. The script reads, in order, the live URL from `VITE_ADMIN_PUBLIC_SITE_DATA_URL` when configured or local Admin manifests from `../DanielClancy-Admin`, then writes `src/data/public-site-fallback.generated.json`. `npm run data:check` reports stale generated fallback data without writing it. `npm run build:with-data` rebuilds the fallback then runs the normal build.
+
+Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site data, and a public refresh. Redeploy the public site only when `VITE_ADMIN_PUBLIC_SITE_DATA_URL`, committed fallback data, rendering code, or public assets changed.
 
 ## Key implementation files
 
@@ -203,6 +211,7 @@ The normalized model preserves legacy project fields while accepting admin publi
   - `src/components/PortfolioMediaGallery.tsx`
   - `src/content/brandAssets.ts`
   - `src/content/workSetPortfolio.ts`
+  - `src/data/public-site-fallback.generated.json`
   - `src/data/public-site-fallback.ts`
   - `src/lib/publicSiteData.tsx`
   - `src/lib/watchFeed.ts`
@@ -243,6 +252,7 @@ npm run dev -- --host
 
 ```powershell
 npm run check
+npm run data:rebuild
 npm run build
 npm run preview -- --host
 ```
@@ -295,6 +305,7 @@ DanielClancy/
 │  │  └─ PageVisitBeacon.tsx
 │  ├─ content/
 │  ├─ data/
+│  │  ├─ public-site-fallback.generated.json
 │  │  └─ public-site-fallback.ts
 │  ├─ lib/
 │  │  ├─ donate.ts
@@ -304,6 +315,10 @@ DanielClancy/
 │  │  └─ watchFeed.ts
 │  ├─ pages/
 │  └─ styles/global.css
+├─ tests/
+│  └─ public-site-data-client.test.mjs
+├─ tools/
+│  └─ rebuild-public-fallback.mjs
 ├─ .env.example
 ├─ BUMP_NOTES.md
 ├─ package.json

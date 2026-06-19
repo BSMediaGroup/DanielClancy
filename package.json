@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "data:rebuild": "node tools/rebuild-public-fallback.mjs",
+    "data:check": "node tools/rebuild-public-fallback.mjs --check",
+    "build:with-data": "npm run data:rebuild && npm run build"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

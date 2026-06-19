@@ -1,5 +1,32 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Public Site-Data Revision Diagnostics / Fallback Rebuild Milestone
+
+### Technical
+
+- Updated `src/lib/publicSiteData.tsx` to fetch `VITE_ADMIN_PUBLIC_SITE_DATA_URL` with `cache: "no-store"` and preserve `source`, `revision`, `publishedAt`, `generatedAt`, `usingFallback`, and safe error metadata.
+- Added development-only diagnostics for missing env, successful live load, and fetch fallback.
+- Added generated committed fallback data at `src/data/public-site-fallback.generated.json`; `src/data/public-site-fallback.ts` prefers it when populated and otherwise keeps the existing source-derived fallback.
+- Added `tools/rebuild-public-fallback.mjs` plus `npm run data:rebuild`, `npm run data:check`, and `npm run build:with-data`.
+- Added `tests/public-site-data-client.test.mjs` for client wiring, revision metadata, normalization hooks, generated fallback counts, and no admin-only field leaks.
+- Added `VITE_ADMIN_PUBLIC_SITE_DATA_URL=https://admin.danielclancy.net/api/public/site-data` to `.env.example`.
+- No admin-only overlay/account/session/secret data is exposed.
+- No CV/employment/company/software/project facts were invented.
+
+### Human-readable
+
+- DanielClancy.net can now tell internally whether it loaded a live/published Admin payload or committed fallback data.
+- The public fallback snapshot can be rebuilt locally after Admin manifests change, without requiring live Admin KV.
+
+### Validation
+
+- Targeted validation should include `npm run data:rebuild`, `node --test tests/public-site-data-client.test.mjs`, `npm run check`, `npm run build`, and `git diff --check`.
+
+### Risks / follow-ups
+
+- Public Cloudflare Pages must have `VITE_ADMIN_PUBLIC_SITE_DATA_URL` set and redeployed once for runtime live hydration to be available.
+- Public refresh is enough after Admin publishes new data; public redeploy is only needed for env/fallback/code/assets changes.
+
 ## Public Site-Data Hydration Milestone
 
 ### Technical

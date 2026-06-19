@@ -5,6 +5,7 @@ import {
   type ExperienceItem,
   type PortfolioItem,
 } from "../content/siteContent";
+import generatedFallback from "./public-site-fallback.generated.json";
 
 export type PublicCompany = {
   id: string;
@@ -71,7 +72,11 @@ export type PublicProject = PortfolioItem & {
 export type PublicSiteDataModel = {
   schemaVersion: "danielclancy-public-site-data.v1";
   generatedAt: string;
-  source: "static_fallback" | "admin_kv_reconciled" | "admin_baseline_reconciled" | "mixed_fallback";
+  source: "static_fallback" | "published_kv_snapshot" | "live_reconciled_fallback" | "baseline_fallback" | "admin_kv_reconciled" | "admin_baseline_reconciled" | "mixed_fallback";
+  revision?: string;
+  publishedAt?: string | null;
+  usingFallback?: boolean;
+  error?: string;
   collections: {
     projects: PublicProject[];
     companies: PublicCompany[];
@@ -109,10 +114,11 @@ const thumbnailBySlug: Record<string, string> = {
   "cockburn-coast": "/media/portfolio/thumbs/cockburn-coast-details-thumb.webp",
 };
 
-export const publicSiteFallback: PublicSiteDataModel = {
+const builtInFallback: PublicSiteDataModel = {
   schemaVersion: "danielclancy-public-site-data.v1",
   generatedAt: "static-fallback",
   source: "static_fallback",
+  usingFallback: true,
   collections: {
     projects: portfolioArchive.map(toFallbackProject),
     companies: experienceItems.map(toFallbackCompany),
@@ -129,6 +135,15 @@ export const publicSiteFallback: PublicSiteDataModel = {
   },
   warnings: [],
 };
+
+export const publicSiteFallback: PublicSiteDataModel = isGeneratedPublicSiteFallback(generatedFallback)
+  ? {
+      ...generatedFallback,
+      source: "static_fallback",
+      usingFallback: true,
+      warnings: Array.isArray(generatedFallback.warnings) ? generatedFallback.warnings : [],
+    }
+  : builtInFallback;
 
 function toFallbackProject(project: PortfolioItem): PublicProject {
   const companyName = project.studio[0] || project.client;
@@ -200,4 +215,10 @@ function slugify(value: string) {
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function isGeneratedPublicSiteFallback(value: unknown): value is PublicSiteDataModel {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const candidate = value as PublicSiteDataModel;
+  return candidate.schemaVersion === "danielclancy-public-site-data.v1" && Boolean(candidate.collections?.projects?.length);
 }
