@@ -89,7 +89,7 @@ Generate `DANIELCLANCY_ANALYTICS_INGEST_SECRET` separately unless intentionally 
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. That Pages Function forwards sanitized page-visit metadata server-side to DanielClancy-Admin analytics ingest when the analytics URL/secret are configured. The browser never receives the analytics ingest secret, and forwarding failures do not block page rendering.
+Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. That Pages Function forwards sanitized page-visit metadata server-side to DanielClancy-Admin analytics ingest when the analytics URL/secret are configured. The browser sends a per-page-load `eventId` and page fields only; the Pages Function adds `source: "page_visit_kv"`, `live: true`, `recordedAt`, and sanitized Cloudflare `request.cf` city/region/country fields before forwarding. The browser never receives the analytics ingest secret, and forwarding failures do not block page rendering.
 
 ## Public login modal and auth origin
 
@@ -320,6 +320,7 @@ DanielClancy/
 │  ├─ pages/
 │  └─ styles/global.css
 ├─ tests/
+│  ├─ page-visit-forwarder.test.mjs
 │  └─ public-site-data-client.test.mjs
 ├─ tools/
 │  └─ rebuild-public-fallback.mjs

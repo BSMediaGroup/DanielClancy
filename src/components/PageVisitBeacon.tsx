@@ -4,7 +4,13 @@ import { useLocation } from "react-router-dom";
 function sendVisit(path: string) {
   if (typeof window === "undefined" || typeof document === "undefined") return;
   const userAgent = window.navigator.userAgent || "";
+  const eventId =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `page_visit_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   const payload = JSON.stringify({
+    eventId,
+    recordedAt: new Date().toISOString(),
     path,
     pageUrl: window.location.href,
     title: document.title,

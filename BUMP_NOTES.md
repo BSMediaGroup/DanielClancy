@@ -1,5 +1,41 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Emergency Page-Visit Analytics Forwarding Repair Milestone
+
+### Technical
+
+- Updated `PageVisitBeacon` to include a per-page-load `eventId` and `recordedAt` without exposing any server secret.
+- Updated `POST /api/track/page-visit` so the server-side forward to DanielClancy-Admin includes `source: "page_visit_kv"`, `live: true`, `eventId`, `dedupeKey`, `recordedAt`, page/referrer/client fields, and sanitized Cloudflare `request.cf` city/region/country fields.
+- Kept `DANIELCLANCY_ANALYTICS_INGEST_SECRET` server-side only in the Pages Function header `X-DanielClancy-Analytics-Secret`.
+- Added a focused public forwarder test proving the Admin ingest payload receives geo/source/live metadata and the browser-facing response does not expose the secret.
+- Kept StreamSuites alert sending event-only and non-blocking; StreamSuites alert rules were not mutated.
+
+### Human-readable
+
+- Real public visitor geographies can now reach DanielClancy-Admin analytics KV instead of only appearing in StreamSuites alerts.
+- Analytics forwarding failures remain server-side diagnostics and do not block page rendering.
+
+### Files / areas changed
+
+- `functions/api/track/page-visit.js`
+- `src/components/PageVisitBeacon.tsx`
+- `tests/page-visit-forwarder.test.mjs`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Passed `node --check functions/api/track/page-visit.js`.
+- Passed `node --test tests/page-visit-forwarder.test.mjs`.
+- Passed `npm run check`.
+- Passed `npm run build`; Vite reported the existing large-chunk warning.
+- Passed `git diff --check`; Git only reported line-ending normalization warnings for edited files.
+- Browser validation through the Admin surface confirmed source-tagged public page-visit style rows render as live analytics rows when ingested.
+
+### Risks / follow-ups
+
+- Hosted Cloudflare Pages must have `DANIELCLANCY_ADMIN_ANALYTICS_INGEST_URL` and matching `DANIELCLANCY_ANALYTICS_INGEST_SECRET` configured.
+
 ## Direct Route Hydration Repair Milestone
 
 ### Technical

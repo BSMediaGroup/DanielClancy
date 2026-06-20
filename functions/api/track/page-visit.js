@@ -61,6 +61,24 @@ function detectPlatform(userAgent) {
   return "";
 }
 
+function requestGeo(request) {
+  const cf = request?.cf || {};
+  const countryCode = cleanText(cf.country, 8).toUpperCase();
+  return {
+    city: cleanText(cf.city, 120),
+    region: cleanText(cf.region, 120),
+    region_code: cleanText(cf.regionCode, 40).toUpperCase(),
+    country: countryCode,
+    country_code: countryCode
+  };
+}
+
+function stableEventId(payload, pagePath) {
+  const provided = cleanText(payload.eventId || payload.event_id || payload.id, 160);
+  if (provided) return provided;
+  return `page_visit_${Date.now()}_${Math.random().toString(36).slice(2, 10)}_${pagePath.replace(/[^a-z0-9]+/gi, "_").slice(0, 80)}`;
+}
+
 async function forwardAdminAnalyticsVisit(context, event) {
   const url = cleanText(context.env.DANIELCLANCY_ADMIN_ANALYTICS_INGEST_URL, 500);
   const secret = String(context.env.DANIELCLANCY_ANALYTICS_INGEST_SECRET || "").trim();
@@ -114,13 +132,26 @@ export async function onRequestPost(context) {
   const title = cleanText(payload.title, 160);
   const referrer = cleanText(payload.referrer, 500);
   const userAgent = context.request.headers.get("User-Agent") || "";
+  const recordedAt = cleanText(payload.recordedAt || payload.recorded_at, 80) || new Date().toISOString();
+  const eventId = stableEventId(payload, pagePath);
+  const geo = requestGeo(context.request);
   const analyticsEvent = {
+    eventId,
+    dedupeKey: eventId,
+    recordedAt,
+    source: "page_visit_kv",
+    live: true,
     surface: "danielclancy_public",
     page_path: pagePath,
     page_url: cleanText(payload.pageUrl || payload.url, 500),
     page_title: title,
     referrer,
     referrer_host: referrerHost(payload.referrerHost || referrer),
+    city: geo.city,
+    region: geo.region,
+    region_code: geo.region_code,
+    country: geo.country,
+    country_code: geo.country_code,
     timezone: cleanText(payload.timezone, 120),
     browser: cleanText(payload.browser || detectBrowser(userAgent), 80),
     device: cleanText(payload.device || detectDevice(userAgent), 80),
@@ -140,6 +171,11 @@ export async function onRequestPost(context) {
     pageTitle: title,
     referrer,
     referrerHost: analyticsEvent.referrer_host,
+    context: {
+      eventId,
+      recordedAt,
+      geo
+    },
     browser: analyticsEvent.browser,
     device: analyticsEvent.device,
     platform: analyticsEvent.platform,
