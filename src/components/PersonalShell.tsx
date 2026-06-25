@@ -10,6 +10,11 @@ const navItems = [
   { to: "/donate", label: "Donate" },
 ];
 
+const legalItems = [
+  { to: "/privacy", label: "Privacy" },
+  { to: "/terms", label: "Terms" },
+];
+
 export function PersonalShell() {
   const location = useLocation();
   const mobileNavId = useId();
@@ -129,6 +134,11 @@ export function PersonalShell() {
             <p className="kicker">Professional site</p>
             <div className="footer-link-list">
               <NavLink to="/">Portfolio and CV</NavLink>
+              {legalItems.map((item) => (
+                <NavLink key={item.to} to={item.to}>
+                  {item.label}
+                </NavLink>
+              ))}
             </div>
           </div>
         </div>

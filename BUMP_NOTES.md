@@ -1,5 +1,53 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## Public Privacy And Terms Pages Milestone
+
+### Technical
+
+- Added `/privacy` and `/terms` as professional-shell React routes in the existing Vite/React router.
+- Added `src/components/LegalPageLayout.tsx` for shared legal-page hero metadata, last-updated display, top jump-to anchor menu, stable section IDs, per-section hash links, and accessible long-form section rendering.
+- Added `src/pages/PrivacyPage.tsx` with complete Privacy Policy content covering contact form fields, OAuth/login data, admin/session/security metadata, page visits, approximate Cloudflare request location metadata, Turnstile, local/session storage, /watch media metadata, YouTube API Services, Google/GitHub/X OAuth, Twitch/Kick platform references, Cloudflare infrastructure, analytics/security logs, retention, revocation, and third-party links.
+- Added `src/pages/TermsPage.tsx` with complete Terms of Use content covering acceptance, site purpose, accounts/admin restrictions, OAuth and third-party services, /watch media/platform content, YouTube API Services terms, Twitch/Kick/X/GitHub/Google provider terms, acceptable use, IP, portfolio/CV content, submitted content, analytics/security, Cloudflare/Turnstile, disclaimers, liability, indemnity, termination, changes, and New South Wales governing law.
+- Added provider/API references for YouTube Terms, Google Privacy Policy, Google API Services User Data Policy, YouTube API Services Terms, YouTube API Services Developer Policies, Google security permissions/revocation, GitHub Terms/Privacy, X Developer Agreement/Policy/Privacy/Terms, Twitch docs/Terms/Privacy, Kick Developer Terms/Terms, and Cloudflare Privacy/Turnstile/Website Terms.
+- Added scoped `.legal-*` styles to `src/styles/global.css` so the pages use the existing dark professional visual system, responsive cards, keyboard-visible focus states, and mobile-friendly anchor links.
+- Added footer legal links in both public shells and Privacy/Terms links in the account modal without changing OAuth, auth, Turnstile, admin, analytics, contact, or watch behavior.
+- Preserved the existing Cloudflare Pages SPA fallback in `public/_redirects`; no redirect changes were required for direct `/privacy` or `/terms` loads.
+- Updated `README.md` route architecture, legal-page notes, key implementation files, and repository tree for the new component/page files.
+- No legal entity registration number, office address, new phone number, lawyer, regulator contact, or unverified formal company detail was invented.
+- DanielClancy-Admin was inspected read-only for auth/OAuth context only. DanielClancy-Admin, StreamSuites, and StreamSuites-Dashboard were not mutated.
+
+### Human-readable
+
+- DanielClancy.net now has professional public Privacy Policy and Terms of Use pages with visible provider, OAuth, YouTube API, streaming platform, analytics, Cloudflare, Turnstile, security, storage, and contact coverage.
+- Both pages provide jump menus and stable deep links for each major section, making the long policy content easier to scan and link to.
+- The pages are informational website policy pages and should receive legal review before relying on them as final legal documents.
+
+### Files / areas changed
+
+- `src/app/App.tsx`
+- `src/components/LegalPageLayout.tsx`
+- `src/components/ProfessionalShell.tsx`
+- `src/components/PersonalShell.tsx`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/pages/PrivacyPage.tsx`
+- `src/pages/TermsPage.tsx`
+- `src/styles/global.css`
+- `README.md`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Passed `npm run check`.
+- Passed `npm run build`; Vite reported the existing large-chunk warning.
+- Passed static source inspection for `/privacy` and `/terms` routes, Cloudflare SPA fallback, required section IDs, unique section IDs, anchor-menu/hash-link rendering, footer/account legal links, YouTube/Google/API/OAuth/provider links, Twitch/Kick streaming provider links, Cloudflare/Turnstile links, watch/API language, analytics/security/storage language, absence of the banned word `delve`, and absence of invented ABN/ACN/registered-office/phone marker details in the new page files.
+- Passed local Vite direct-route smoke checks returning HTTP 200 for `/privacy`, `/terms`, `/privacy#youtube-api-services`, and `/terms#youtube-api-services-terms`.
+- Passed `git diff --check`; Git only reported line-ending normalization warnings for edited files.
+
+### Risks / follow-ups
+
+- Legal review is still required before treating the content as final legal advice or a finalized legal document.
+- Hosted Cloudflare Pages should be checked after deployment for direct `/privacy`, `/terms`, and deep-hash links.
+
 ## TypeScript Resolver Deprecation Repair Milestone
 
 ### Technical

@@ -2607,6 +2607,29 @@ select:focus {
   justify-content: center;
 }
 
+.login-modal__legal-links {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin: 0;
+  color: var(--text-soft);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.login-modal__legal-links a {
+  color: var(--accent-bright);
+}
+
+.login-modal__legal-links a:hover,
+.login-modal__legal-links a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
 .turnstile-box {
   display: grid;
   gap: 0.45rem;
@@ -2785,12 +2808,230 @@ select:focus {
   font-size: 0.84rem;
 }
 
+.legal-page {
+  position: relative;
+}
+
+.legal-hero__grid {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  align-items: end;
+}
+
+.legal-hero__copy h1 {
+  max-width: 12ch;
+}
+
+.legal-plain-note {
+  margin: 0;
+  max-width: 48rem;
+  color: var(--text-soft);
+  font-size: 0.94rem;
+}
+
+.legal-hero__meta {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.legal-hero__meta strong {
+  font-family: "Recharge", sans-serif;
+  font-size: clamp(1rem, 1.35vw, 1.25rem);
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.legal-hero__meta a,
+.legal-link {
+  color: var(--accent-bright);
+  text-decoration: underline;
+  text-decoration-color: rgba(242, 227, 194, 0.42);
+  text-underline-offset: 0.18em;
+  transition:
+    color 180ms ease,
+    text-decoration-color 180ms ease;
+}
+
+.legal-hero__meta a:hover,
+.legal-link:hover {
+  color: var(--text);
+  text-decoration-color: rgba(245, 241, 232, 0.75);
+}
+
+.legal-content-section {
+  padding-bottom: var(--space-3xl);
+}
+
+.legal-content {
+  display: grid;
+  gap: var(--space-lg);
+  padding-top: 1.1rem;
+}
+
+.legal-anchor-menu {
+  display: grid;
+  gap: 1rem;
+}
+
+.legal-anchor-menu__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.legal-anchor-menu__header span {
+  color: var(--text-soft);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.legal-anchor-menu__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.legal-anchor-menu__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.035);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.legal-anchor-menu__links a:hover,
+.legal-anchor-menu__links a:focus-visible {
+  color: var(--text);
+  border-color: rgba(219, 201, 166, 0.34);
+  background: rgba(219, 201, 166, 0.08);
+  transform: translateY(-1px);
+}
+
+.legal-section-list {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.legal-section {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 1.1rem;
+  scroll-margin-top: 6.4rem;
+}
+
+.legal-section__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.1rem;
+  height: 3.1rem;
+  border: 1px solid rgba(219, 201, 166, 0.2);
+  border-radius: 999px;
+  color: var(--accent-bright);
+  background: rgba(219, 201, 166, 0.06);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.legal-section__header {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.legal-section__header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: clamp(1.02rem, 1.52vw, 1.4rem);
+  line-height: 1.08;
+}
+
+.legal-section__header h2 span {
+  min-width: 0;
+}
+
+.legal-section__header p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.legal-section__hash-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: var(--text-soft);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.72rem;
+}
+
+.legal-section__hash-link:hover,
+.legal-section__hash-link:focus-visible {
+  color: var(--accent-bright);
+  border-color: rgba(219, 201, 166, 0.35);
+  background: rgba(219, 201, 166, 0.08);
+}
+
+.legal-copy {
+  grid-column: 2;
+  display: grid;
+  gap: 0.95rem;
+  max-width: 76rem;
+}
+
+.legal-copy p,
+.legal-copy li {
+  color: var(--text-muted);
+}
+
+.legal-copy p {
+  margin: 0;
+}
+
+.legal-copy ul {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.legal-copy li::marker {
+  color: var(--accent);
+}
+
+.legal-anchor-menu__links a:focus-visible,
+.legal-section__hash-link:focus-visible,
+.legal-link:focus-visible,
+.legal-hero__meta a:focus-visible {
+  outline: 2px solid rgba(219, 201, 166, 0.48);
+  outline-offset: 3px;
+}
+
 .site-footer {
   padding: 0 0 2rem;
 }
 
 .footer-grid {
-  grid-template-columns: 1.2fr 0.9fr 0.7fr;
+  grid-template-columns: 1.15fr 0.85fr 0.45fr 0.65fr;
   padding: 1.4rem 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -2871,12 +3112,17 @@ select:focus {
   .hero-split--portfolio,
   .hero-split--contact,
   .hero-split--personal,
+  .legal-hero__grid,
   .detail-hero,
   .watch-hero,
   .capability-grid,
   .two-column-grid,
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .legal-section {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
   }
 
   .project-grid,
@@ -3122,6 +3368,30 @@ select:focus {
     width: 100%;
     max-width: 100%;
     justify-content: flex-start;
+  }
+
+  .legal-anchor-menu__header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .legal-anchor-menu__links a {
+    width: 100%;
+  }
+
+  .legal-section {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    scroll-margin-top: 5.5rem;
+  }
+
+  .legal-section__index,
+  .legal-copy {
+    grid-column: 1;
+  }
+
+  .legal-section__header h2 {
+    align-items: start;
   }
 }
 .footer-copy {

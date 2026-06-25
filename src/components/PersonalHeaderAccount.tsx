@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import { shellAssets, socialIcons } from "../content/brandAssets";
 
 type AccountState =
@@ -272,6 +273,11 @@ export function PersonalHeaderAccount() {
               <a className="button button--ghost login-modal__admin-link" href="https://admin.danielclancy.net">
                 Admin Dashboard
               </a>
+              <p className="login-modal__legal-links">
+                <Link to="/privacy" onClick={() => setIsModalOpen(false)}>Privacy</Link>
+                <span aria-hidden="true">/</span>
+                <Link to="/terms" onClick={() => setIsModalOpen(false)}>Terms</Link>
+              </p>
               <p className="login-modal__note">Admin access is restricted.</p>
             </section>
           </div>,

@@ -27,6 +27,8 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/portfolio` | WorkSet-driven archive gallery and filtering surface | Yes |
 | `/portfolio/:slug` | Dedicated project detail route with gallery, lightbox, and prev/next navigation | Yes |
 | `/contact` | Professional contact page with live-ready form delivery | Yes |
+| `/privacy` | Privacy Policy covering contact, OAuth/login, analytics, media/API integrations, Cloudflare, Turnstile, and third-party services | Yes |
+| `/terms` | Terms of Use covering portfolio content, accounts, providers/APIs, acceptable use, IP, analytics, and third-party services | Yes |
 
 ### Personal shell
 
@@ -42,7 +44,18 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 - Personal routes use `noindex, nofollow, noarchive`.
 - Personal routes still render Open Graph and Twitter preview metadata for link sharing.
 - `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
-- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with `/* /index.html 200`, so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/work`, `/cv`, and `/contact` serve the Vite app before React resolves the route.
+- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with `/* /index.html 200`, so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/work`, `/cv`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
+
+## Legal and policy pages
+
+- Public routes: `/privacy` and `/terms`
+- Shared layout: `src/components/LegalPageLayout.tsx`
+- Page files: `src/pages/PrivacyPage.tsx` and `src/pages/TermsPage.tsx`
+- Both pages use the professional shell, route metadata through `Seo`, a last-updated date, a top jump-to anchor menu, stable section IDs, per-section hash links, and scoped `.legal-*` styling in `src/styles/global.css`.
+- Footer legal links are present in the professional shell and the personal shell. The public account modal also links to Privacy and Terms near the admin boundary note.
+- The Privacy Policy covers contact form fields, OAuth/login data, admin/session/security metadata, page visits, Cloudflare request metadata, Turnstile, local/session storage, /watch media metadata, YouTube API Services, Google/GitHub/X OAuth, Twitch/Kick streaming platform references, Cloudflare infrastructure, analytics/security logs, retention, revocation, and third-party links.
+- The Terms of Use cover acceptance, site purpose, accounts/admin restrictions, OAuth and third-party services, /watch media/platform content, YouTube API Services terms, Twitch/Kick/X/GitHub/Google provider terms, acceptable use, intellectual property, portfolio/CV content, submitted content, analytics/security, Cloudflare/Turnstile, disclaimers, liability, indemnity, termination, changes, and New South Wales governing law.
+- The pages are informational website policy pages and should receive legal review before relying on them as final legal documents. No legal entity registration number, office address, new phone number, lawyer, regulator contact, or other unverified formal registration detail is added by these pages.
 
 ## Contact delivery
 
@@ -97,6 +110,7 @@ Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. 
 - Sign in and Create account modes share the OAuth entry flow because provider login/signup both start through the same admin auth origin.
 - The public site does not verify admin passwords in browser code. Email/password and OAuth requests are sent to the DanielClancy-Admin Cloudflare Pages Functions auth origin.
 - The modal does not render or require Cloudflare Turnstile for login, signup, or OAuth start. Turnstile is isolated to the public contact form only.
+- The modal links to `/privacy` and `/terms` without changing OAuth or admin-auth behavior.
 - Email/password signup is scaffolded only. Until durable account storage exists, attempts return a clear storage-required message and do not store passwords client-side.
 - Public session-aware content remains future work. Signing in on the public site must not grant admin dashboard access unless the server-side admin session says the account is admin.
 - The surfaced modal copy stays user-facing and does not expose internal env/provider setup notes.
@@ -212,6 +226,7 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/components/CapabilityMeter.tsx`
   - `src/components/CompanyLogoMark.tsx`
   - `src/components/ContactMap.tsx`
+  - `src/components/LegalPageLayout.tsx`
   - `src/components/PortfolioMediaGallery.tsx`
   - `src/content/brandAssets.ts`
   - `src/content/workSetPortfolio.ts`
@@ -226,6 +241,8 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/pages/PortfolioPage.tsx`
   - `src/pages/PortfolioDetailPage.tsx`
   - `src/pages/ContactPage.tsx`
+  - `src/pages/PrivacyPage.tsx`
+  - `src/pages/TermsPage.tsx`
   - `src/pages/PersonalHomePage.tsx`
   - `src/pages/WatchPage.tsx`
   - `src/pages/DonatePage.tsx`
@@ -306,6 +323,7 @@ DanielClancy/
 │  ├─ assets.d.ts
 │  ├─ vite-env.d.ts
 │  ├─ components/
+│  │  ├─ LegalPageLayout.tsx
 │  │  └─ PageVisitBeacon.tsx
 │  ├─ content/
 │  ├─ data/
@@ -318,6 +336,8 @@ DanielClancy/
 │  │  ├─ turnstile.tsx
 │  │  └─ watchFeed.ts
 │  ├─ pages/
+│  │  ├─ PrivacyPage.tsx
+│  │  └─ TermsPage.tsx
 │  └─ styles/global.css
 ├─ tests/
 │  ├─ page-visit-forwarder.test.mjs

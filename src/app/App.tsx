@@ -10,6 +10,8 @@ import { HomePage } from "../pages/HomePage";
 import { PersonalHomePage } from "../pages/PersonalHomePage";
 import { PortfolioDetailPage } from "../pages/PortfolioDetailPage";
 import { PortfolioPage } from "../pages/PortfolioPage";
+import { PrivacyPage } from "../pages/PrivacyPage";
+import { TermsPage } from "../pages/TermsPage";
 import { WatchPage } from "../pages/WatchPage";
 
 export default function App() {
@@ -24,6 +26,8 @@ export default function App() {
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
         </Route>
 
         <Route element={<PersonalShell />}>
