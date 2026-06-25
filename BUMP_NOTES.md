@@ -1,5 +1,30 @@
 CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
 
+## TypeScript Resolver Deprecation Repair Milestone
+
+### Technical
+
+- Replaced deprecated `moduleResolution: "Node"` with `moduleResolution: "Bundler"` in the app TypeScript config and the referenced Vite TypeScript config.
+- Removed the temporary `ignoreDeprecations` waiver because the deprecated resolver setting is no longer present.
+
+### Human-readable
+
+- TypeScript config validation no longer depends on the deprecated Node 10 resolver.
+
+### Files / areas changed
+
+- `tsconfig.json`
+- `tsconfig.node.json`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Passed `npm run check`.
+
+### Risks / follow-ups
+
+- `Bundler` module resolution is the Vite-aligned resolver mode for this app; any future non-bundled Node-specific tooling should be checked separately if added.
+
 ## Emergency Page-Visit Analytics Forwarding Repair Milestone
 
 ### Technical
