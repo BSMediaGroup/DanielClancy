@@ -1,4 +1,40 @@
-CURRENT VER= v0.1.2-beta / PENDING VER= v1.0
+CURRENT VER= v1.0 / PENDING VER= v1.0.1
+
+## v1.0 Release Milestone
+
+### Technical
+
+- Promoted the public DanielClancy package metadata from `0.1.2-beta` to `1.0.0`.
+- Added GitHub-release-ready `RELEASE_NOTES_v1.0.md` built from the current README, BUMP notes, package metadata, source files, and test coverage.
+- Added a focused version consistency test covering package metadata, BUMP heading, the release-notes file, and public footer/source absence of visible alpha/beta/pre-release version labels.
+- Kept the existing public site-data hydration model: `VITE_ADMIN_PUBLIC_SITE_DATA_URL` points at the sanitized DanielClancy-Admin public endpoint, while committed fallback data keeps routes renderable when the endpoint is unavailable.
+- Kept the Cloudflare Pages deployment posture, contact/page-visit Pages Functions, payment/watch endpoints, public auth-origin handoff, and legal routes unchanged for this release documentation pass.
+- No CV, employment, company, software/platform, project, or portfolio facts were changed.
+
+### Human-readable
+
+- DanielClancy.net is now tracked as the `v1.0` public website release.
+- The release keeps the public site as a read-only Cloudflare Pages surface that renders portfolio, CV, contact, legal, support, and watch routes from source-backed public data.
+- Public edits still flow from DanielClancy-Admin Save/Sync plus Publish site data, then public hydration through the configured endpoint.
+
+### Files / areas changed
+
+- `package.json`
+- `package-lock.json`
+- `README.md`
+- `BUMP_NOTES.md`
+- `RELEASE_NOTES_v1.0.md`
+- `tests/version-consistency.test.mjs`
+
+### Validation
+
+- Run `node --test tests/version-consistency.test.mjs`.
+- Run existing public data tests and the repo `check`, `build`, and `git diff --check` release validation commands.
+
+### Risks / follow-ups
+
+- Hosted Cloudflare Pages still needs `VITE_ADMIN_PUBLIC_SITE_DATA_URL=https://admin.danielclancy.net/api/public/site-data` configured for live Admin-published hydration.
+- Legal pages remain informational website policy pages and should receive legal review before relying on them as final legal documents.
 
 ## Public Privacy And Terms Pages Milestone
 

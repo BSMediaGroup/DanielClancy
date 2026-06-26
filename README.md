@@ -2,6 +2,12 @@
 
 Public-site repository for `DanielClancy.net`, built as a Cloudflare Pages-friendly Vite + React + TypeScript front end.
 
+## Current Release
+
+- Current release: `v1.0`
+- Package version: `1.0.0`
+- Release notes: `RELEASE_NOTES_v1.0.md`
+
 ## Purpose
 
 This repo holds the public-facing Daniel Clancy website only. It now uses a deliberate split between:
@@ -341,11 +347,13 @@ DanielClancy/
 │  └─ styles/global.css
 ├─ tests/
 │  ├─ page-visit-forwarder.test.mjs
-│  └─ public-site-data-client.test.mjs
+│  ├─ public-site-data-client.test.mjs
+│  └─ version-consistency.test.mjs
 ├─ tools/
 │  └─ rebuild-public-fallback.mjs
 ├─ .env.example
 ├─ BUMP_NOTES.md
+├─ RELEASE_NOTES_v1.0.md
 ├─ package.json
 ├─ run-local.cmd
 ├─ run-local.ps1
