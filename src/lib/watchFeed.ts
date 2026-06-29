@@ -1,6 +1,6 @@
 export type WatchFeedVideo = {
   id: string;
-  provider: "youtube";
+  provider: "youtube" | (string & {});
   title: string;
   description: string;
   excerpt: string;
@@ -14,7 +14,7 @@ export type WatchFeedVideo = {
 export type WatchFeedState = "ready" | "partial" | "empty" | "unavailable";
 
 export type WatchFeedResponse = {
-  provider: "youtube";
+  provider: "youtube" | (string & {});
   state: WatchFeedState;
   fetchedAt: string;
   message: string;

@@ -1,5 +1,42 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Cinematic Watch Page Redesign Milestone
+
+### Technical
+
+- Rebuilt `/watch` around an active fetched-video state so the first item from the existing watch feed is the default hero item and selector thumbnails can promote any fetched catalogue item into the hero.
+- Added client-side platform/embed helpers for platform detection, YouTube embed URL construction, source CTA labels, deduped feed item resolution, and thumbnail-backed cinematic backdrop styling.
+- Added muted autoplay defaults plus overlay autoplay and mute buttons. The controls rebuild the YouTube iframe URL with `autoplay`, `mute`, `playsinline`, `rel`, and `modestbranding` params instead of adding a heavier player API bridge.
+- Added fallback handling for non-embeddable or unavailable platforms: thumbnail-backed hero panel where available, source-platform CTA, safe external link attributes, and defensive catalogue thumbnail placeholders.
+- Replaced the old split `/watch` hero presentation with a cinematic embedded-player stage, dark falloff overlays, blurred thumbnail-derived ambient backdrop, active thumbnail selector rail, accessible selector buttons, and a secondary full fetched-catalogue card grid.
+- Kept `functions/api/watch-feed.js` and the existing feed source unchanged. No video titles, descriptions, thumbnails, dates, platform URLs, tags, or catalogue entries were invented.
+- Widened the TypeScript watch-feed provider type enough for future non-YouTube provider fallback handling while preserving the current YouTube response contract.
+
+### Human-readable
+
+- `/watch` now opens as a premium dark video-watch surface with the latest fetched release as the hero, cinematic backdrop treatment, source CTA, visible autoplay/mute controls, and a thumbnail rail directly beneath the hero.
+- The full fetched catalogue remains available lower on the page, while the hero selector provides a cleaner way to preview fetched videos without losing source links.
+- If the local or hosted feed is unavailable, the page stays honest and presentable instead of pretending live video data exists.
+
+### Files / areas changed
+
+- `src/pages/WatchPage.tsx`
+- `src/lib/watchFeed.ts`
+- `src/styles/global.css`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Passed `npm run check`.
+- Passed `npm run build`; Vite reported the existing large-chunk warning.
+- Ran a local Vite `/watch` smoke check at `http://127.0.0.1:5182/watch` with Playwright MCP at desktop and mobile widths. The route rendered, the cinematic fallback hero and full-catalogue empty state were visible, controls had accessible labels, and no horizontal overflow was detected.
+- The local Vite smoke did not prove live feed hydration or live YouTube iframe playback because Vite does not run Cloudflare Pages Functions and upstream watch-feed fetching was intentionally not exercised for this task.
+
+### Risks / follow-ups
+
+- Hosted Cloudflare Pages should be checked after deploy with the real `/api/watch-feed` function and configured YouTube env to confirm hydrated selector thumbnails, iframe playback, and thumbnail-derived backdrop imagery with live data.
+- The overlay autoplay/mute controls intentionally rebuild the iframe URL rather than controlling an already-mounted player instance; a future iframe API bridge would be a separate enhancement if smoother in-place control is needed.
+
 ## v1.0 Release Milestone
 
 ### Technical
