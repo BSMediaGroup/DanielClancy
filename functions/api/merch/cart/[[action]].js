@@ -359,7 +359,7 @@ async function resolveValidatedShipping(env, cart, recipient, selectedShipping) 
 
 function normalizeShippingOption(raw = {}) {
   const amount = Math.round(Number.parseFloat(raw.rate || raw.amount || "0") * 100);
-  const currency = clean(raw.currency || "USD", 12).toUpperCase();
+  const currency = clean(raw.currency || "AUD", 12).toUpperCase();
   const id = clean(raw.shipping || raw.id || raw.shipping_method_name, 120);
   if (!id || !Number.isFinite(amount) || amount < 0 || !currency) return null;
   return {

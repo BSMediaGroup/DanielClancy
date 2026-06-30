@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import { shellAssets } from "../content/brandAssets";
-import { fetchMerchProducts, productPath, type MerchFeed, type MerchProduct } from "../lib/merch";
+import { PriceWithFlag } from "../lib/currency";
+import {
+  fetchMerchProducts,
+  productCategories,
+  productCategoryLabel,
+  productMatchesCategory,
+  productPath,
+  slugify,
+  type MerchFeed,
+  type MerchProduct,
+} from "../lib/merch";
 
 const initialFeed: MerchFeed = {
   ok: false,
@@ -11,10 +21,18 @@ const initialFeed: MerchFeed = {
 };
 
 export function ShopPage() {
+  const { category = "" } = useParams();
+  const activeCategorySlug = slugify(category || "all") || "all";
   const [feed, setFeed] = useState<MerchFeed>(initialFeed);
   const [loading, setLoading] = useState(true);
-  const featured = useMemo(() => feed.products.filter((product) => product.featured).slice(0, 3), [feed.products]);
-  const leadProducts = featured.length ? featured : feed.products.slice(0, 3);
+  const categories = useMemo(() => productCategories(feed.products), [feed.products]);
+  const activeCategory = categories.find((entry) => entry.slug === activeCategorySlug) || categories[0];
+  const visibleProducts = useMemo(
+    () => feed.products.filter((product) => productMatchesCategory(product, activeCategorySlug)),
+    [feed.products, activeCategorySlug],
+  );
+  const featured = useMemo(() => visibleProducts.filter((product) => product.featured).slice(0, 3), [visibleProducts]);
+  const leadProducts = featured.length ? featured : visibleProducts.slice(0, 3);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,14 +56,15 @@ export function ShopPage() {
     return () => controller.abort();
   }, []);
 
-  const hasProducts = feed.products.length > 0;
+  const hasProducts = visibleProducts.length > 0;
+  const pagePath = activeCategorySlug === "all" && !category ? "/shop" : `/products/${activeCategorySlug}`;
 
   return (
     <>
       <Seo
         title="Shop"
         description="DanielClancy.net merch storefront powered by server-side Printful product data."
-        path="/shop"
+        path={pagePath}
         image={shellAssets.professionalShare}
       />
 
@@ -55,7 +74,7 @@ export function ShopPage() {
             <h1>DanielClancy.net Shop</h1>
             <p>
               A focused merch storefront for Daniel Clancy and Brainstream Media Group product drops,
-              powered by Printful product data when the store API is configured.
+              priced in server-validated Australian dollars from the Printful store feed.
             </p>
             <div className="shop-hero__actions">
               <a className="button" href="#shop-products">
@@ -69,7 +88,7 @@ export function ShopPage() {
               </Link>
             </div>
             <div className="shop-hero__status" aria-live="polite">
-              <span>{loading ? "Checking Printful" : hasProducts ? `${feed.products.length} product records` : "Storefront pending"}</span>
+              <span>{loading ? "Checking Printful" : hasProducts ? `${visibleProducts.length} ${activeCategory?.label || "All"} product records` : "Storefront pending"}</span>
               <strong>{loading ? "Loading" : feed.ok ? "Printful connected" : feed.configured ? "Printful unavailable" : "Printful not configured"}</strong>
             </div>
           </div>
@@ -98,23 +117,32 @@ export function ShopPage() {
           <div className="shop-section__header">
             <div>
               <p className="kicker">Merch catalogue</p>
-              <h2>Product records, live from the store feed.</h2>
+              <h2>{activeCategory?.label || "All"} products.</h2>
             </div>
             <p>
               Product checkout validates cart and shipping data server-side before attempting secure payment.
             </p>
           </div>
 
+          <nav className="shop-category-chips" aria-label="Shop categories">
+            {categories.map((entry) => (
+              <Link key={entry.slug} className={`shop-category-chip${entry.slug === activeCategorySlug ? " is-active" : ""}`} to={`/products/${entry.slug}`}>
+                <span>{entry.label}</span>
+                <small>{entry.count}</small>
+              </Link>
+            ))}
+          </nav>
+
           {hasProducts ? (
             <div className="shop-grid">
-              {feed.products.map((product) => (
+              {visibleProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
             <div className="shop-empty-state">
               <p className="kicker">Storefront empty state</p>
-              <h3>{loading ? "Loading products." : feed.configured ? "No public products are available yet." : "Printful is not configured locally."}</h3>
+              <h3>{loading ? "Loading products." : feed.configured ? "No public products are available for this category." : "Printful is not configured locally."}</h3>
               <p>
                 {loading
                   ? "The server-side feed is still resolving."
@@ -134,9 +162,9 @@ function ShopFeatureCard({ product }: { product: MerchProduct }) {
     <Link className="shop-feature-card" to={productPath(product)}>
       <ProductImage product={product} />
       <div>
-        <span>{product.category || "Category pending"}</span>
+        <span>{productCategoryLabel(product)}</span>
         <strong>{product.title}</strong>
-        <small>{product.priceRange?.text || "Price pending"}</small>
+        <small><PriceWithFlag amount={product.priceRange?.min} currency={product.priceRange?.currency || "AUD"} text={product.priceRange?.text || "Price pending"} /></small>
       </div>
     </Link>
   );
@@ -148,13 +176,13 @@ function ProductCard({ product }: { product: MerchProduct }) {
       <ProductImage product={product} />
       <div className="shop-product-card__body">
         <div className="shop-product-card__topline">
-          <span>{product.category || "Category pending"}</span>
+          <span>{productCategoryLabel(product)}</span>
           {product.availability ? <em>{product.availability}</em> : null}
         </div>
         <h3>{product.title}</h3>
         <p>{product.description || "Description pending from Printful or Admin override."}</p>
         <div className="shop-product-card__meta">
-          <strong>{product.priceRange?.text || "Price pending"}</strong>
+          <strong><PriceWithFlag amount={product.priceRange?.min} currency={product.priceRange?.currency || "AUD"} text={product.priceRange?.text || "Price pending"} /></strong>
           <span>{product.variantCount ? `${product.variantCount} variant${product.variantCount === 1 ? "" : "s"}` : "Variants pending"}</span>
         </div>
         <span className="text-link">View product</span>

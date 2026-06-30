@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
+import { CurrencySelect, PriceWithFlag, convertAmount, formatMoney, useCurrencyRates, type CurrencyCode } from "../lib/currency";
 import {
   clearCart,
   estimateShipping,
@@ -38,6 +39,9 @@ export function CartPage() {
   const [status, setStatus] = useState("Validating cart...");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [convertedCurrency, setConvertedCurrency] = useState<CurrencyCode>("USD");
+  const [calculatorAmount, setCalculatorAmount] = useState("50");
+  const rates = useCurrencyRates();
 
   useEffect(() => {
     saveCart(items);
@@ -67,6 +71,8 @@ export function CartPage() {
     () => shippingOptions.find((option) => option.id === selectedShippingId) || null,
     [selectedShippingId, shippingOptions],
   );
+  const subtotalConverted = convertAmount(summary ? summary.subtotalAmount / 100 : null, summary?.currency || "AUD", convertedCurrency, rates);
+  const calculatorConverted = convertAmount(Number.parseFloat(calculatorAmount), "AUD", convertedCurrency, rates);
 
   function updateRecipient(field: keyof ShippingRecipient, value: string) {
     setRecipient((current) => ({ ...current, [field]: value }));
@@ -124,7 +130,7 @@ export function CartPage() {
                     <div>
                       <strong>{item.title}</strong>
                       <span>{item.variantName}</span>
-                      <small>{formatCents(item.unitAmount, item.currency)} each</small>
+                      <small><PriceWithFlag amount={item.unitAmount / 100} currency={item.currency} text={`${formatMoney(item.unitAmount / 100, item.currency)} ${item.currency}`} /> each</small>
                     </div>
                     <input
                       className="input input--compact"
@@ -198,7 +204,16 @@ export function CartPage() {
             ) : null}
             <div className="shop-cart-total">
               <span>Subtotal</span>
-              <strong>{summary?.subtotalText || "$0.00"}</strong>
+              <strong><PriceWithFlag amount={summary ? summary.subtotalAmount / 100 : 0} currency={summary?.currency || "AUD"} text={summary?.subtotalText ? `${summary.subtotalText} ${summary.currency}` : "$0.00 AUD"} /></strong>
+              <small>{subtotalConverted === null ? "Conversion unavailable." : `Approx. ${formatMoney(subtotalConverted, convertedCurrency)} ${convertedCurrency}`}</small>
+            </div>
+            <div className="currency-tools currency-tools--cart">
+              <CurrencySelect value={convertedCurrency} onChange={setConvertedCurrency} />
+              <label className="currency-calculator">
+                <span>Convert custom AUD amount</span>
+                <input className="input" inputMode="decimal" value={calculatorAmount} onChange={(event) => setCalculatorAmount(event.target.value)} />
+                <strong>{calculatorConverted === null ? "Unavailable" : `${formatMoney(calculatorConverted, convertedCurrency)} ${convertedCurrency}`}</strong>
+              </label>
             </div>
             <button className="button" type="button" onClick={handleCheckout} disabled={!selectedShipping || busy}>
               Continue to Stripe Checkout
@@ -277,8 +292,4 @@ function ShopStatusPage({ title, message }: { title: string; message: string }) 
       </section>
     </>
   );
-}
-
-function formatCents(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount / 100);
 }

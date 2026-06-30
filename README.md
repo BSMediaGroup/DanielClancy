@@ -47,6 +47,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/cart` | Merch cart, server-side validation, Printful draft creation, Stripe checkout, and safe return status | Yes |
 | `/shop/success`, `/shop/cancel` | Customer-facing merch checkout return states backed by safe order-status lookups where possible | Yes |
 | `/store`, `/merch` | Cloudflare/client aliases redirecting to `/shop` | Yes |
+| `/products/all`, `/products/:category` | Category browsing routes for the Printful-backed product catalogue | Yes |
 | `/products/:category/:slug` | Clean product detail route resolved through the server-side merch API by slug or Printful identifiers where available | Yes |
 
 ## SEO and metadata split
@@ -55,7 +56,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 - Personal content/support routes such as `/home`, `/watch`, and `/donate` use `noindex, nofollow, noarchive`; storefront routes under the Personal Studio shell remain indexable where their page metadata allows it.
 - Personal and storefront routes still render Open Graph and Twitter preview metadata for link sharing.
 - `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
-- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/products/:category/:slug`, `/work`, `/cv`, `/shop`, `/cart`, `/shop/success`, `/shop/cancel`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
+- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/work`, `/cv`, `/shop`, `/cart`, `/shop/success`, `/shop/cancel`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
 
 ## Legal and policy pages
 
@@ -161,11 +162,12 @@ Cloudflare setup checkpoint after this local scaffold:
 
 ## Printful merch storefront
 
-- UI routes: `/shop`, `/products/:category/:slug`, `/cart`, `/shop/success`, and `/shop/cancel`
+- UI routes: `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/shop/success`, and `/shop/cancel`
 - Redirect aliases: `/store` and `/merch` redirect to `/shop` through `public/_redirects` and client routing
 - Server endpoints:
   - `GET /api/merch/products`
   - `GET /api/merch/products/*`
+  - `GET /api/merch/currency-rates`
   - `POST /api/merch/cart/validate`
   - `POST /api/merch/cart/shipping`
   - `POST /api/merch/cart/checkout`
@@ -176,9 +178,12 @@ Cloudflare setup checkpoint after this local scaffold:
   - `STRIPE_SECRET_KEY`
   - `STRIPE_WEBHOOK_SECRET`
   - `STRIPE_LIVE_ENABLED`
+  - Optional `CURRENCY_RATES_API_URL` for a runtime AUD-based exchange-rate JSON endpoint; if omitted, the Pages Function uses a public HTTPS AUD rates endpoint and still fails gracefully when unavailable.
   - `DC_MERCH_ORDERS_KV` Cloudflare KV binding for durable merch order intents before Stripe checkout/session creation is allowed
 
-The public storefront never reads `PRINTFUL_STORE_API` in browser code. Pages Functions resolve the Printful store named `Daniel Clancy` through Printful v2 stores where available, then use legacy Printful sync product endpoints for storefront product list/detail data because sync product management is not available in Printful v2 yet. Public responses are normalized into the local merch product shape and merged with published Admin overrides for visibility, featured state, display title, description, category, slug, hero image, gallery order, alt text, and sort order.
+The public storefront never reads `PRINTFUL_STORE_API` in browser code. Pages Functions resolve the Printful store named `Daniel Clancy` through Printful v2 stores where available, then use legacy Printful sync product endpoints for storefront product list/detail data because sync product management is not available in Printful v2 yet. Public responses are normalized into the local merch product shape and merged with published Admin overrides for visibility, featured state, display title, description, category/categories, primary category, slug, hero image, gallery order, alt text, and sort order. Every product is assigned the system `All` category, plus Printful-provided category/collection/tag/product-type categories when available and Admin category overrides from the published public-safe Admin data snapshot.
+
+The store base currency is AUD. Product cards show only the AUD/store-currency price with a small inline flag icon. Product detail and cart pages can show a smaller converted estimate underneath the main price, defaulting to USD, with options for USD, CAD, NZD, GBP, EUR, JPY, CHF, SGD, HKD, and KRW when rates are available. Converted amounts are informational only; checkout, shipping, Stripe session creation, and Printful draft order data continue to use server-validated store-currency totals. If rates cannot be fetched, conversion UI shows an unavailable state and does not block shopping.
 
 The public cart stores only non-sensitive selections in localStorage: product id, slug, variant id, and quantity. `POST /api/merch/cart/validate` validates those selections against server-side Printful data, rejects hidden/unpublished products through published Admin overrides, rejects unknown variants, and recalculates titles, variant names, prices, currency, and totals server-side. `POST /api/merch/cart/shipping` validates the same cart and calls Printful `/v2/shipping-rates` server-side with short-lived recipient data; US, AU, and CA require a state/province code. Checkout requires complete recipient name, email, and shipping address, then rechecks the selected shipping option server-side before any payment session is created.
 
@@ -359,6 +364,7 @@ DanielClancy/
 │     ├─ merch/
 │     │  ├─ cart/
 │     │  │  └─ [[action]].js
+│     │  ├─ currency-rates.js
 │     │  ├─ products/
 │     │  │  └─ [[lookup]].js
 │     │  └─ stripe/
@@ -388,6 +394,7 @@ DanielClancy/
 │  │  ├─ public-site-fallback.generated.json
 │  │  └─ public-site-fallback.ts
 │  ├─ lib/
+│  │  ├─ currency.tsx
 │  │  ├─ donate.ts
 │  │  ├─ merchCart.ts
 │  │  ├─ merch.ts

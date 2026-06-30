@@ -43,6 +43,8 @@ export default function App() {
           <Route path="/shop/cancel" element={<ShopCancelPage />} />
           <Route path="/store" element={<Navigate to="/shop" replace />} />
           <Route path="/merch" element={<Navigate to="/shop" replace />} />
+          <Route path="/products/all" element={<ShopPage />} />
+          <Route path="/products/:category" element={<ShopPage />} />
           <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
         </Route>
 

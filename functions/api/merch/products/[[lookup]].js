@@ -53,28 +53,32 @@ export async function onRequest(context) {
       );
     }
 
-    const result = await fetchPrintfulProductDetail(env, lookup);
-    if (!result.ok) {
+    const list = await fetchPrintfulProductList(env);
+    if (!list.ok) {
       return json(
         {
           ok: false,
-          configured: Boolean(result.configured),
-          error: result.error || "product_not_found",
-          message: result.message || "No public Printful product matches this route."
+          configured: Boolean(list.configured),
+          error: list.error || "printful_products_unavailable",
+          message: list.message || "Printful products are unavailable."
         },
-        { status: result.status || 404, headers: ERROR_HEADERS }
+        { status: list.status || 503, headers: ERROR_HEADERS }
       );
     }
-    const merged = mergeProductOverrides(result.product, overrides);
-    if (!productLookupKeys(merged).includes(normalizeLookupKey(lookup))) {
+    const publicRows = publicProducts(list.products, overrides);
+    const lookupKey = normalizeLookupKey(lookup);
+    const listed = publicRows.find((product) => productLookupKeys(product).includes(lookupKey));
+    if (!listed) {
       return json({ ok: false, configured: true, error: "product_not_found" }, { status: 404, headers: ERROR_HEADERS });
     }
+    const result = await fetchPrintfulProductDetail(env, listed.printfulProductId || listed.id || listed.slug);
+    const merged = result.ok ? mergeProductOverrides(result.product, overrides) : listed;
     return json(
       {
         ok: true,
         configured: true,
         source: "printful_legacy_sync_product",
-        store: safeStore(result.store),
+        store: safeStore(result.store || list.store),
         product: sanitizePublicProduct(merged),
         overridesConfigured: overrides.length > 0
       },

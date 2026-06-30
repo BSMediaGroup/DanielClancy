@@ -1,5 +1,51 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Merch Storefront Routing / Pricing / Currency / Category Repair Milestone
+
+### Technical
+
+- Added explicit PersonalShell routes for `/products/all` and `/products/:category` before `/products/:category/:slug`, preserving `/shop`, `/store`, `/merch`, `/cart`, `/shop/success`, and `/shop/cancel`.
+- Fixed product lookup normalization so slash-delimited `category/slug` keys stay slash-delimited instead of collapsing into one slug, and added `all/{product}` lookup fallback.
+- Product detail API resolution now matches the public, override-merged product list first, then hydrates the selected product detail by Printful id. This supports Admin slug/category overrides and prevents valid generated product links from 404ing.
+- Printful product list normalization now hydrates missing list prices/variants from detail endpoints with bounded concurrency, reads retail price candidates from variant/list/detail fields, derives min/max price ranges, defaults missing currency to AUD, and keeps checkout totals server-validated.
+- Added category modeling with system `All`, Printful category/collection/tag/product-type fields where present, and Admin override categories from the published public-safe Admin data snapshot.
+- Added `/api/merch/currency-rates` for AUD-based display conversion with optional `CURRENCY_RATES_API_URL`; conversion failures show unavailable UI and do not block shopping.
+- Product cards show AUD/store-currency flag + price only. Product detail and cart show muted converted estimates and a small AUD conversion calculator while checkout remains store-currency only.
+- Polished `/shop` toward a cinematic dark merch storefront with smaller hero typography, category chips, richer cards, and featured-product presentation.
+
+### Human-readable
+
+- Product links and category pages should now resolve instead of falling through to not-found states when the product exists.
+- Merch prices should show real Printful variant prices when Printful returns them; “Price pending” is reserved for products with no usable server-side price after detail hydration.
+- Converted prices are estimates only. The buyer is still charged through the validated AUD/store-currency checkout path.
+
+### Cloudflare / Stripe setup notes
+
+- Optional conversion endpoint override: `CURRENCY_RATES_API_URL=`. Leave blank to use the built-in AUD rates source and graceful fallback.
+- Stripe Dashboard webhook URL remains `https://danielclancy.net/api/merch/stripe/webhook`.
+- Stripe webhook events remain `checkout.session.completed` and `checkout.session.expired`.
+
+### Known limitations
+
+- Currency conversion depends on a runtime rates fetch and can be unavailable without blocking shopping.
+- PayPal merch checkout remains deferred because the existing PayPal code is donation-specific and not a safe product-cart checkout flow.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `functions/_shared/printful-products.js`
+- `functions/api/merch/cart/[[action]].js`
+- `functions/api/merch/currency-rates.js`
+- `functions/api/merch/products/[[lookup]].js`
+- `src/app/App.tsx`
+- `src/lib/currency.tsx`
+- `src/lib/merch.ts`
+- `src/pages/CartPage.tsx`
+- `src/pages/ProductDetailPage.tsx`
+- `src/pages/ShopPage.tsx`
+- `src/styles/global.css`
+
 ## Live Merch Order Persistence / Storefront Shell Milestone
 
 ### Technical

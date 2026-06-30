@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
-import { fetchMerchProduct, type MerchDetail, type MerchProduct } from "../lib/merch";
+import {
+  CurrencySelect,
+  PriceWithFlag,
+  convertAmount,
+  formatMoney,
+  useCurrencyRates,
+  useConvertedAmount,
+  type CurrencyCode,
+} from "../lib/currency";
+import { fetchMerchProduct, productCategoryLabel, productPath, type MerchDetail, type MerchProduct } from "../lib/merch";
 import { addCartItem, cartCount, loadCart, saveCart } from "../lib/merchCart";
 
 export function ProductDetailPage() {
@@ -62,6 +71,9 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
   const gallery = useMemo(() => product.images.filter(Boolean), [product.images]);
   const [activeImage, setActiveImage] = useState(gallery[0] || "");
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id || "");
+  const [convertedCurrency, setConvertedCurrency] = useState<CurrencyCode>("USD");
+  const [calculatorAmount, setCalculatorAmount] = useState("25");
+  const rates = useCurrencyRates();
   const [quantity, setQuantity] = useState(1);
   const [cartMessage, setCartMessage] = useState("");
 
@@ -74,6 +86,11 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
   }, [product]);
 
   const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId) || product.variants[0] || null;
+  const selectedPrice = Number.parseFloat(selectedVariant?.retailPrice || "");
+  const mainAmount = Number.isFinite(selectedPrice) ? selectedPrice : product.priceRange?.min || null;
+  const mainCurrency = selectedVariant?.currency || product.priceRange?.currency || "AUD";
+  const convertedAmount = useConvertedAmount(mainAmount, mainCurrency, convertedCurrency, rates);
+  const calculatorConverted = convertAmount(Number.parseFloat(calculatorAmount), "AUD", convertedCurrency, rates);
 
   function handleAddToCart() {
     if (!selectedVariant) {
@@ -90,7 +107,7 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
       <Seo
         title={product.title}
         description={product.description || "DanielClancy.net shop product detail."}
-        path={`/products/${product.category || "product"}/${product.slug}`}
+        path={productPath(product)}
         image={product.thumbnailUrl}
         type="article"
       />
@@ -124,12 +141,21 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
           </div>
 
           <div className="shop-detail-copy">
-            <p className="kicker">{product.category || "Category pending"}</p>
+            <p className="kicker">{productCategoryLabel(product)}</p>
             <h1>{product.title}</h1>
             <p>{product.description || "Description pending from Printful or Admin override."}</p>
             <div className="shop-detail-price">
               <span>Price</span>
-              <strong>{selectedVariant?.retailPrice ? `${selectedVariant.retailPrice}${selectedVariant.currency ? ` ${selectedVariant.currency}` : ""}` : product.priceRange?.text || "Pending"}</strong>
+              <strong><PriceWithFlag amount={mainAmount} currency={mainCurrency} text={selectedVariant?.retailPrice ? `${formatMoney(selectedPrice, mainCurrency)} ${mainCurrency}` : product.priceRange?.text || "Price pending"} /></strong>
+              <small>{convertedAmount === null ? "Conversion unavailable." : `Approx. ${formatMoney(convertedAmount, convertedCurrency)} ${convertedCurrency}. Final checkout uses validated store currency.`}</small>
+            </div>
+            <div className="currency-tools">
+              <CurrencySelect value={convertedCurrency} onChange={setConvertedCurrency} />
+              <label className="currency-calculator">
+                <span>Convert custom AUD amount</span>
+                <input className="input" inputMode="decimal" value={calculatorAmount} onChange={(event) => setCalculatorAmount(event.target.value)} />
+                <strong>{calculatorConverted === null ? "Unavailable" : `${formatMoney(calculatorConverted, convertedCurrency)} ${convertedCurrency}`}</strong>
+              </label>
             </div>
             <div className="shop-purchase-controls">
               <label>
@@ -173,6 +199,10 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
                 <dd>Printful sync product</dd>
               </div>
               <div>
+                <dt>Category</dt>
+                <dd>{productCategoryLabel(product)}</dd>
+              </div>
+              <div>
                 <dt>Product ID</dt>
                 <dd>{product.printfulProductId}</dd>
               </div>
@@ -191,7 +221,7 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
                 {product.variants.map((variant) => (
                   <div key={variant.id} className="shop-variant-row">
                     <strong>{variant.name || variant.sku || variant.id}</strong>
-                    <span>{variant.retailPrice ? `${variant.retailPrice}${variant.currency ? ` ${variant.currency}` : ""}` : "Price pending"}</span>
+                    <span>{variant.retailPrice ? <PriceWithFlag amount={Number.parseFloat(variant.retailPrice)} currency={variant.currency || "AUD"} text={`${formatMoney(Number.parseFloat(variant.retailPrice), variant.currency || "AUD")} ${variant.currency || "AUD"}`} /> : "Price pending"}</span>
                     {variant.status ? <em>{variant.status}</em> : null}
                   </div>
                 ))}
