@@ -1,5 +1,43 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Watch Page Immersive Shell Correction Milestone
+
+### Technical
+
+- Replaced the previous `/watch` constrained cinematic hero/card treatment with a route-owned immersive watch shell: compact custom top chrome, full-bleed hero media stage, thumbnail-derived blurred side/backdrop falloff, lower-left overlay copy/meta, lower-right playback/source controls, and a dark selector strip directly below the hero.
+- Scoped the normal personal shell suppression to `/watch` only so the standard Home / Watch / Donate header and personal footer no longer render on the immersive watch route, while `/home` and `/donate` keep the existing personal shell.
+- Kept `functions/api/watch-feed.js`, `src/lib/watchFeed.ts`, the fetched item contract, and all video item data untouched. No video titles, descriptions, thumbnails, dates, URLs, platform metadata, or catalogue rows were invented.
+- Preserved the lower fetched catalogue section and source links, with the selector now promoting fetched items into the active hero state through accessible buttons and carousel arrows.
+- Added watch-specific platform/profile chrome using existing local brand/social assets and existing known platform links.
+
+### Human-readable
+
+- `/watch` now reads as an immersive streaming/watch surface instead of a standard DanielClancy.net content page with a large centered card.
+- The active video/poster fills the first viewport under a compact translucent header, with the metadata, title, source CTA, mute, and autoplay controls overlaid on the stage.
+- The thumbnail rail sits immediately below the hero as secondary "More content" navigation, and the full fetched catalogue remains available farther down the page.
+
+### Files / areas changed
+
+- `src/components/PersonalShell.tsx`
+- `src/content/brandAssets.ts`
+- `src/pages/WatchPage.tsx`
+- `src/styles/global.css`
+- `BUMP_NOTES.md`
+
+### Validation
+
+- Passed `npm run check`.
+- Passed `npm run build`; Vite reported the existing large-chunk warning.
+- Passed `git diff --check`; Git only reported line-ending normalization warnings for edited files.
+- Passed local `/watch` visual smoke at desktop/wide, laptop-ish, and mobile viewports through Playwright MCP against the Vite dev server, with `/api/watch-feed` fulfilled from the existing public sanitized feed response because Vite does not run Cloudflare Pages Functions.
+- Browser smoke confirmed no horizontal overflow, the watch-specific chrome replaced the normal personal nav, selector clicks changed the active hero state, the source CTA resolved, autoplay/mute controls updated iframe state, and the lower fetched catalogue remained present.
+- `npm run lint` and `npm run typecheck` are not present in `package.json`; `npm run check` is the repo's TypeScript check script.
+
+### Risks / follow-ups
+
+- Local Vite-only smoke can verify layout and interaction state, but real hosted feed hydration and YouTube iframe playback still depend on the Cloudflare Pages Function and configured YouTube env.
+- The overlay autoplay/mute controls continue to rebuild the iframe URL rather than using a YouTube Player API bridge.
+
 ## Cinematic Watch Page Redesign Milestone
 
 ### Technical

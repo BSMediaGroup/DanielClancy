@@ -8,6 +8,7 @@ import patreonIcon from "../../assets/icons/patreon.svg";
 import kofiIcon from "../../assets/icons/kofi.svg";
 import localsIcon from "../../assets/icons/locals.svg";
 import telegramIcon from "../../assets/icons/telegram.svg";
+import linkIcon from "../../assets/icons/link.svg";
 import appleIcon from "../../assets/icons/applecon.svg";
 import googleIcon from "../../assets/icons/google.svg";
 import paymentIcon from "../../assets/icons/ui/payments.svg";
@@ -71,6 +72,7 @@ export const socialIcons = {
   kofi: kofiIcon,
   locals: localsIcon,
   telegram: telegramIcon,
+  link: linkIcon,
   apple: appleIcon,
   google: googleIcon,
   payments: paymentIcon,

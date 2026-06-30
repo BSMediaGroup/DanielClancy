@@ -19,6 +19,7 @@ export function PersonalShell() {
   const location = useLocation();
   const mobileNavId = useId();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const isWatchRoute = location.pathname === "/watch";
 
   useEffect(() => {
     setIsMobileNavOpen(false);
@@ -47,15 +48,48 @@ export function PersonalShell() {
   }, []);
 
   return (
-    <div className="site-shell site-shell--personal">
-      <header className="site-header site-header--personal">
-        <div className="container personal-header">
-          <div className="personal-header__brand">
-            <SiteBrand homeTo="/home" subtitle="Personal Studio" theme="personal" />
+    <div className={`site-shell site-shell--personal${isWatchRoute ? " site-shell--watch" : ""}`}>
+      {isWatchRoute ? null : (
+        <header className="site-header site-header--personal">
+          <div className="container personal-header">
+            <div className="personal-header__brand">
+              <SiteBrand homeTo="/home" subtitle="Personal Studio" theme="personal" />
+            </div>
+
+            <div className="personal-header__actions">
+              <nav aria-label="Personal navigation" className="site-nav site-nav--desktop site-nav--personal">
+                {navItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `site-nav__link${isActive ? " site-nav__link--active" : ""}`
+                    }
+                    end
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </nav>
+
+              <HeaderMenuButton
+                controls={mobileNavId}
+                isOpen={isMobileNavOpen}
+                onToggle={() => setIsMobileNavOpen((current) => !current)}
+              />
+
+              <div className="personal-header__account">
+                <PersonalHeaderAccount />
+              </div>
+            </div>
           </div>
 
-          <div className="personal-header__actions">
-            <nav aria-label="Personal navigation" className="site-nav site-nav--desktop site-nav--personal">
+          <div className={`container mobile-nav-shell${isMobileNavOpen ? " mobile-nav-shell--open" : ""}`}>
+            <nav
+              id={mobileNavId}
+              aria-label="Personal mobile navigation"
+              className="site-nav site-nav--mobile site-nav--personal"
+            >
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
@@ -69,46 +103,16 @@ export function PersonalShell() {
                 </NavLink>
               ))}
             </nav>
-
-            <HeaderMenuButton
-              controls={mobileNavId}
-              isOpen={isMobileNavOpen}
-              onToggle={() => setIsMobileNavOpen((current) => !current)}
-            />
-
-            <div className="personal-header__account">
-              <PersonalHeaderAccount />
-            </div>
           </div>
-        </div>
-
-        <div className={`container mobile-nav-shell${isMobileNavOpen ? " mobile-nav-shell--open" : ""}`}>
-          <nav
-            id={mobileNavId}
-            aria-label="Personal mobile navigation"
-            className="site-nav site-nav--mobile site-nav--personal"
-          >
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `site-nav__link${isActive ? " site-nav__link--active" : ""}`
-                }
-                end
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main>
         <Outlet />
       </main>
 
-      <footer className="site-footer site-footer--personal">
+      {isWatchRoute ? null : (
+        <footer className="site-footer site-footer--personal">
         <div className="container footer-grid footer-grid--personal">
           <div>
             <p className="kicker">Personal pages</p>
@@ -142,7 +146,8 @@ export function PersonalShell() {
             </div>
           </div>
         </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
