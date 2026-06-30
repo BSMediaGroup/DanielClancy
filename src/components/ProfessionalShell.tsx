@@ -9,13 +9,7 @@ const navItems = [
   { to: "/", label: "Home" },
   { to: "/cv", label: "CV" },
   { to: "/portfolio", label: "Portfolio" },
-  { to: "/shop", label: "Shop" },
   { to: "/contact", label: "Contact" },
-];
-
-const legalItems = [
-  { to: "/privacy", label: "Privacy" },
-  { to: "/terms", label: "Terms" },
 ];
 
 export function ProfessionalShell() {
@@ -174,17 +168,6 @@ export function ProfessionalShell() {
               <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
               <a href="tel:+61458747524">{siteMeta.contact.phone}</a>
               <span>{siteMeta.contact.location}</span>
-            </div>
-          </div>
-
-          <div>
-            <p className="kicker">Legal</p>
-            <div className="footer-link-list">
-              {legalItems.map((item) => (
-                <NavLink key={item.to} to={item.to}>
-                  {item.label}
-                </NavLink>
-              ))}
             </div>
           </div>
 

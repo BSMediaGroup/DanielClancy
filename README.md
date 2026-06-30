@@ -13,7 +13,7 @@ Public-site repository for `DanielClancy.net`, built as a Cloudflare Pages-frien
 This repo holds the public-facing Daniel Clancy website only. It now uses a deliberate split between:
 
 - a professional shell for CV, portfolio, and contact review
-- a personal shell for content, support, and future member-facing utilities
+- a Personal Studio shell for content, support, and storefront/merch commerce pages
 
 The visual system keeps the existing DanielClancy font pairing while tightening hierarchy, spacing, route separation, and public copy quality.
 
@@ -32,11 +32,6 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/work` | Portfolio archive alias for share/bookmark compatibility | Yes |
 | `/portfolio` | WorkSet-driven archive gallery and filtering surface | Yes |
 | `/portfolio/:slug` | Dedicated project detail route with gallery, lightbox, and prev/next navigation | Yes |
-| `/shop` | Printful-powered merch storefront with published Admin display overrides where available | Yes |
-| `/cart` | Merch cart, server-side validation, shipping estimate, and Stripe checkout handoff foundation | Yes |
-| `/shop/success`, `/shop/cancel` | Customer-facing merch checkout return states | Yes |
-| `/store`, `/merch` | Cloudflare/client aliases redirecting to `/shop` | Yes |
-| `/products/:category/:slug` | Clean product detail route resolved through the server-side merch API by slug or Printful identifiers where available | Yes |
 | `/contact` | Professional contact page with live-ready form delivery | Yes |
 | `/privacy` | Privacy Policy covering contact, OAuth/login, analytics, media/API integrations, Cloudflare, Turnstile, and third-party services | Yes |
 | `/terms` | Terms of Use covering portfolio content, accounts, providers/APIs, acceptable use, IP, analytics, and third-party services | Yes |
@@ -48,12 +43,17 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/home` | Personal landing page for channels and supporter paths | No |
 | `/watch` | Featured latest-video page hydrated from a server-side YouTube feed, with a clean provider seam for later migration | No |
 | `/donate` | Live Stripe and PayPal support page with hosted checkout, PayPal approval redirect, and graceful fallback handling | No |
+| `/shop` | Printful-powered merch storefront with published Admin display overrides where available | Yes |
+| `/cart` | Merch cart, server-side validation, Printful draft creation, Stripe checkout, and safe return status | Yes |
+| `/shop/success`, `/shop/cancel` | Customer-facing merch checkout return states backed by safe order-status lookups where possible | Yes |
+| `/store`, `/merch` | Cloudflare/client aliases redirecting to `/shop` | Yes |
+| `/products/:category/:slug` | Clean product detail route resolved through the server-side merch API by slug or Printful identifiers where available | Yes |
 
 ## SEO and metadata split
 
-- Professional routes use standard indexable metadata.
-- Personal routes use `noindex, nofollow, noarchive`.
-- Personal routes still render Open Graph and Twitter preview metadata for link sharing.
+- Professional CV/portfolio routes use standard indexable metadata.
+- Personal content/support routes such as `/home`, `/watch`, and `/donate` use `noindex, nofollow, noarchive`; storefront routes under the Personal Studio shell remain indexable where their page metadata allows it.
+- Personal and storefront routes still render Open Graph and Twitter preview metadata for link sharing.
 - `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
 - `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/products/:category/:slug`, `/work`, `/cv`, `/shop`, `/cart`, `/shop/success`, `/shop/cancel`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
 
@@ -63,7 +63,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 - Shared layout: `src/components/LegalPageLayout.tsx`
 - Page files: `src/pages/PrivacyPage.tsx` and `src/pages/TermsPage.tsx`
 - Both pages use the professional shell, route metadata through `Seo`, a last-updated date, a top jump-to anchor menu, stable section IDs, per-section hash links, and scoped `.legal-*` styling in `src/styles/global.css`.
-- Footer legal links are present in the professional shell and the personal shell. The public account modal also links to Privacy and Terms near the admin boundary note.
+- Footer legal links are no longer advertised from the professional footer. Terms and Privacy remain available as routes and continue to be linked from the Personal Studio/storefront footer and the public account modal where commercially or account-policy relevant.
 - The Privacy Policy covers contact form fields, OAuth/login data, admin/session/security metadata, page visits, Cloudflare request metadata, Turnstile, local/session storage, /watch media metadata, YouTube API Services, Google/GitHub/X OAuth, Twitch/Kick streaming platform references, Cloudflare infrastructure, analytics/security logs, retention, revocation, and third-party links.
 - The Terms of Use cover acceptance, site purpose, accounts/admin restrictions, OAuth and third-party services, /watch media/platform content, YouTube API Services terms, Twitch/Kick/X/GitHub/Google provider terms, acceptable use, intellectual property, portfolio/CV content, submitted content, analytics/security, Cloudflare/Turnstile, disclaimers, liability, indemnity, termination, changes, and New South Wales governing law.
 - The pages are informational website policy pages and should receive legal review before relying on them as final legal documents. No legal entity registration number, office address, new phone number, lawyer, regulator contact, or other unverified formal registration detail is added by these pages.
@@ -180,9 +180,13 @@ Cloudflare setup checkpoint after this local scaffold:
 
 The public storefront never reads `PRINTFUL_STORE_API` in browser code. Pages Functions resolve the Printful store named `Daniel Clancy` through Printful v2 stores where available, then use legacy Printful sync product endpoints for storefront product list/detail data because sync product management is not available in Printful v2 yet. Public responses are normalized into the local merch product shape and merged with published Admin overrides for visibility, featured state, display title, description, category, slug, hero image, gallery order, alt text, and sort order.
 
-The public cart stores only non-sensitive selections in localStorage: product id, slug, variant id, and quantity. `POST /api/merch/cart/validate` validates those selections against server-side Printful data, rejects hidden/unpublished products through published Admin overrides, rejects unknown variants, and recalculates titles, variant names, prices, currency, and totals server-side. `POST /api/merch/cart/shipping` validates the same cart and calls Printful `/v2/shipping-rates` server-side with short-lived recipient data; US, AU, and CA requests require a state/province code.
+The public cart stores only non-sensitive selections in localStorage: product id, slug, variant id, and quantity. `POST /api/merch/cart/validate` validates those selections against server-side Printful data, rejects hidden/unpublished products through published Admin overrides, rejects unknown variants, and recalculates titles, variant names, prices, currency, and totals server-side. `POST /api/merch/cart/shipping` validates the same cart and calls Printful `/v2/shipping-rates` server-side with short-lived recipient data; US, AU, and CA require a state/province code. Checkout requires complete recipient name, email, and shipping address, then rechecks the selected shipping option server-side before any payment session is created.
 
-`POST /api/merch/cart/checkout` is deliberately fail-closed until `DC_MERCH_ORDERS_KV` exists in the DanielClancy Pages project. Without durable order-intent storage, the endpoint does not create a Stripe Checkout Session and does not create a Printful draft order. When the binding is configured, Stripe Checkout uses server-validated cart/shipping amounts only and writes a durable intent before redirecting. The merch webhook URL is `https://danielclancy.net/api/merch/stripe/webhook`; subscribe it to `checkout.session.completed` at minimum after deployment. Current webhook behavior records paid/action-required state only; automatic Printful order creation/confirmation remains deferred until the durable order handoff is completed and verified.
+`POST /api/merch/cart/checkout` requires the dedicated `DC_MERCH_ORDERS_KV` binding before it creates payment or fulfillment state. It writes durable records under `merch:orders:*`, `merch:index:recent:*`, `merch:printful:drafts:*`, and `merch:stripe:sessions:*`, creates a Printful draft order with synced variant ids and confirmation deferred, then creates a Stripe Checkout Session from server-validated line items and shipping only. If storage, Printful, shipping validation, or Stripe configuration is unavailable, checkout fails closed with a config-needed or safe generic checkout message and no fake success path.
+
+The merch webhook URL is `https://danielclancy.net/api/merch/stripe/webhook`. Subscribe it to `checkout.session.completed` and `checkout.session.expired` after deployment. The webhook verifies the Stripe signature with `STRIPE_WEBHOOK_SECRET`, records Stripe event ids under `merch:stripe:events:*`, marks paid sessions once, confirms the Printful draft only after `payment_status=paid`, and persists `printful_confirmation_failed` or `manual_review_required` when paid fulfillment cannot be confirmed. `/shop/success` reads only the safe order status by Stripe session id; `/shop/cancel` attempts to mark the intent canceled when the intent id is present.
+
+Printful product discovery still uses the existing synced product feed. Shipping rates use Printful `/v2/shipping-rates`; product image file registration elsewhere uses `/v2/files`; order draft/confirmation uses the legacy synced-order path (`POST /orders?confirm=false` and `POST /orders/{id}/confirm`) because the storefront items are existing Printful sync variants.
 
 If Printful is not configured or returns no products, `/shop` renders a polished empty/error state without inventing products, prices, images, descriptions, variants, or inventory.
 
@@ -344,6 +348,7 @@ DanielClancy/
 ├─ functions/
 │  ├─ _shared/
 │  │  ├─ alert-sender.js
+│  │  ├─ merch-orders.js
 │  │  ├─ printful-products.js
 │  │  └─ turnstile.js
 │  └─ api/

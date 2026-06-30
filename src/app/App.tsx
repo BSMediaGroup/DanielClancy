@@ -28,13 +28,6 @@ export default function App() {
           <Route path="/work" element={<PortfolioPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/shop/success" element={<ShopSuccessPage />} />
-          <Route path="/shop/cancel" element={<ShopCancelPage />} />
-          <Route path="/store" element={<Navigate to="/shop" replace />} />
-          <Route path="/merch" element={<Navigate to="/shop" replace />} />
-          <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
@@ -44,6 +37,13 @@ export default function App() {
           <Route path="/home" element={<PersonalHomePage />} />
           <Route path="/watch" element={<WatchPage />} />
           <Route path="/donate" element={<DonatePage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/shop/success" element={<ShopSuccessPage />} />
+          <Route path="/shop/cancel" element={<ShopCancelPage />} />
+          <Route path="/store" element={<Navigate to="/shop" replace />} />
+          <Route path="/merch" element={<Navigate to="/shop" replace />} />
+          <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

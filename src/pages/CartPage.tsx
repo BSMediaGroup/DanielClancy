@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import {
   clearCart,
   estimateShipping,
+  fetchMerchOrderStatus,
   loadCart,
+  markMerchCheckoutCanceled,
   removeCartItem,
   saveCart,
   startStripeMerchCheckout,
@@ -17,6 +19,8 @@ import {
 } from "../lib/merchCart";
 
 const initialRecipient: ShippingRecipient = {
+  name: "",
+  email: "",
   country_code: "US",
   state_code: "",
   city: "",
@@ -91,7 +95,7 @@ export function CartPage() {
     setBusy(true);
     setError("");
     try {
-      const checkout = await startStripeMerchCheckout(items, selectedShipping);
+      const checkout = await startStripeMerchCheckout(items, recipient, selectedShipping);
       window.location.assign(checkout.url);
     } catch (checkoutError) {
       setError(checkoutError instanceof Error ? checkoutError.message : "Checkout could not be started.");
@@ -150,6 +154,14 @@ export function CartPage() {
             <h2>Shipping estimate</h2>
             <div className="shop-cart-fields">
               <label>
+                <span>Recipient name</span>
+                <input className="input" value={recipient.name} onChange={(event) => updateRecipient("name", event.target.value)} />
+              </label>
+              <label>
+                <span>Email</span>
+                <input className="input" type="email" value={recipient.email} onChange={(event) => updateRecipient("email", event.target.value)} />
+              </label>
+              <label>
                 <span>Country code</span>
                 <input className="input" value={recipient.country_code} onChange={(event) => updateRecipient("country_code", event.target.value.toUpperCase())} />
               </label>
@@ -202,14 +214,53 @@ export function CartPage() {
 }
 
 export function ShopSuccessPage() {
+  const [searchParams] = useSearchParams();
+  const [message, setMessage] = useState("Checking paid order status...");
+  const [title, setTitle] = useState("Payment return received");
+
   useEffect(() => {
     clearCart();
-  }, []);
-  return <ShopStatusPage title="Payment received" message="Your payment was completed. Fulfillment status will be reconciled server-side after the merch order handoff is fully enabled." />;
+    const sessionId = searchParams.get("session_id") || "";
+    if (!sessionId) {
+      setTitle("Payment return received");
+      setMessage("No checkout session id was returned, so live order status cannot be shown here.");
+      return;
+    }
+    const controller = new AbortController();
+    fetchMerchOrderStatus({ sessionId }, controller.signal)
+      .then((order) => {
+        setTitle(order.status === "printful_confirmed" ? "Payment received" : "Payment status received");
+        setMessage(order.message);
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        setTitle("Payment return received");
+        setMessage(error instanceof Error ? error.message : "Order status is unavailable.");
+      });
+    return () => controller.abort();
+  }, [searchParams]);
+  return <ShopStatusPage title={title} message={message} />;
 }
 
 export function ShopCancelPage() {
-  return <ShopStatusPage title="Checkout canceled" message="Your cart is still stored locally on this device. You can return to checkout when ready." />;
+  const [searchParams] = useSearchParams();
+  const [message, setMessage] = useState("Your cart is still stored locally on this device. You can return to checkout when ready.");
+
+  useEffect(() => {
+    const intentId = searchParams.get("intent_id") || "";
+    if (!intentId) return;
+    const controller = new AbortController();
+    markMerchCheckoutCanceled(intentId, controller.signal)
+      .then((order) => setMessage(order.message || "Checkout was canceled. No fulfillment order was confirmed."))
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setMessage("Checkout was canceled. Local/dev order storage may be unavailable, so no live order state was updated.");
+        }
+      });
+    return () => controller.abort();
+  }, [searchParams]);
+
+  return <ShopStatusPage title="Checkout canceled" message={message} />;
 }
 
 function ShopStatusPage({ title, message }: { title: string; message: string }) {

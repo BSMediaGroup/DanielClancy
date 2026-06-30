@@ -8,6 +8,7 @@ const navItems = [
   { to: "/home", label: "Home" },
   { to: "/watch", label: "Watch" },
   { to: "/donate", label: "Donate" },
+  { to: "/shop", label: "Shop" },
 ];
 
 const legalItems = [

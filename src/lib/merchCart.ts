@@ -26,12 +26,26 @@ export type ServerCartSummary = {
 };
 
 export type ShippingRecipient = {
+  name: string;
+  email: string;
   country_code: string;
   state_code: string;
   city: string;
   zip: string;
   address1: string;
   address2: string;
+};
+
+export type MerchOrderStatus = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  status: string;
+  paymentStatus?: string;
+  fulfillmentStatus?: string;
+  actionNeeded?: boolean;
+  message: string;
+  items: Array<{ title: string; variantName: string; quantity: number }>;
 };
 
 export type ShippingOption = {
@@ -129,17 +143,47 @@ export async function estimateShipping(items: MerchCartItem[], recipient: Shippi
   return payload.shippingOptions as ShippingOption[];
 }
 
-export async function startStripeMerchCheckout(items: MerchCartItem[], shippingOption: ShippingOption) {
+export async function startStripeMerchCheckout(items: MerchCartItem[], recipient: ShippingRecipient, shippingOption: ShippingOption) {
   const response = await fetch("/api/merch/cart/checkout", {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
-    body: JSON.stringify({ items, shippingOption }),
+    body: JSON.stringify({ items, recipient, shippingOption }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok || !payload?.ok || !payload.url) {
     throw new Error(payload?.message || payload?.error || "Checkout could not be started.");
   }
   return payload as { url: string; sessionId?: string; intentId?: string };
+}
+
+export async function fetchMerchOrderStatus(params: { sessionId?: string; intentId?: string }, signal?: AbortSignal) {
+  const query = new URLSearchParams();
+  if (params.sessionId) query.set("session_id", params.sessionId);
+  if (params.intentId) query.set("intent_id", params.intentId);
+  const response = await fetch(`/api/merch/cart/status?${query.toString()}`, {
+    method: "GET",
+    headers: { accept: "application/json" },
+    signal,
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || !payload?.ok) {
+    throw new Error(payload?.message || payload?.error || "Order status is unavailable.");
+  }
+  return payload.order as MerchOrderStatus;
+}
+
+export async function markMerchCheckoutCanceled(intentId: string, signal?: AbortSignal) {
+  const response = await fetch("/api/merch/cart/cancel", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ intentId }),
+    signal,
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || !payload?.ok) {
+    throw new Error(payload?.message || payload?.error || "Checkout cancel state is unavailable.");
+  }
+  return payload.order as MerchOrderStatus;
 }
 
 function normalizeCartItem(raw: Partial<MerchCartItem>) {

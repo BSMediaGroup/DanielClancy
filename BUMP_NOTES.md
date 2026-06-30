@@ -1,5 +1,50 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Live Merch Order Persistence / Storefront Shell Milestone
+
+### Technical
+
+- Moved `/shop`, `/store`, `/merch`, `/cart`, `/shop/success`, `/shop/cancel`, and `/products/:category/:slug` out of `ProfessionalShell` and into the Personal Studio/storefront shell.
+- Removed Shop from the professional navigation and removed the professional footer Legal link block. `/privacy` and `/terms` routes remain available; Personal Studio/storefront footer legal links remain.
+- Added `functions/_shared/merch-orders.js` with dedicated `DC_MERCH_ORDERS_KV` helpers and key prefixes: `merch:orders:*`, `merch:stripe:sessions:*`, `merch:stripe:events:*`, `merch:printful:drafts:*`, and `merch:index:recent:*`.
+- `POST /api/merch/cart/checkout` now requires complete recipient details, revalidates the selected shipping option against Printful `/v2/shipping-rates`, persists a durable order intent, creates a Printful synced-product draft order with confirmation deferred, and only then creates Stripe Checkout.
+- Printful order draft/confirmation uses the legacy synced-order endpoints (`POST /orders?confirm=false` and `POST /orders/{id}/confirm`) because storefront checkout items are existing Printful sync variants; v2 remains in use for shipping rates and file registration where already practical.
+- `POST /api/merch/stripe/webhook` now handles `checkout.session.completed` and `checkout.session.expired`, records Stripe event ids, marks paid sessions idempotently, confirms the Printful draft only after `payment_status=paid`, and persists `printful_confirmation_failed` or `manual_review_required` when fulfillment cannot be confirmed after payment.
+- `/shop/success` reads only safe public order status by Stripe session id. `/shop/cancel` attempts to mark the intent canceled when an intent id is present.
+- Checkout still fails safely when `DC_MERCH_ORDERS_KV`, `PRINTFUL_STORE_API`, Stripe secret config, or webhook signing config is unavailable. No local filesystem, in-memory-only, fake success, or fake fulfillment path was added.
+- PayPal merch checkout remains deferred because the existing PayPal flow is donation-specific, uses `NO_SHIPPING`, and is not a safe product-cart checkout implementation.
+
+### Human-readable
+
+- Storefront pages now visually belong to Personal Studio instead of the professional CV/portfolio site.
+- Paid merch checkout can now create durable order state, defer Printful fulfillment until Stripe payment succeeds, and surface manual-review states instead of silently dropping fulfillment failures.
+
+### Cloudflare / Stripe setup required
+
+- DanielClancy Pages project: `DC_MERCH_ORDERS_KV -> danielclancy-merch-orders`.
+- DanielClancy Pages project: server-only `PRINTFUL_STORE_API`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` are required before live checkout/webhook behavior can complete.
+- Stripe Dashboard webhook URL: `https://danielclancy.net/api/merch/stripe/webhook`.
+- Stripe webhook events: subscribe to `checkout.session.completed` and `checkout.session.expired`.
+
+### Known limitations
+
+- Local/static development without the KV binding still shows config-needed failure states by design.
+- Printful confirmation failures after paid Stripe sessions require manual review; no Admin mutation action was added in this public repo milestone.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `functions/_shared/merch-orders.js`
+- `functions/_shared/printful-products.js`
+- `functions/api/merch/cart/[[action]].js`
+- `functions/api/merch/stripe/webhook.js`
+- `src/app/App.tsx`
+- `src/components/PersonalShell.tsx`
+- `src/components/ProfessionalShell.tsx`
+- `src/lib/merchCart.ts`
+- `src/pages/CartPage.tsx`
+
 ## Live Merch Cart / Checkout Guardrail Milestone
 
 ### Technical

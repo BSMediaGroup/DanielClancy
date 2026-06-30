@@ -179,6 +179,33 @@ export async function registerPrintfulFile(env, publicUrl) {
   });
 }
 
+export async function createPrintfulDraftOrder(env, order) {
+  const store = await resolvePrintfulStore(env);
+  if (!store.ok) return store;
+  const body = buildLegacySyncDraftOrder(order);
+  return printfulFetch(env, "/orders?confirm=false", {
+    version: "v1",
+    method: "POST",
+    storeId: store.storeId,
+    body
+  });
+}
+
+export async function confirmPrintfulDraftOrder(env, printfulOrderId) {
+  const id = cleanText(printfulOrderId, 120);
+  if (!id) {
+    return { ok: false, configured: true, status: 400, error: "printful_order_id_required" };
+  }
+  const store = await resolvePrintfulStore(env);
+  if (!store.ok) return store;
+  return printfulFetch(env, `/orders/${encodeURIComponent(id)}/confirm`, {
+    version: "v1",
+    method: "POST",
+    storeId: store.storeId,
+    body: {}
+  });
+}
+
 export function normalizePrintfulProduct(row, detail = null) {
   const syncProduct = detail?.sync_product || row?.sync_product || row || {};
   const variants = Array.isArray(detail?.sync_variants)
@@ -432,6 +459,44 @@ function formatPriceRange(min, max, currency) {
   const left = trimPrice(min);
   const right = trimPrice(max);
   return min === max ? `${left}${suffix}` : `${left}-${right}${suffix}`;
+}
+
+function buildLegacySyncDraftOrder(order) {
+  const recipient = order.recipient || {};
+  const cart = order.cart || {};
+  const shipping = order.selectedShipping || {};
+  return {
+    external_id: order.id,
+    shipping: cleanText(shipping.id, 120),
+    recipient: {
+      name: cleanText(recipient.name, 160),
+      email: cleanText(recipient.email, 180),
+      address1: cleanText(recipient.address1, 180),
+      address2: cleanText(recipient.address2, 180),
+      city: cleanText(recipient.city, 120),
+      state_code: cleanText(recipient.state_code, 20),
+      country_code: cleanText(recipient.country_code, 2),
+      zip: cleanText(recipient.zip, 40)
+    },
+    items: (cart.items || []).map((item) => ({
+      sync_variant_id: Number(item.variantId) || item.variantId,
+      quantity: Number(item.quantity) || 1,
+      retail_price: centsToDecimal(item.unitAmount),
+      name: cleanText(`${item.title} - ${item.variantName}`, 220),
+      external_id: cleanText(`${item.productId}:${item.variantId}`, 160)
+    })),
+    retail_costs: {
+      currency: cleanText(cart.currency, 12),
+      subtotal: centsToDecimal(cart.subtotalAmount),
+      shipping: centsToDecimal(shipping.amount),
+      tax: "0.00",
+      total: centsToDecimal((Number(cart.subtotalAmount) || 0) + (Number(shipping.amount) || 0))
+    }
+  };
+}
+
+function centsToDecimal(value) {
+  return (Math.max(0, Number(value) || 0) / 100).toFixed(2);
 }
 
 function trimPrice(value) {

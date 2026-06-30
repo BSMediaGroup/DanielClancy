@@ -1,4 +1,13 @@
 import { json, logPaymentEvent, sanitizeEnv } from "../../payments/_shared.js";
+import { confirmPrintfulDraftOrder } from "../../../_shared/printful-products.js";
+import {
+  maskEmail,
+  merchOrderStorage,
+  merchStripeEventKey,
+  readMerchOrder,
+  readMerchOrderByStripeSession,
+  transitionMerchOrder
+} from "../../../_shared/merch-orders.js";
 
 const STRIPE_WEBHOOK_TOLERANCE_SECONDS = 300;
 
@@ -22,25 +31,18 @@ export async function onRequestPost(context) {
   if (!verification.ok || !verification.payload) return json({ message: "Invalid webhook signature." }, 400);
 
   const event = verification.payload;
+  const eventId = sanitizeEnv(event?.id, 120);
+  if (eventId) {
+    const eventKey = merchStripeEventKey(eventId);
+    const existingEvent = await storage.get(eventKey).catch(() => null);
+    if (existingEvent) return json({ received: true, duplicate: true });
+    await storage.put(eventKey, new Date().toISOString());
+  }
+
   if (event?.type === "checkout.session.completed") {
-    const session = event.data?.object || {};
-    const intentId = sanitizeEnv(session.metadata?.merch_order_intent_id, 120);
-    if (intentId) {
-      const key = `merch-order:${intentId}`;
-      const current = await storage.get(key).then((raw) => (raw ? JSON.parse(raw) : null)).catch(() => null);
-      await storage.put(
-        key,
-        JSON.stringify({
-          ...(current || { id: intentId }),
-          updatedAt: new Date().toISOString(),
-          status: session.payment_status === "paid" ? "paid_fulfillment_action_required" : "payment_pending",
-          paymentStatus: sanitizeEnv(session.payment_status, 80),
-          stripeCheckoutSessionId: sanitizeEnv(session.id, 120),
-          printfulStatus: current?.printfulStatus || "not_created",
-          actionRequired: "Create and confirm Printful fulfillment only after the production order handoff is implemented."
-        })
-      );
-    }
+    await handleCheckoutCompleted(context.env, storage, event.data?.object || {});
+  } else if (event?.type === "checkout.session.expired") {
+    await handleCheckoutExpired(storage, event.data?.object || {});
   }
 
   logPaymentEvent({
@@ -53,9 +55,103 @@ export async function onRequestPost(context) {
   return json({ received: true });
 }
 
-function merchOrderStorage(env) {
-  const binding = env?.DC_MERCH_ORDERS_KV;
-  return binding && typeof binding.get === "function" && typeof binding.put === "function" ? binding : null;
+async function handleCheckoutCompleted(env, storage, session) {
+  const intentId = sanitizeEnv(session.metadata?.merch_order_intent_id, 120);
+  const current = intentId ? await readMerchOrder(storage, intentId) : await readMerchOrderByStripeSession(storage, session.id);
+  if (!current) return;
+
+  const paid = session.payment_status === "paid";
+  const nextStripe = {
+    ...current.stripe,
+    sessionId: sanitizeEnv(session.id, 120) || current.stripe?.sessionId,
+    paymentStatus: sanitizeEnv(session.payment_status, 80),
+    paymentIntentId: sanitizeEnv(session.payment_intent, 120),
+    customerEmailMasked: maskEmail(session.customer_details?.email || session.customer_email)
+  };
+
+  if (!paid) {
+    await transitionMerchOrder(storage, current, "stripe_checkout_created", {
+      stripe: nextStripe,
+      historyNote: "Stripe checkout completed webhook arrived before payment_status=paid."
+    });
+    return;
+  }
+
+  const currentStatus = String(current.status || "");
+  let order = currentStatus === "paid" || currentStatus.startsWith("printful_")
+    ? current
+    : await transitionMerchOrder(storage, current, "paid", {
+        stripe: nextStripe,
+        customer: {
+          ...(current.customer || {}),
+          emailMasked: nextStripe.customerEmailMasked || current.customer?.emailMasked || ""
+        },
+        historyNote: "Stripe confirmed successful payment."
+      });
+
+  if (order.status === "printful_confirmed") return;
+  if (order.status === "printful_confirming") return;
+  const printfulDraftId = sanitizeEnv(order.printful?.draftOrderId || session.metadata?.printful_draft_order_id, 120);
+  if (!printfulDraftId) {
+    await transitionMerchOrder(storage, order, "manual_review_required", {
+      actionNeeded: true,
+      errorSummary: "Stripe payment succeeded but no Printful draft order id was stored.",
+      historyNote: "Fulfillment confirmation could not start."
+    });
+    return;
+  }
+
+  order = await transitionMerchOrder(storage, order, "printful_confirming", {
+    printful: {
+      ...order.printful,
+      draftOrderId: printfulDraftId,
+      status: "confirming",
+      confirmationAttemptCount: Number(order.printful?.confirmationAttemptCount || 0) + 1,
+      confirmationAttemptedAt: new Date().toISOString()
+    },
+    historyNote: "Confirming Printful draft after paid Stripe session."
+  });
+
+  const confirmed = await confirmPrintfulDraftOrder(env, printfulDraftId);
+  if (!confirmed.ok) {
+    await transitionMerchOrder(storage, order, "printful_confirmation_failed", {
+      printful: {
+        ...order.printful,
+        status: "confirmation_failed"
+      },
+      actionNeeded: true,
+      errorSummary: "Printful draft confirmation failed after successful Stripe payment.",
+      historyNote: "Manual review is required; no second confirmation attempt was made for this webhook event."
+    });
+    return;
+  }
+
+  const payload = confirmed.payload?.result || confirmed.payload?.data || confirmed.payload || {};
+  await transitionMerchOrder(storage, order, "printful_confirmed", {
+    printful: {
+      ...order.printful,
+      status: "confirmed",
+      confirmedOrderId: sanitizeEnv(payload.id || payload.order?.id || printfulDraftId, 120),
+      confirmedAt: new Date().toISOString()
+    },
+    actionNeeded: false,
+    errorSummary: "",
+    historyNote: "Printful draft confirmed after successful Stripe payment."
+  });
+}
+
+async function handleCheckoutExpired(storage, session) {
+  const intentId = sanitizeEnv(session.metadata?.merch_order_intent_id, 120);
+  const current = intentId ? await readMerchOrder(storage, intentId) : await readMerchOrderByStripeSession(storage, session.id);
+  if (!current || ["paid", "printful_confirming", "printful_confirmed"].includes(current.status)) return;
+  await transitionMerchOrder(storage, current, "expired", {
+    stripe: {
+      ...current.stripe,
+      sessionId: sanitizeEnv(session.id, 120) || current.stripe?.sessionId,
+      paymentStatus: "expired"
+    },
+    historyNote: "Stripe Checkout Session expired before payment completion."
+  });
 }
 
 function parseStripeSignature(headerValue) {
