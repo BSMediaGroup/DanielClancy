@@ -1,5 +1,40 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Printful Merch Storefront Foundation Milestone
+
+### Technical
+
+- Added `/shop` as the canonical merch storefront route, `/store` and `/merch` Cloudflare/client redirects to `/shop`, and `/products/:category/:slug` product detail routing.
+- Added server-side Cloudflare Pages merch API endpoints under `/api/merch/products` so `PRINTFUL_STORE_API` stays server-only and is never bundled into client code.
+- Added a shared Printful normalization helper that resolves the `Daniel Clancy` store with Printful v2 stores where possible, then uses legacy Printful sync product endpoints for product list/detail data because sync product management is not available in Printful v2 yet.
+- Added a merch frontend data layer and polished public shop/detail pages that merge sanitized Printful product data with published Admin storefront overrides when `DANIELCLANCY_ADMIN_PUBLIC_SITE_DATA_URL` or `VITE_ADMIN_PUBLIC_SITE_DATA_URL` is configured.
+- Kept checkout intentionally disabled for merch products; product pages show a checkout-pending CTA because no Printful order/payment flow is wired in this repo.
+
+### Human-readable
+
+- DanielClancy.net now has a real merch storefront foundation ready to display Printful products once the server token and store data are available.
+- The storefront stays honest when Printful is missing or empty and does not invent product names, pricing, inventory, images, variants, or checkout capability.
+
+### Setup / config required
+
+- Configure `PRINTFUL_STORE_API` only in the Cloudflare Pages Functions environment.
+- Configure the Admin public site-data URL if published storefront overrides should affect `/shop`.
+- Live paid checkout and Printful fulfillment order creation remain future work.
+
+### Files / areas changed
+
+- `functions/_shared/printful-products.js`
+- `functions/api/merch/products/[[lookup]].js`
+- `public/_redirects`
+- `src/app/App.tsx`
+- `src/components/ProfessionalShell.tsx`
+- `src/lib/merch.ts`
+- `src/pages/ShopPage.tsx`
+- `src/pages/ProductDetailPage.tsx`
+- `src/styles/global.css`
+- `README.md`
+- `BUMP_NOTES.md`
+
 ## Watch Page Immersive Shell Correction Milestone
 
 ### Technical

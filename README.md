@@ -32,6 +32,9 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/work` | Portfolio archive alias for share/bookmark compatibility | Yes |
 | `/portfolio` | WorkSet-driven archive gallery and filtering surface | Yes |
 | `/portfolio/:slug` | Dedicated project detail route with gallery, lightbox, and prev/next navigation | Yes |
+| `/shop` | Printful-powered merch storefront with published Admin display overrides where available | Yes |
+| `/store`, `/merch` | Cloudflare/client aliases redirecting to `/shop` | Yes |
+| `/products/:category/:slug` | Clean product detail route resolved through the server-side merch API by slug or Printful identifiers where available | Yes |
 | `/contact` | Professional contact page with live-ready form delivery | Yes |
 | `/privacy` | Privacy Policy covering contact, OAuth/login, analytics, media/API integrations, Cloudflare, Turnstile, and third-party services | Yes |
 | `/terms` | Terms of Use covering portfolio content, accounts, providers/APIs, acceptable use, IP, analytics, and third-party services | Yes |
@@ -50,7 +53,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 - Personal routes use `noindex, nofollow, noarchive`.
 - Personal routes still render Open Graph and Twitter preview metadata for link sharing.
 - `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
-- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with `/* /index.html 200`, so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/work`, `/cv`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
+- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/products/:category/:slug`, `/work`, `/cv`, `/shop`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
 
 ## Legal and policy pages
 
@@ -154,6 +157,21 @@ Cloudflare setup checkpoint after this local scaffold:
 - Channel identifier used now: the stable channel ID from `YOUTUBE_CHANNEL_ID_DANIEL`
 - Fallback behavior: if env/runtime or the upstream API is unavailable, `/watch` keeps its static share metadata, shows a polished fallback hero/state, and avoids exposing any secret in the client bundle
 
+## Printful merch storefront
+
+- UI routes: `/shop` and `/products/:category/:slug`
+- Redirect aliases: `/store` and `/merch` redirect to `/shop` through `public/_redirects` and client routing
+- Server endpoints:
+  - `GET /api/merch/products`
+  - `GET /api/merch/products/*`
+- Server-only env:
+  - `PRINTFUL_STORE_API`
+  - `DANIELCLANCY_ADMIN_PUBLIC_SITE_DATA_URL` or `VITE_ADMIN_PUBLIC_SITE_DATA_URL` for sanitized published Admin storefront overrides
+
+The public storefront never reads `PRINTFUL_STORE_API` in browser code. Pages Functions resolve the Printful store named `Daniel Clancy` through Printful v2 stores where available, then use legacy Printful sync product endpoints for storefront product list/detail data because sync product management is not available in Printful v2 yet. Public responses are normalized into the local merch product shape and merged with published Admin overrides for visibility, featured state, display title, description, category, slug, hero image, gallery order, alt text, and sort order.
+
+If Printful is not configured or returns no products, `/shop` renders a polished empty/error state without inventing products, prices, images, descriptions, variants, or inventory. Product pages show a checkout-pending CTA because this repo does not yet have a merch payment/order flow wired to Printful fulfillment.
+
 ## Donation checkout
 
 - UI route: `/donate`
@@ -238,6 +256,7 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/content/workSetPortfolio.ts`
   - `src/data/public-site-fallback.generated.json`
   - `src/data/public-site-fallback.ts`
+  - `src/lib/merch.ts`
   - `src/lib/publicSiteData.tsx`
   - `src/lib/watchFeed.ts`
   - `src/lib/portfolio.ts`
@@ -252,6 +271,8 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/pages/PersonalHomePage.tsx`
   - `src/pages/WatchPage.tsx`
   - `src/pages/DonatePage.tsx`
+  - `src/pages/ShopPage.tsx`
+  - `src/pages/ProductDetailPage.tsx`
   - `src/lib/donate.ts`
 - Global styling: `src/styles/global.css`
 - Audit notes:
@@ -305,12 +326,16 @@ DanielClancy/
 ├─ functions/
 │  ├─ _shared/
 │  │  ├─ alert-sender.js
+│  │  ├─ printful-products.js
 │  │  └─ turnstile.js
 │  └─ api/
 │     ├─ contact.js
 │     ├─ donate/
 │     │  ├─ session.js
 │     │  └─ webhook.js
+│     ├─ merch/
+│     │  └─ products/
+│     │     └─ [[lookup]].js
 │     ├─ track/
 │     │  └─ page-visit.js
 │     ├─ turnstile/
@@ -337,11 +362,14 @@ DanielClancy/
 │  │  └─ public-site-fallback.ts
 │  ├─ lib/
 │  │  ├─ donate.ts
+│  │  ├─ merch.ts
 │  │  ├─ portfolio.ts
 │  │  ├─ publicSiteData.tsx
 │  │  ├─ turnstile.tsx
 │  │  └─ watchFeed.ts
 │  ├─ pages/
+│  │  ├─ ProductDetailPage.tsx
+│  │  ├─ ShopPage.tsx
 │  │  ├─ PrivacyPage.tsx
 │  │  └─ TermsPage.tsx
 │  └─ styles/global.css

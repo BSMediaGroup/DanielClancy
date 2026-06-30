@@ -10,7 +10,9 @@ import { HomePage } from "../pages/HomePage";
 import { PersonalHomePage } from "../pages/PersonalHomePage";
 import { PortfolioDetailPage } from "../pages/PortfolioDetailPage";
 import { PortfolioPage } from "../pages/PortfolioPage";
+import { ProductDetailPage } from "../pages/ProductDetailPage";
 import { PrivacyPage } from "../pages/PrivacyPage";
+import { ShopPage } from "../pages/ShopPage";
 import { TermsPage } from "../pages/TermsPage";
 import { WatchPage } from "../pages/WatchPage";
 
@@ -25,6 +27,10 @@ export default function App() {
           <Route path="/work" element={<PortfolioPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/store" element={<Navigate to="/shop" replace />} />
+          <Route path="/merch" element={<Navigate to="/shop" replace />} />
+          <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
