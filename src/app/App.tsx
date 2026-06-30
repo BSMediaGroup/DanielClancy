@@ -4,6 +4,7 @@ import { PageVisitBeacon } from "../components/PageVisitBeacon";
 import { ProfessionalShell } from "../components/ProfessionalShell";
 import { PublicSiteDataProvider } from "../lib/publicSiteData";
 import { ContactPage } from "../pages/ContactPage";
+import { CartPage, ShopCancelPage, ShopSuccessPage } from "../pages/CartPage";
 import { CvPage } from "../pages/CvPage";
 import { DonatePage } from "../pages/DonatePage";
 import { HomePage } from "../pages/HomePage";
@@ -28,6 +29,9 @@ export default function App() {
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/shop/success" element={<ShopSuccessPage />} />
+          <Route path="/shop/cancel" element={<ShopCancelPage />} />
           <Route path="/store" element={<Navigate to="/shop" replace />} />
           <Route path="/merch" element={<Navigate to="/shop" replace />} />
           <Route path="/products/:category/:slug" element={<ProductDetailPage />} />

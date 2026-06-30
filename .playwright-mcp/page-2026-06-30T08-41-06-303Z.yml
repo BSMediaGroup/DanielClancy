@@ -1,0 +1,81 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "Daniel Clancy Design Consultant" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]:
+          - generic [ref=e9]: Daniel Clancy
+          - generic [ref=e10]: Design Consultant
+      - navigation "Professional navigation" [ref=e12]:
+        - link "Home" [ref=e13] [cursor=pointer]:
+          - /url: /
+        - link "CV" [ref=e14] [cursor=pointer]:
+          - /url: /cv
+        - link "Portfolio" [ref=e15] [cursor=pointer]:
+          - /url: /portfolio
+        - link "Shop" [ref=e16] [cursor=pointer]:
+          - /url: /shop
+        - link "Contact" [ref=e17] [cursor=pointer]:
+          - /url: /contact
+  - main [ref=e18]:
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - paragraph [ref=e22]: Merch cart
+        - heading "Review your selections." [level=1] [ref=e23]
+        - paragraph [ref=e24]: Prices, titles, variants, and totals are recalculated by the server before checkout.
+        - generic [ref=e25]: Your cart is empty.
+        - generic [ref=e26]:
+          - heading "Your cart is empty." [level=2] [ref=e27]
+          - paragraph [ref=e28]: Add a product variant from the shop before estimating shipping.
+          - link "Back to shop" [ref=e29] [cursor=pointer]:
+            - /url: /shop
+      - complementary [ref=e30]:
+        - heading "Shipping estimate" [level=2] [ref=e31]
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - generic [ref=e34]: Country code
+            - textbox "Country code" [ref=e35]: US
+          - generic [ref=e36]:
+            - generic [ref=e37]: State / province code
+            - textbox "State / province code" [ref=e38]
+          - generic [ref=e39]:
+            - generic [ref=e40]: City
+            - textbox "City" [ref=e41]
+          - generic [ref=e42]:
+            - generic [ref=e43]: Postal code
+            - textbox "Postal code" [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46]: Address line 1
+            - textbox "Address line 1" [ref=e47]
+        - button "Estimate shipping" [disabled] [ref=e48]
+        - generic [ref=e49]:
+          - generic [ref=e50]: Subtotal
+          - strong [ref=e51]: $0.00
+        - button "Continue to Stripe Checkout" [disabled] [ref=e52]
+        - button "Clear cart" [ref=e53] [cursor=pointer]
+  - contentinfo [ref=e54]:
+    - generic [ref=e55]:
+      - generic [ref=e56]:
+        - paragraph [ref=e57]: Daniel Clancy
+        - heading "Design documentation, project evidence, and direct contact." [level=2] [ref=e58]
+        - paragraph [ref=e59]: Independent drafting and design presentation spanning architecture, urban work, structural coordination, and project record keeping.
+      - generic [ref=e60]:
+        - paragraph [ref=e61]: Direct contact
+        - generic [ref=e62]:
+          - link "mail@danielclancy.net" [ref=e63] [cursor=pointer]:
+            - /url: mailto:mail@danielclancy.net
+          - link "+61 458 747 524" [ref=e64] [cursor=pointer]:
+            - /url: tel:+61458747524
+          - generic [ref=e65]: Potts Point, New South Wales, Australia
+      - generic [ref=e66]:
+        - paragraph [ref=e67]: Legal
+        - generic [ref=e68]:
+          - link "Privacy" [ref=e69] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms" [ref=e70] [cursor=pointer]:
+            - /url: /terms
+      - generic [ref=e71]:
+        - paragraph [ref=e72]: Elsewhere
+        - link "LinkedIn" [ref=e73] [cursor=pointer]:
+          - /url: https://www.linkedin.com/in/danielmarkclancy/
+          - generic [ref=e74]: LinkedIn

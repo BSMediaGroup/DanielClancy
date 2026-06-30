@@ -1,5 +1,45 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Live Merch Cart / Checkout Guardrail Milestone
+
+### Technical
+
+- Added a public merch cart flow with `/cart`, `/shop/success`, and `/shop/cancel` routes. Product detail pages now support variant selection, quantity selection, add-to-cart, and cart navigation.
+- Added `src/lib/merchCart.ts` so browser storage contains only non-sensitive cart selections: product id, slug, variant id, and quantity. Prices, titles, variant names, and totals are never trusted from localStorage.
+- Added server-side merch cart endpoints: `POST /api/merch/cart/validate`, `POST /api/merch/cart/shipping`, and `POST /api/merch/cart/checkout`.
+- Cart validation recalculates product/variant/title/price/currency totals from server-side Printful product data and published Admin storefront overrides, rejecting hidden/unpublished products, unknown products, unknown variants, mixed currencies, and variants without server-side prices.
+- Shipping estimates call Printful `/v2/shipping-rates` server-side with validated cart rows and recipient data. US, AU, and CA require state/province codes.
+- Stripe merch checkout is fail-closed until durable order-intent storage exists. `POST /api/merch/cart/checkout` requires `DC_MERCH_ORDERS_KV` before creating a Stripe Checkout Session or writing payment metadata.
+- Added `POST /api/merch/stripe/webhook` with Stripe signature verification and `checkout.session.completed` handling, but it also requires `DC_MERCH_ORDERS_KV` before updating merch payment state.
+- Printful draft order creation and confirmation remain intentionally deferred because this repo did not have existing durable merch order storage. No fulfillment order is created or confirmed before payment success.
+- PayPal merch checkout remains deferred because the existing PayPal implementation is donation-specific, uses `NO_SHIPPING`, and is not a safe reusable product-cart checkout flow.
+- Replaced the concrete `PRINTFUL_STORE_API` value in `.env.example` with a blank placeholder so server-only Printful secrets are not exposed in example config.
+
+### Human-readable
+
+- Customers can now add live Printful variants to a cart and request server-side validation/shipping estimates.
+- The site still refuses to start paid checkout unless durable merch order storage is configured, preventing fake order persistence or lost fulfillment state.
+
+### Cloudflare / Stripe setup required
+
+- DanielClancy Pages project: configure server-only `PRINTFUL_STORE_API`, existing Stripe env vars, and a KV binding named `DC_MERCH_ORDERS_KV` before enabling merch Stripe checkout.
+- Stripe Dashboard webhook URL after deployment: `https://danielclancy.net/api/merch/stripe/webhook`; subscribe at minimum to `checkout.session.completed`.
+- Printful fulfillment handoff remains a follow-up after durable order intents are verified end to end.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `functions/_shared/printful-products.js`
+- `functions/api/merch/cart/[[action]].js`
+- `functions/api/merch/stripe/webhook.js`
+- `src/app/App.tsx`
+- `src/lib/merchCart.ts`
+- `src/pages/CartPage.tsx`
+- `src/pages/ProductDetailPage.tsx`
+- `src/pages/ShopPage.tsx`
+- `src/styles/global.css`
+
 ## Printful Merch Storefront Foundation Milestone
 
 ### Technical

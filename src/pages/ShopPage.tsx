@@ -61,6 +61,9 @@ export function ShopPage() {
               <a className="button" href="#shop-products">
                 Browse products
               </a>
+              <Link className="button button--secondary" to="/cart">
+                View cart
+              </Link>
               <Link className="button button--ghost" to="/contact">
                 Product inquiry
               </Link>
@@ -98,7 +101,7 @@ export function ShopPage() {
               <h2>Product records, live from the store feed.</h2>
             </div>
             <p>
-              Checkout is intentionally pending until a real public payment/order flow is connected.
+              Product checkout validates cart and shipping data server-side before attempting secure payment.
             </p>
           </div>
 

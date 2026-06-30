@@ -33,6 +33,8 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/portfolio` | WorkSet-driven archive gallery and filtering surface | Yes |
 | `/portfolio/:slug` | Dedicated project detail route with gallery, lightbox, and prev/next navigation | Yes |
 | `/shop` | Printful-powered merch storefront with published Admin display overrides where available | Yes |
+| `/cart` | Merch cart, server-side validation, shipping estimate, and Stripe checkout handoff foundation | Yes |
+| `/shop/success`, `/shop/cancel` | Customer-facing merch checkout return states | Yes |
 | `/store`, `/merch` | Cloudflare/client aliases redirecting to `/shop` | Yes |
 | `/products/:category/:slug` | Clean product detail route resolved through the server-side merch API by slug or Printful identifiers where available | Yes |
 | `/contact` | Professional contact page with live-ready form delivery | Yes |
@@ -53,7 +55,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 - Personal routes use `noindex, nofollow, noarchive`.
 - Personal routes still render Open Graph and Twitter preview metadata for link sharing.
 - `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
-- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/products/:category/:slug`, `/work`, `/cv`, `/shop`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
+- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/products/:category/:slug`, `/work`, `/cv`, `/shop`, `/cart`, `/shop/success`, `/shop/cancel`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
 
 ## Legal and policy pages
 
@@ -159,18 +161,32 @@ Cloudflare setup checkpoint after this local scaffold:
 
 ## Printful merch storefront
 
-- UI routes: `/shop` and `/products/:category/:slug`
+- UI routes: `/shop`, `/products/:category/:slug`, `/cart`, `/shop/success`, and `/shop/cancel`
 - Redirect aliases: `/store` and `/merch` redirect to `/shop` through `public/_redirects` and client routing
 - Server endpoints:
   - `GET /api/merch/products`
   - `GET /api/merch/products/*`
+  - `POST /api/merch/cart/validate`
+  - `POST /api/merch/cart/shipping`
+  - `POST /api/merch/cart/checkout`
+  - `POST /api/merch/stripe/webhook`
 - Server-only env:
   - `PRINTFUL_STORE_API`
   - `DANIELCLANCY_ADMIN_PUBLIC_SITE_DATA_URL` or `VITE_ADMIN_PUBLIC_SITE_DATA_URL` for sanitized published Admin storefront overrides
+  - `STRIPE_SECRET_KEY`
+  - `STRIPE_WEBHOOK_SECRET`
+  - `STRIPE_LIVE_ENABLED`
+  - `DC_MERCH_ORDERS_KV` Cloudflare KV binding for durable merch order intents before Stripe checkout/session creation is allowed
 
 The public storefront never reads `PRINTFUL_STORE_API` in browser code. Pages Functions resolve the Printful store named `Daniel Clancy` through Printful v2 stores where available, then use legacy Printful sync product endpoints for storefront product list/detail data because sync product management is not available in Printful v2 yet. Public responses are normalized into the local merch product shape and merged with published Admin overrides for visibility, featured state, display title, description, category, slug, hero image, gallery order, alt text, and sort order.
 
-If Printful is not configured or returns no products, `/shop` renders a polished empty/error state without inventing products, prices, images, descriptions, variants, or inventory. Product pages show a checkout-pending CTA because this repo does not yet have a merch payment/order flow wired to Printful fulfillment.
+The public cart stores only non-sensitive selections in localStorage: product id, slug, variant id, and quantity. `POST /api/merch/cart/validate` validates those selections against server-side Printful data, rejects hidden/unpublished products through published Admin overrides, rejects unknown variants, and recalculates titles, variant names, prices, currency, and totals server-side. `POST /api/merch/cart/shipping` validates the same cart and calls Printful `/v2/shipping-rates` server-side with short-lived recipient data; US, AU, and CA requests require a state/province code.
+
+`POST /api/merch/cart/checkout` is deliberately fail-closed until `DC_MERCH_ORDERS_KV` exists in the DanielClancy Pages project. Without durable order-intent storage, the endpoint does not create a Stripe Checkout Session and does not create a Printful draft order. When the binding is configured, Stripe Checkout uses server-validated cart/shipping amounts only and writes a durable intent before redirecting. The merch webhook URL is `https://danielclancy.net/api/merch/stripe/webhook`; subscribe it to `checkout.session.completed` at minimum after deployment. Current webhook behavior records paid/action-required state only; automatic Printful order creation/confirmation remains deferred until the durable order handoff is completed and verified.
+
+If Printful is not configured or returns no products, `/shop` renders a polished empty/error state without inventing products, prices, images, descriptions, variants, or inventory.
+
+PayPal merch checkout is deferred. The existing PayPal implementation is donation-specific, uses `NO_SHIPPING`, and captures a one-time donation order; it is not reused for physical product cart checkout in this milestone.
 
 ## Donation checkout
 
@@ -257,6 +273,7 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/data/public-site-fallback.generated.json`
   - `src/data/public-site-fallback.ts`
   - `src/lib/merch.ts`
+  - `src/lib/merchCart.ts`
   - `src/lib/publicSiteData.tsx`
   - `src/lib/watchFeed.ts`
   - `src/lib/portfolio.ts`
@@ -271,6 +288,7 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/pages/PersonalHomePage.tsx`
   - `src/pages/WatchPage.tsx`
   - `src/pages/DonatePage.tsx`
+  - `src/pages/CartPage.tsx`
   - `src/pages/ShopPage.tsx`
   - `src/pages/ProductDetailPage.tsx`
   - `src/lib/donate.ts`
@@ -334,8 +352,12 @@ DanielClancy/
 │     │  ├─ session.js
 │     │  └─ webhook.js
 │     ├─ merch/
-│     │  └─ products/
-│     │     └─ [[lookup]].js
+│     │  ├─ cart/
+│     │  │  └─ [[action]].js
+│     │  ├─ products/
+│     │  │  └─ [[lookup]].js
+│     │  └─ stripe/
+│     │     └─ webhook.js
 │     ├─ track/
 │     │  └─ page-visit.js
 │     ├─ turnstile/
@@ -362,12 +384,14 @@ DanielClancy/
 │  │  └─ public-site-fallback.ts
 │  ├─ lib/
 │  │  ├─ donate.ts
+│  │  ├─ merchCart.ts
 │  │  ├─ merch.ts
 │  │  ├─ portfolio.ts
 │  │  ├─ publicSiteData.tsx
 │  │  ├─ turnstile.tsx
 │  │  └─ watchFeed.ts
 │  ├─ pages/
+│  │  ├─ CartPage.tsx
 │  │  ├─ ProductDetailPage.tsx
 │  │  ├─ ShopPage.tsx
 │  │  ├─ PrivacyPage.tsx

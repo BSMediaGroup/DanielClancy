@@ -1,0 +1,266 @@
+- generic [ref=e1]:
+  - dialog [ref=e2]:
+    - region "Sign in" [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: Restricted dashboard
+        - heading "Sign in" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Sign in to continue.
+      - tablist "Authentication mode" [ref=e9]:
+        - button "Sign in" [pressed] [ref=e10] [cursor=pointer]
+        - button "Create account" [ref=e11] [cursor=pointer]
+      - generic [ref=e12]:
+        - button "Continue with GitHub" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: Continue with GitHub
+        - button "Continue with Google" [ref=e15] [cursor=pointer]:
+          - generic [ref=e16]: Continue with Google
+        - button "Continue with Twitter/X" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]: Continue with Twitter/X
+      - generic [ref=e20]: or
+      - button "Use email instead" [ref=e22] [cursor=pointer]:
+        - generic [ref=e23]: Use email instead
+        - generic [ref=e24]: +
+      - status [ref=e25]: Auth endpoint is unavailable in this local/static view. Local scaffold unlock is available for UI smoke testing.
+      - button "Local scaffold unlock" [ref=e26] [cursor=pointer]
+      - paragraph [ref=e27]: Local scaffold unlock is available only on file, localhost, or Pages preview hosts. It is not a production admin credential.
+  - generic:
+    - complementary "Admin navigation":
+      - link "DanielClancy.net Admin overview":
+        - /url: "#/overview"
+        - generic:
+          - strong: DanielClancy.net
+          - text: ADMIN DASHBOARD
+      - navigation:
+        - link "Overview":
+          - /url: "#/overview"
+          - generic: Overview
+        - link "Analytics":
+          - /url: "#/analytics"
+          - generic: Analytics
+        - link "Products":
+          - /url: "#/products"
+          - generic: Products
+        - link "Accounts":
+          - /url: "#/accounts"
+          - generic: Accounts
+        - link "Settings":
+          - /url: "#/settings"
+          - generic: Settings
+        - link "Projects":
+          - /url: "#/projects"
+          - generic: Projects
+        - link "Media":
+          - /url: "#/media"
+          - generic: Media
+        - link "Companies":
+          - /url: "#/companies"
+          - generic: Companies
+        - link "Platforms":
+          - /url: "#/platforms"
+          - generic: Platforms
+        - link "Positions":
+          - /url: "#/positions"
+          - generic: Positions
+      - generic: Static/local fallback. No live admin API connected.
+    - generic:
+      - banner:
+        - button "Collapse sidebar":
+          - img
+        - button "Hide sidebar":
+          - img
+        - generic:
+          - generic: Professional Portfolio Administration
+          - strong: Products
+        - generic:
+          - generic: v1.0
+          - generic:
+            - generic: Auth required
+          - generic:
+            - link "Public Site":
+              - /url: https://danielclancy.net
+      - main [active]:
+        - generic:
+          - generic:
+            - generic:
+              - text: Printful products
+              - heading "Products" [level=1]
+              - paragraph: Manage Printful storefront display overrides. Printful remains the source of truth for product IDs, variants, sync status, and base thumbnails.
+            - generic:
+              - button "Refresh Printful"
+              - button "Check API health"
+          - generic:
+            - generic:
+              - generic:
+                - heading "Printful and storage status" [level=2]
+                - paragraph: Storefront data is read through server-side Pages Functions. Override saves require a signed admin session and DC_ADMIN_KV.
+            - generic:
+              - generic:
+                - article:
+                  - generic: Printful
+                  - strong: Unavailable
+                  - paragraph: Printful products are unavailable.
+                  - generic: Scaffold
+                - article:
+                  - generic: Products
+                  - strong: "0"
+                  - paragraph: Rows returned by the server-side Printful sync product feed.
+                  - generic: Scaffold
+                - article:
+                  - generic: Overrides
+                  - strong: "0"
+                  - paragraph: DC_ADMIN_KV unavailable or not checked.
+                  - generic: Scaffold
+                - article:
+                  - generic: Featured
+                  - strong: "0"
+                  - paragraph: Storefront display flag only.
+                  - generic: Ready
+                - article:
+                  - generic: Hidden/private
+                  - strong: "0"
+                  - paragraph: Excluded from public /shop after publish.
+                  - generic: Ready
+          - generic:
+            - generic:
+              - generic:
+                - heading "Public publish status" [level=2]
+                - paragraph: Publishing writes a sanitized snapshot for DanielClancy.net. Save/Sync remains separate from Publish.
+              - generic:
+                - button "Publish site data" [disabled]
+                - button "Refresh status"
+                - link "Rebuild manifests":
+                  - /url: "#/settings"
+            - generic:
+              - generic:
+                - generic: unavailable
+                - generic: "Cannot publish: live Admin API/KV is unavailable. Current edits are local-only."
+              - generic:
+                - article:
+                  - generic: Projects
+                  - strong: "0"
+                  - paragraph: Public projects in current site-data payload.
+                  - generic: Scaffold
+                - article:
+                  - generic: Companies
+                  - strong: "0"
+                  - paragraph: Sanitized public company rows.
+                  - generic: Scaffold
+                - article:
+                  - generic: Platforms
+                  - strong: "0"
+                  - paragraph: Sanitized public platform rows.
+                  - generic: Scaffold
+                - article:
+                  - generic: Positions
+                  - strong: "0"
+                  - paragraph: Sanitized CV position rows.
+                  - generic: Scaffold
+                - article:
+                  - generic: Assets
+                  - strong: "0"
+                  - paragraph: Cataloged thumbnails, images, and docs.
+                  - generic: Scaffold
+                - article:
+                  - generic: Revision
+                  - strong: None
+                  - paragraph: No published timestamp.
+                  - generic: Scaffold
+              - generic:
+                - generic:
+                  - term: Public endpoint
+                  - definition: /api/public/site-data
+                - generic:
+                  - term: Generated at
+                  - definition: Not recorded
+                - generic:
+                  - term: Warnings
+                  - definition: public_site_data_status_unavailable
+                - generic:
+                  - term: Next step
+                  - definition: Save/Sync edits first, then Publish site data. Redeploy Public only for env, committed fallback, rendering code, or asset changes.
+          - generic:
+            - generic:
+              - generic:
+                - heading "Filters and bulk controls" [level=2]
+                - paragraph: Search product metadata, select rows, and apply confirmed storefront override changes.
+            - generic:
+              - generic:
+                - generic:
+                  - generic: Search
+                  - searchbox "Search"
+                - generic:
+                  - generic: Visibility
+                  - combobox "Visibility":
+                    - option "All visibility" [selected]
+                    - option "public"
+                    - option "hidden"
+                    - option "private"
+                    - option "draft"
+                - generic:
+                  - generic: Featured
+                  - combobox "Featured":
+                    - option "All products" [selected]
+                    - option "Featured only"
+                    - option "Not featured"
+                - generic:
+                  - generic: Sort
+                  - combobox "Sort":
+                    - option "title" [selected]
+                    - option "updated"
+                    - option "variants"
+                    - option "images"
+                - generic:
+                  - generic: 0 visible
+                  - generic: 0 selected
+              - generic:
+                - generic:
+                  - strong: Bulk edit mode
+                  - paragraph: Bulk saves write storefront overrides only. Printful product records are not mutated.
+                - button "Open bulk mode"
+                - combobox [disabled]:
+                  - option "Set visibility" [selected]
+                  - option "public"
+                  - option "hidden"
+                  - option "private"
+                  - option "draft"
+                - combobox [disabled]:
+                  - option "Set featured" [selected]
+                  - option "featured"
+                  - option "not featured"
+                - textbox "Category override" [disabled]
+                - button "Apply category" [disabled]
+                - button "Bulk save" [disabled]
+              - generic: Printful products are unavailable.
+          - generic:
+            - generic:
+              - generic:
+                - heading "Product table" [level=2]
+                - paragraph: CMS-style product manager backed by Printful product records and Admin storefront overrides.
+            - generic:
+              - generic:
+                - table:
+                  - rowgroup:
+                    - row "Product Category Slug Printful ID Visibility Featured Variants Images Updated Status/API Actions":
+                      - columnheader:
+                        - checkbox
+                      - columnheader "Product"
+                      - columnheader "Category"
+                      - columnheader "Slug"
+                      - columnheader "Printful ID"
+                      - columnheader "Visibility"
+                      - columnheader "Featured"
+                      - columnheader "Variants"
+                      - columnheader "Images"
+                      - columnheader "Updated"
+                      - columnheader "Status/API"
+                      - columnheader "Actions"
+                  - rowgroup:
+                    - row "No Printful products match this view. Printful products are unavailable.":
+                      - cell "No Printful products match this view. Printful products are unavailable.":
+                        - generic: No Printful products match this view. Printful products are unavailable.
+      - contentinfo:
+        - generic:
+          - generic: DanielClancy.net Admin
+          - generic: /
+          - generic: v1.0
+        - generic:
+          - generic: Admin CMS uses KV when configured and local fallback when unavailable.

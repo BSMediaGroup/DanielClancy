@@ -32,7 +32,7 @@ export function hasPrintfulToken(env) {
   return Boolean(cleanText(env?.PRINTFUL_STORE_API, 4096));
 }
 
-async function printfulFetch(env, path, options = {}) {
+export async function printfulFetch(env, path, options = {}) {
   const token = cleanText(env?.PRINTFUL_STORE_API, 4096);
   if (!token) {
     return {
@@ -275,6 +275,72 @@ export function sanitizePublicProduct(product) {
   return safe;
 }
 
+export function validatePublicCartItems(products, cartItems = [], overrides = []) {
+  const productMap = new Map();
+  publicProducts(products, overrides).forEach((product) => {
+    productLookupKeys(product).forEach((key) => productMap.set(key, product));
+  });
+  const normalizedItems = [];
+  for (const raw of Array.isArray(cartItems) ? cartItems : []) {
+    if (
+      Object.prototype.hasOwnProperty.call(raw || {}, "price") ||
+      Object.prototype.hasOwnProperty.call(raw || {}, "unitAmount") ||
+      Object.prototype.hasOwnProperty.call(raw || {}, "lineAmount") ||
+      Object.prototype.hasOwnProperty.call(raw || {}, "total")
+    ) {
+      return { ok: false, error: "client_price_not_accepted", message: "Cart prices must be calculated server-side." };
+    }
+    const productKey = normalizeLookupKey(raw?.productId || raw?.slug || raw?.lookup);
+    const variantId = cleanText(raw?.variantId, 80);
+    const quantity = Math.max(1, Math.min(10, Number.parseInt(raw?.quantity, 10) || 1));
+    const product = productMap.get(productKey);
+    if (!product) {
+      return { ok: false, error: "unknown_product", message: "Cart contains an unknown product." };
+    }
+    if (["hidden", "private", "draft", "archived"].includes(cleanText(product.visibility || "public").toLowerCase())) {
+      return { ok: false, error: "product_unavailable", message: "Cart contains an unavailable product." };
+    }
+    const variant = (product.variants || []).find((entry) => [entry.id, entry.variantId].map((value) => cleanText(value, 80)).includes(variantId));
+    if (!variant) {
+      return { ok: false, error: "unknown_variant", message: "Cart contains an unknown variant." };
+    }
+    const unitAmount = priceToCents(variant.retailPrice);
+    if (!unitAmount) {
+      return { ok: false, error: "variant_price_unavailable", message: "A selected variant does not have a server-side price." };
+    }
+    const currency = cleanText(variant.currency || product.priceRange?.currency || "USD", 12).toUpperCase();
+    normalizedItems.push({
+      productId: product.printfulProductId || product.id,
+      slug: product.slug,
+      title: product.title,
+      variantId: variant.id,
+      catalogVariantId: cleanText(variant.variantId || variant.id, 80),
+      variantName: variant.name || variant.sku || variant.id,
+      sku: variant.sku || "",
+      quantity,
+      unitAmount,
+      currency,
+      lineAmount: unitAmount * quantity,
+      image: product.thumbnailUrl || product.images?.[0] || ""
+    });
+  }
+  if (!normalizedItems.length) {
+    return { ok: false, error: "cart_empty", message: "Cart is empty." };
+  }
+  const currencies = new Set(normalizedItems.map((item) => item.currency));
+  if (currencies.size > 1) {
+    return { ok: false, error: "mixed_currency_cart", message: "Cart contains variants with mixed currencies." };
+  }
+  const subtotalAmount = normalizedItems.reduce((total, item) => total + item.lineAmount, 0);
+  return {
+    ok: true,
+    items: normalizedItems,
+    subtotalAmount,
+    currency: normalizedItems[0].currency,
+    itemCount: normalizedItems.reduce((total, item) => total + item.quantity, 0)
+  };
+}
+
 export function productLookupKeys(product) {
   return uniqueStrings([
     product.slug,
@@ -370,6 +436,11 @@ function formatPriceRange(min, max, currency) {
 
 function trimPrice(value) {
   return Number(value).toFixed(2).replace(/\.00$/, "");
+}
+
+function priceToCents(value) {
+  const amount = Number.parseFloat(cleanText(value, 40));
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0;
 }
 
 function uniqueStrings(values) {

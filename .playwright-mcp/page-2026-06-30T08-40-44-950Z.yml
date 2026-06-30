@@ -1,0 +1,75 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "Daniel Clancy Design Consultant" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]:
+          - generic [ref=e9]: Daniel Clancy
+          - generic [ref=e10]: Design Consultant
+      - navigation "Professional navigation" [ref=e12]:
+        - link "Home" [ref=e13] [cursor=pointer]:
+          - /url: /
+        - link "CV" [ref=e14] [cursor=pointer]:
+          - /url: /cv
+        - link "Portfolio" [ref=e15] [cursor=pointer]:
+          - /url: /portfolio
+        - link "Shop" [ref=e16] [cursor=pointer]:
+          - /url: /shop
+        - link "Contact" [ref=e17] [cursor=pointer]:
+          - /url: /contact
+  - main [ref=e18]:
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - heading "DanielClancy.net Shop" [level=1] [ref=e22]
+        - paragraph [ref=e23]: A focused merch storefront for Daniel Clancy and Brainstream Media Group product drops, powered by Printful product data when the store API is configured.
+        - generic [ref=e24]:
+          - link "Browse products" [ref=e25] [cursor=pointer]:
+            - /url: "#shop-products"
+          - link "View cart" [ref=e26] [cursor=pointer]:
+            - /url: /cart
+          - link "Product inquiry" [ref=e27] [cursor=pointer]:
+            - /url: /contact
+        - generic [ref=e28]:
+          - generic [ref=e29]: Storefront pending
+          - strong [ref=e30]: Printful not configured
+      - generic "Featured shop products" [ref=e31]:
+        - generic [ref=e32]:
+          - text: Printful status
+          - strong [ref=e33]: No public products available
+          - paragraph [ref=e34]: Merch products are unavailable.
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: Merch catalogue
+          - heading "Product records, live from the store feed." [level=2] [ref=e40]
+        - paragraph [ref=e41]: Product checkout validates cart and shipping data server-side before attempting secure payment.
+      - generic [ref=e42]:
+        - paragraph [ref=e43]: Storefront empty state
+        - heading "Printful is not configured locally." [level=3] [ref=e44]
+        - paragraph [ref=e45]: Merch products are unavailable.
+  - contentinfo [ref=e46]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - paragraph [ref=e49]: Daniel Clancy
+        - heading "Design documentation, project evidence, and direct contact." [level=2] [ref=e50]
+        - paragraph [ref=e51]: Independent drafting and design presentation spanning architecture, urban work, structural coordination, and project record keeping.
+      - generic [ref=e52]:
+        - paragraph [ref=e53]: Direct contact
+        - generic [ref=e54]:
+          - link "mail@danielclancy.net" [ref=e55] [cursor=pointer]:
+            - /url: mailto:mail@danielclancy.net
+          - link "+61 458 747 524" [ref=e56] [cursor=pointer]:
+            - /url: tel:+61458747524
+          - generic [ref=e57]: Potts Point, New South Wales, Australia
+      - generic [ref=e58]:
+        - paragraph [ref=e59]: Legal
+        - generic [ref=e60]:
+          - link "Privacy" [ref=e61] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms" [ref=e62] [cursor=pointer]:
+            - /url: /terms
+      - generic [ref=e63]:
+        - paragraph [ref=e64]: Elsewhere
+        - link "LinkedIn" [ref=e65] [cursor=pointer]:
+          - /url: https://www.linkedin.com/in/danielmarkclancy/
+          - generic [ref=e66]: LinkedIn

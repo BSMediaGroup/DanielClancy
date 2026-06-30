@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import { fetchMerchProduct, type MerchDetail, type MerchProduct } from "../lib/merch";
+import { addCartItem, cartCount, loadCart, saveCart } from "../lib/merchCart";
 
 export function ProductDetailPage() {
   const { category = "", slug = "" } = useParams();
@@ -60,10 +61,29 @@ export function ProductDetailPage() {
 function ResolvedProductDetail({ product }: { product: MerchProduct }) {
   const gallery = useMemo(() => product.images.filter(Boolean), [product.images]);
   const [activeImage, setActiveImage] = useState(gallery[0] || "");
+  const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id || "");
+  const [quantity, setQuantity] = useState(1);
+  const [cartMessage, setCartMessage] = useState("");
 
   useEffect(() => {
     setActiveImage(gallery[0] || "");
   }, [gallery]);
+
+  useEffect(() => {
+    setSelectedVariantId(product.variants[0]?.id || "");
+  }, [product]);
+
+  const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId) || product.variants[0] || null;
+
+  function handleAddToCart() {
+    if (!selectedVariant) {
+      setCartMessage("Choose a product variant before adding to cart.");
+      return;
+    }
+    const nextCart = addCartItem(loadCart(), product, selectedVariant, quantity);
+    saveCart(nextCart);
+    setCartMessage(`${cartCount(nextCart)} item${cartCount(nextCart) === 1 ? "" : "s"} in cart.`);
+  }
 
   return (
     <>
@@ -109,16 +129,36 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
             <p>{product.description || "Description pending from Printful or Admin override."}</p>
             <div className="shop-detail-price">
               <span>Price</span>
-              <strong>{product.priceRange?.text || "Pending"}</strong>
+              <strong>{selectedVariant?.retailPrice ? `${selectedVariant.retailPrice}${selectedVariant.currency ? ` ${selectedVariant.currency}` : ""}` : product.priceRange?.text || "Pending"}</strong>
+            </div>
+            <div className="shop-purchase-controls">
+              <label>
+                <span>Variant</span>
+                <select className="input" value={selectedVariantId} onChange={(event) => setSelectedVariantId(event.target.value)} disabled={!product.variants.length}>
+                  {product.variants.map((variant) => (
+                    <option key={variant.id} value={variant.id}>
+                      {variant.name || variant.sku || variant.id}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Quantity</span>
+                <input className="input" type="number" min="1" max="10" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} />
+              </label>
             </div>
             <div className="shop-detail-actions">
-              <button className="button" type="button" disabled>
-                Checkout coming soon
+              <button className="button" type="button" onClick={handleAddToCart} disabled={!selectedVariant}>
+                Add to cart
               </button>
+              <Link className="button button--secondary" to="/cart">
+                View cart
+              </Link>
               <Link className="button button--ghost" to="/contact">
                 Product inquiry
               </Link>
             </div>
+            {cartMessage ? <p className="form-status">{cartMessage}</p> : null}
             <dl className="shop-detail-meta">
               <div>
                 <dt>Status</dt>
@@ -163,10 +203,10 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
 
           <article className="shop-detail-panel">
             <p className="kicker">Checkout state</p>
-            <h2>Fulfilment is not connected to a public payment flow yet.</h2>
+            <h2>Checkout validates cart and shipping server-side.</h2>
             <p>
-              Product data is visible for review. Public customer ordering is intentionally disabled until
-              payment capture, order creation, and fulfilment handling are wired end to end.
+              The browser stores only product, variant, and quantity selections. Prices, shipping, and payment
+              handoff are recalculated through Pages Functions before checkout.
             </p>
           </article>
         </div>
