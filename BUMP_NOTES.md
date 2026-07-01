@@ -1,5 +1,45 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Merch Category / Banner / Hero Slide UX Repair Milestone
+
+### Technical
+
+- Renamed the locked storefront system category from `All` to `All Products` while preserving the canonical slug `all`.
+- Kept every visible product assigned to locked `All Products`, with additional Printful-derived or Admin-managed categories applied only when real metadata or overrides exist.
+- Extended public product normalization to consume published Admin category settings, banner settings, and shop hero slide settings without making the public storefront an authority layer.
+- Added product promo banner rendering on cards/details; banners render only when enabled and explicitly assigned.
+- Added a static shop hero slide manifest for `assets/backgrounds/shopheroslides/` and crossfaded the configured slide set by default every 5 seconds.
+- Strengthened merch price presentation: cards keep main AUD pricing only, while product detail/cart show stronger AUD prices plus selected-currency estimate rows with flag prefixes.
+- Darkened currency controls so selected values/options remain readable.
+
+### Human-readable
+
+- Products with only `All Products` remain browseable at `/products/all`; that state is merchandising setup work, not a broken Printful sync.
+- The shop hero now uses the configured merch imagery instead of a static-only text-heavy hero.
+- Currency conversion remains informational and never blocks checkout when rates are unavailable.
+
+### Follow-up
+
+- Full public customer account management is still the next major phase. It needs a real auth/session model, customer profile storage, order-history integration, delivery-address/contact-preference storage, an Admin Customers page, and Stripe Customer Portal or equivalent saved-payment handling instead of raw card storage.
+
+### Known limitations
+
+- Admin cannot write new static hero files into the deployed git repo at runtime; static slides must be added to `assets/backgrounds/shopheroslides/` and the manifest, while runtime/uploaded slides must use public R2/CDN URLs.
+- No default promo banners are invented for products.
+
+### Files / areas changed
+
+- `README.md`
+- `functions/_shared/printful-products.js`
+- `functions/api/merch/cart/[[action]].js`
+- `functions/api/merch/products/[[lookup]].js`
+- `src/content/shopHeroSlides.ts`
+- `src/lib/merch.ts`
+- `src/pages/CartPage.tsx`
+- `src/pages/ProductDetailPage.tsx`
+- `src/pages/ShopPage.tsx`
+- `src/styles/global.css`
+
 ## Merch Stripe Webhook Secret Split / Currency Rates Config Milestone
 
 ### Technical
@@ -39,7 +79,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Fixed product lookup normalization so slash-delimited `category/slug` keys stay slash-delimited instead of collapsing into one slug, and added `all/{product}` lookup fallback.
 - Product detail API resolution now matches the public, override-merged product list first, then hydrates the selected product detail by Printful id. This supports Admin slug/category overrides and prevents valid generated product links from 404ing.
 - Printful product list normalization now hydrates missing list prices/variants from detail endpoints with bounded concurrency, reads retail price candidates from variant/list/detail fields, derives min/max price ranges, defaults missing currency to AUD, and keeps checkout totals server-validated.
-- Added category modeling with system `All`, Printful category/collection/tag/product-type fields where present, and Admin override categories from the published public-safe Admin data snapshot.
+- Added category modeling with system `All Products`, Printful category/collection/tag/product-type fields where present, and Admin override categories from the published public-safe Admin data snapshot.
 - Added `/api/merch/currency-rates` for AUD-based display conversion with optional `CURRENCY_RATES_API_URL`; conversion failures show unavailable UI and do not block shopping.
 - Product cards show AUD/store-currency flag + price only. Product detail and cart show muted converted estimates and a small AUD conversion calculator while checkout remains store-currency only.
 - Polished `/shop` toward a cinematic dark merch storefront with smaller hero typography, category chips, richer cards, and featured-product presentation.

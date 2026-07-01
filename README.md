@@ -181,9 +181,15 @@ Cloudflare setup checkpoint after this local scaffold:
   - Optional `CURRENCY_RATES_API_URL=https://api.frankfurter.dev/v1/latest?base=AUD` for a runtime AUD-based exchange-rate JSON endpoint. If omitted or unavailable, conversion UI shows an unavailable state and shopping/checkout remain available.
   - `DC_MERCH_ORDERS_KV` Cloudflare KV binding for durable merch order intents before Stripe checkout/session creation is allowed
 
-The public storefront never reads `PRINTFUL_STORE_API` in browser code. Pages Functions resolve the Printful store named `Daniel Clancy` through Printful v2 stores where available, then use legacy Printful sync product endpoints for storefront product list/detail data because sync product management is not available in Printful v2 yet. Public responses are normalized into the local merch product shape and merged with published Admin overrides for visibility, featured state, display title, description, category/categories, primary category, slug, hero image, gallery order, alt text, and sort order. Every product is assigned the system `All` category, plus Printful-provided category/collection/tag/product-type categories when available and Admin category overrides from the published public-safe Admin data snapshot.
+The public storefront never reads `PRINTFUL_STORE_API` in browser code. Pages Functions resolve the Printful store named `Daniel Clancy` through Printful v2 stores where available, then use legacy Printful sync product endpoints for storefront product list/detail data because sync product management is not available in Printful v2 yet. Public responses are normalized into the local merch product shape and merged with published Admin overrides for visibility, featured state, display title, description, category/categories, primary category, slug, hero image, gallery order, alt text, banners, and sort order.
 
-The store base currency is AUD. Product cards show only the AUD/store-currency price with a small inline flag icon. Product detail and cart pages can show a smaller converted estimate underneath the main price, defaulting to USD, with options for USD, CAD, NZD, GBP, EUR, JPY, CHF, SGD, HKD, and KRW when rates are available. Converted amounts are informational only; checkout, shipping, Stripe session creation, and Printful draft order data continue to use server-validated store-currency totals. If rates cannot be fetched, conversion UI shows an unavailable state and does not block shopping.
+Every visible product is assigned the locked system category `All Products` with slug `all`. Products with no additional category remain visible at `/products/all`, and product details continue to resolve at `/products/all/:slug` as well as configured category routes. Additional categories come from Printful category/collection/tag/product-type fields when present or from Admin category overrides; Admin category overrides remain authoritative for public display categories and primary category. Do not invent categories when Printful does not provide them.
+
+Banners are managed product promo chips, not categories. They are configured in Admin, assigned per product, and render on product cards/details only when enabled and explicitly assigned. Disabled banners do not render publicly.
+
+Shop hero slides use static or public-CDN image records from the published Admin product settings. The static repo-backed manifest is `src/content/shopHeroSlides.ts`, and the source image directory is `assets/backgrounds/shopheroslides/` with the currently verified files `shophero-00.webp`, `shophero-01.webp`, and `shophero-02.webp`. To add static hero images, place files in `assets/backgrounds/shopheroslides/`, update `src/content/shopHeroSlides.ts`, configure active/enabled slides, order, active set, and crossfade timing in Admin Shop Settings, then publish site data. Runtime uploads, when used, must be public R2/CDN URLs; Admin does not write new files into the deployed git repo at runtime. The default crossfade interval is 5 seconds.
+
+The store base currency is AUD. Product cards show only the AUD/store-currency price with a small inline flag icon. Product detail and cart pages show a stronger main AUD price and can show a smaller converted estimate underneath the main price, defaulting to USD, with selected currency flag icons for USD, CAD, NZD, GBP, EUR, JPY, CHF, SGD, HKD, and KRW when rates are available. Converted amounts are informational only; checkout, shipping, Stripe session creation, and Printful draft order data continue to use server-validated store-currency totals. If rates cannot be fetched, conversion UI shows an unavailable state and does not block shopping.
 
 The public cart stores only non-sensitive selections in localStorage: product id, slug, variant id, and quantity. `POST /api/merch/cart/validate` validates those selections against server-side Printful data, rejects hidden/unpublished products through published Admin overrides, rejects unknown variants, and recalculates titles, variant names, prices, currency, and totals server-side. `POST /api/merch/cart/shipping` validates the same cart and calls Printful `/v2/shipping-rates` server-side with short-lived recipient data; US, AU, and CA require a state/province code. Checkout requires complete recipient name, email, and shipping address, then rechecks the selected shipping option server-side before any payment session is created.
 
@@ -196,6 +202,8 @@ Printful product discovery still uses the existing synced product feed. Shipping
 If Printful is not configured or returns no products, `/shop` renders a polished empty/error state without inventing products, prices, images, descriptions, variants, or inventory.
 
 PayPal merch checkout is deferred. The existing PayPal implementation is donation-specific, uses `NO_SHIPPING`, and captures a one-time donation order; it is not reused for physical product cart checkout in this milestone.
+
+Full public customer account management is a future phase, not implemented here. That phase needs an auth/session model, customer profile storage, order-history integration, delivery-address/contact-preference storage, an Admin Customers page, and Stripe Customer Portal or equivalent handling for saved payment methods rather than raw card storage.
 
 ## Donation checkout
 
@@ -278,6 +286,7 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/components/LegalPageLayout.tsx`
   - `src/components/PortfolioMediaGallery.tsx`
   - `src/content/brandAssets.ts`
+  - `src/content/shopHeroSlides.ts`
   - `src/content/workSetPortfolio.ts`
   - `src/data/public-site-fallback.generated.json`
   - `src/data/public-site-fallback.ts`
@@ -390,6 +399,7 @@ DanielClancy/
 │  │  ├─ LegalPageLayout.tsx
 │  │  └─ PageVisitBeacon.tsx
 │  ├─ content/
+│  │  └─ shopHeroSlides.ts
 │  ├─ data/
 │  │  ├─ public-site-fallback.generated.json
 │  │  └─ public-site-fallback.ts
@@ -432,4 +442,5 @@ DanielClancy/
 - Later provider migration for the current YouTube-backed `/watch` feed
 - Admin-side content workflow integration
 - Further archive enrichment as more source material is verified
+- Customer account management for display name/avatar, purchase history, cart options, contact preferences, delivery addresses, and Admin customer management, backed by real auth/session, customer profile storage, order history, and Stripe Customer Portal or equivalent payment-method handling
 - Potential media-bundle optimisation if the full local WorkSet asset set proves too heavy for final deployment targets

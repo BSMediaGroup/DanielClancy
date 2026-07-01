@@ -18,6 +18,31 @@
     linear-gradient(135deg, #030305 0%, #0b0711 42%, #150d0a 100%);
 }
 
+.shop-hero-slides {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.shop-hero-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.02);
+  transition-property: opacity, transform;
+  transition-timing-function: ease;
+  filter: saturate(1.04) contrast(1.05);
+}
+
+.shop-hero-slide.is-active {
+  opacity: 0.48;
+  transform: scale(1);
+}
+
 .shop-hero::before,
 .shop-detail-hero::before {
   content: "";
@@ -30,6 +55,18 @@
   background-size: 72px 72px;
   mask-image: radial-gradient(circle at 68% 25%, #000 0 32%, transparent 72%);
   opacity: 0.34;
+}
+
+.shop-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(3, 3, 5, 0.94), rgba(8, 5, 11, 0.74) 46%, rgba(8, 5, 11, 0.36)),
+    radial-gradient(circle at 78% 18%, rgba(240, 117, 54, 0.34), transparent 0 28%),
+    radial-gradient(circle at 30% 72%, rgba(116, 71, 183, 0.34), transparent 0 36%);
 }
 
 .shop-hero__grid,
@@ -48,8 +85,22 @@
   max-width: 680px;
   margin: 0;
   color: #fff8ec;
-  font-size: clamp(2.25rem, 4.2vw, 3.75rem);
-  line-height: 0.96;
+  font-size: clamp(2rem, 3.4vw, 3.1rem);
+  line-height: 1;
+}
+
+.shop-hero__eyebrow {
+  width: fit-content;
+  margin: 0 0 0.85rem;
+  padding: 0.34rem 0.6rem;
+  border: 1px solid rgba(255, 248, 236, 0.16);
+  border-radius: 999px;
+  background: rgba(8, 7, 11, 0.62);
+  color: rgba(255, 248, 236, 0.74);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .shop-hero__copy p,
@@ -97,6 +148,12 @@
   font-size: 1.08rem;
 }
 
+.shop-detail-price strong {
+  color: #f0a15f;
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  line-height: 1.05;
+}
+
 .shop-feature-stack {
   display: grid;
   gap: 1rem;
@@ -113,6 +170,11 @@
     linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 42%),
     linear-gradient(145deg, rgba(17, 15, 22, 0.9), rgba(10, 8, 12, 0.82));
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.32);
+}
+
+.shop-feature-card,
+.shop-empty-card {
+  backdrop-filter: blur(16px);
 }
 
 .shop-feature-card {
@@ -222,6 +284,56 @@
 
 .shop-product-card__meta strong {
   color: #f0a15f;
+  font-size: 1.05rem;
+}
+
+.shop-banner-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.2rem 0;
+}
+
+.shop-banner-row--compact {
+  margin: 0.35rem 0 0.2rem;
+}
+
+.shop-promo-banner {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.55rem;
+  padding: 0.22rem 0.48rem;
+  border: 1px solid rgba(255, 248, 236, 0.18);
+  border-radius: 4px;
+  color: #fff8ec;
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.26);
+}
+
+.shop-promo-banner--purple-orange {
+  background: linear-gradient(135deg, rgba(116, 71, 183, 0.92), rgba(240, 117, 54, 0.88));
+}
+
+.shop-promo-banner--red {
+  background: linear-gradient(135deg, rgba(146, 26, 43, 0.92), rgba(236, 74, 64, 0.88));
+}
+
+.shop-promo-banner--gold {
+  background: linear-gradient(135deg, rgba(132, 89, 18, 0.94), rgba(237, 184, 79, 0.9));
+}
+
+.shop-promo-banner--silver,
+.shop-promo-banner--neutral {
+  background: linear-gradient(135deg, rgba(56, 58, 68, 0.96), rgba(154, 159, 174, 0.76));
+}
+
+.shop-promo-banner--green {
+  background: linear-gradient(135deg, rgba(22, 104, 70, 0.94), rgba(69, 173, 115, 0.82));
 }
 
 .shop-category-chips {
@@ -308,6 +420,20 @@
 .currency-select select,
 .currency-calculator .input {
   min-height: 2.25rem;
+  border-color: rgba(255, 248, 236, 0.18);
+  background: #0d0b12;
+  color: #fff8ec;
+}
+
+.currency-select select:focus-visible,
+.currency-calculator .input:focus-visible {
+  outline: 2px solid rgba(240, 161, 95, 0.72);
+  outline-offset: 2px;
+}
+
+.currency-select option {
+  background: #0d0b12;
+  color: #fff8ec;
 }
 
 .currency-calculator {
@@ -317,6 +443,9 @@
 
 .currency-calculator span {
   grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .currency-calculator strong {
@@ -482,6 +611,11 @@
 .shop-cart-total strong,
 .shop-shipping-option strong {
   color: #fff8ec;
+}
+
+.shop-cart-total strong {
+  color: #f0a15f;
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
 }
 
 .shop-cart-item span,

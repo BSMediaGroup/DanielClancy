@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import {
   CurrencySelect,
+  CurrencyFlag,
   PriceWithFlag,
   convertAmount,
   formatMoney,
@@ -68,7 +69,7 @@ export function ProductDetailPage() {
 }
 
 function ResolvedProductDetail({ product }: { product: MerchProduct }) {
-  const gallery = useMemo(() => product.images.filter(Boolean), [product.images]);
+  const gallery = useMemo(() => (Array.isArray(product.images) ? product.images.filter(Boolean) : []), [product.images]);
   const [activeImage, setActiveImage] = useState(gallery[0] || "");
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id || "");
   const [convertedCurrency, setConvertedCurrency] = useState<CurrencyCode>("USD");
@@ -142,19 +143,28 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
 
           <div className="shop-detail-copy">
             <p className="kicker">{productCategoryLabel(product)}</p>
+            <ProductBanners product={product} />
             <h1>{product.title}</h1>
             <p>{product.description || "Description pending from Printful or Admin override."}</p>
             <div className="shop-detail-price">
               <span>Price</span>
               <strong><PriceWithFlag amount={mainAmount} currency={mainCurrency} text={selectedVariant?.retailPrice ? `${formatMoney(selectedPrice, mainCurrency)} ${mainCurrency}` : product.priceRange?.text || "Price pending"} /></strong>
-              <small>{convertedAmount === null ? "Conversion unavailable." : `Approx. ${formatMoney(convertedAmount, convertedCurrency)} ${convertedCurrency}. Final checkout uses validated store currency.`}</small>
+              <small>
+                {convertedAmount === null ? (
+                  "Conversion unavailable."
+                ) : (
+                  <>
+                    Approx. <PriceWithFlag amount={convertedAmount} currency={convertedCurrency} text={`${formatMoney(convertedAmount, convertedCurrency)} ${convertedCurrency}`} />. Final checkout uses validated store currency.
+                  </>
+                )}
+              </small>
             </div>
             <div className="currency-tools">
               <CurrencySelect value={convertedCurrency} onChange={setConvertedCurrency} />
               <label className="currency-calculator">
-                <span>Convert custom AUD amount</span>
+                <span><CurrencyFlag code="AUD" /> Convert custom AUD amount</span>
                 <input className="input" inputMode="decimal" value={calculatorAmount} onChange={(event) => setCalculatorAmount(event.target.value)} />
-                <strong>{calculatorConverted === null ? "Unavailable" : `${formatMoney(calculatorConverted, convertedCurrency)} ${convertedCurrency}`}</strong>
+                <strong>{calculatorConverted === null ? "Unavailable" : <PriceWithFlag amount={calculatorConverted} currency={convertedCurrency} text={`${formatMoney(calculatorConverted, convertedCurrency)} ${convertedCurrency}`} />}</strong>
               </label>
             </div>
             <div className="shop-purchase-controls">
@@ -242,5 +252,19 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
         </div>
       </section>
     </>
+  );
+}
+
+function ProductBanners({ product }: { product: MerchProduct }) {
+  const banners = (product.banners || []).filter((banner) => banner.enabled !== false);
+  if (!banners.length) return null;
+  return (
+    <div className="shop-banner-row" aria-label="Product promotions">
+      {banners.map((banner) => (
+        <span key={banner.slug} className={`shop-promo-banner shop-promo-banner--${banner.theme || "purple-orange"}`}>
+          {banner.label}
+        </span>
+      ))}
+    </div>
   );
 }

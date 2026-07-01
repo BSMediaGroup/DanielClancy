@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
-import { CurrencySelect, PriceWithFlag, convertAmount, formatMoney, useCurrencyRates, type CurrencyCode } from "../lib/currency";
+import { CurrencyFlag, CurrencySelect, PriceWithFlag, convertAmount, formatMoney, useCurrencyRates, type CurrencyCode } from "../lib/currency";
 import {
   clearCart,
   estimateShipping,
@@ -205,14 +205,20 @@ export function CartPage() {
             <div className="shop-cart-total">
               <span>Subtotal</span>
               <strong><PriceWithFlag amount={summary ? summary.subtotalAmount / 100 : 0} currency={summary?.currency || "AUD"} text={summary?.subtotalText ? `${summary.subtotalText} ${summary.currency}` : "$0.00 AUD"} /></strong>
-              <small>{subtotalConverted === null ? "Conversion unavailable." : `Approx. ${formatMoney(subtotalConverted, convertedCurrency)} ${convertedCurrency}`}</small>
+              <small>
+                {subtotalConverted === null ? (
+                  "Conversion unavailable."
+                ) : (
+                  <>Approx. <PriceWithFlag amount={subtotalConverted} currency={convertedCurrency} text={`${formatMoney(subtotalConverted, convertedCurrency)} ${convertedCurrency}`} /></>
+                )}
+              </small>
             </div>
             <div className="currency-tools currency-tools--cart">
               <CurrencySelect value={convertedCurrency} onChange={setConvertedCurrency} />
               <label className="currency-calculator">
-                <span>Convert custom AUD amount</span>
+                <span><CurrencyFlag code="AUD" /> Convert custom AUD amount</span>
                 <input className="input" inputMode="decimal" value={calculatorAmount} onChange={(event) => setCalculatorAmount(event.target.value)} />
-                <strong>{calculatorConverted === null ? "Unavailable" : `${formatMoney(calculatorConverted, convertedCurrency)} ${convertedCurrency}`}</strong>
+                <strong>{calculatorConverted === null ? "Unavailable" : <PriceWithFlag amount={calculatorConverted} currency={convertedCurrency} text={`${formatMoney(calculatorConverted, convertedCurrency)} ${convertedCurrency}`} />}</strong>
               </label>
             </div>
             <button className="button" type="button" onClick={handleCheckout} disabled={!selectedShipping || busy}>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
 import { shellAssets } from "../content/brandAssets";
+import { staticShopHeroSlides } from "../content/shopHeroSlides";
 import { PriceWithFlag } from "../lib/currency";
 import {
   fetchMerchProducts,
@@ -11,7 +12,9 @@ import {
   productPath,
   slugify,
   type MerchFeed,
+  type MerchSettings,
   type MerchProduct,
+  type ShopHeroSlide,
 } from "../lib/merch";
 
 const initialFeed: MerchFeed = {
@@ -33,6 +36,8 @@ export function ShopPage() {
   );
   const featured = useMemo(() => visibleProducts.filter((product) => product.featured).slice(0, 3), [visibleProducts]);
   const leadProducts = featured.length ? featured : visibleProducts.slice(0, 3);
+  const heroConfig = useMemo(() => resolveHeroSlides(feed.settings), [feed.settings]);
+  const [activeHeroSlide, setActiveHeroSlide] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -56,6 +61,14 @@ export function ShopPage() {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    if (heroConfig.slides.length < 2) return;
+    const timer = window.setInterval(() => {
+      setActiveHeroSlide((current) => (current + 1) % heroConfig.slides.length);
+    }, heroConfig.intervalSeconds * 1000);
+    return () => window.clearInterval(timer);
+  }, [heroConfig.intervalSeconds, heroConfig.slides.length]);
+
   const hasProducts = visibleProducts.length > 0;
   const pagePath = activeCategorySlug === "all" && !category ? "/shop" : `/products/${activeCategorySlug}`;
 
@@ -69,12 +82,25 @@ export function ShopPage() {
       />
 
       <section className="shop-hero">
+        {heroConfig.slides.length ? (
+          <div className="shop-hero-slides" aria-hidden="true">
+            {heroConfig.slides.map((slide, index) => (
+              <img
+                key={`${slide.id}-${slide.src}`}
+                className={`shop-hero-slide${index === activeHeroSlide % heroConfig.slides.length ? " is-active" : ""}`}
+                src={slide.src}
+                alt=""
+                style={{ transitionDuration: `${heroConfig.durationSeconds}s` }}
+              />
+            ))}
+          </div>
+        ) : null}
         <div className="container shop-hero__grid">
           <div className="shop-hero__copy">
+            <p className="shop-hero__eyebrow">DanielClancy.net Shop</p>
             <h1>DanielClancy.net Shop</h1>
             <p>
-              A focused merch storefront for Daniel Clancy and Brainstream Media Group product drops,
-              priced in server-validated Australian dollars from the Printful store feed.
+              Premium merch drops with server-validated AUD pricing, Printful product data, and a clean checkout handoff.
             </p>
             <div className="shop-hero__actions">
               <a className="button" href="#shop-products">
@@ -88,7 +114,7 @@ export function ShopPage() {
               </Link>
             </div>
             <div className="shop-hero__status" aria-live="polite">
-              <span>{loading ? "Checking Printful" : hasProducts ? `${visibleProducts.length} ${activeCategory?.label || "All"} product records` : "Storefront pending"}</span>
+              <span>{loading ? "Checking Printful" : hasProducts ? `${visibleProducts.length} ${activeCategory?.label || "All Products"} product records` : "Storefront pending"}</span>
               <strong>{loading ? "Loading" : feed.ok ? "Printful connected" : feed.configured ? "Printful unavailable" : "Printful not configured"}</strong>
             </div>
           </div>
@@ -117,7 +143,7 @@ export function ShopPage() {
           <div className="shop-section__header">
             <div>
               <p className="kicker">Merch catalogue</p>
-              <h2>{activeCategory?.label || "All"} products.</h2>
+              <h2>{activeCategory?.label || "All Products"} products.</h2>
             </div>
             <p>
               Product checkout validates cart and shipping data server-side before attempting secure payment.
@@ -163,6 +189,7 @@ function ShopFeatureCard({ product }: { product: MerchProduct }) {
       <ProductImage product={product} />
       <div>
         <span>{productCategoryLabel(product)}</span>
+        <ProductBanners product={product} compact />
         <strong>{product.title}</strong>
         <small><PriceWithFlag amount={product.priceRange?.min} currency={product.priceRange?.currency || "AUD"} text={product.priceRange?.text || "Price pending"} /></small>
       </div>
@@ -179,6 +206,7 @@ function ProductCard({ product }: { product: MerchProduct }) {
           <span>{productCategoryLabel(product)}</span>
           {product.availability ? <em>{product.availability}</em> : null}
         </div>
+        <ProductBanners product={product} />
         <h3>{product.title}</h3>
         <p>{product.description || "Description pending from Printful or Admin override."}</p>
         <div className="shop-product-card__meta">
@@ -189,6 +217,41 @@ function ProductCard({ product }: { product: MerchProduct }) {
       </div>
     </Link>
   );
+}
+
+function ProductBanners({ product, compact = false }: { product: MerchProduct; compact?: boolean }) {
+  const banners = (product.banners || []).filter((banner) => banner.enabled !== false);
+  if (!banners.length) return null;
+  return (
+    <div className={`shop-banner-row${compact ? " shop-banner-row--compact" : ""}`} aria-label="Product promotions">
+      {banners.map((banner) => (
+        <span key={banner.slug} className={`shop-promo-banner shop-promo-banner--${banner.theme || "purple-orange"}`}>
+          {banner.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function resolveHeroSlides(settings?: MerchSettings) {
+  const activeSet = settings?.hero?.activeSet || "default";
+  const configured = (settings?.heroSlides || [])
+    .filter((slide) => slide.enabled !== false && (!slide.set || slide.set === activeSet))
+    .sort((left, right) => (left.sortOrder || 1000) - (right.sortOrder || 1000));
+  const slides = (configured.length ? configured : staticShopHeroSlides).map(resolveHeroSlide).filter((slide): slide is { id: string; src: string } => Boolean(slide?.src));
+  return {
+    slides,
+    intervalSeconds: settings?.hero?.crossfadeIntervalSeconds || 5,
+    durationSeconds: settings?.hero?.crossfadeDurationSeconds || 1.2,
+  };
+}
+
+function resolveHeroSlide(slide: ShopHeroSlide | (typeof staticShopHeroSlides)[number]) {
+  const staticMatch = staticShopHeroSlides.find((entry) => entry.id === slide.id || entry.staticPath === slide.src || entry.staticPath.endsWith(String(slide.src || "")));
+  return {
+    id: slide.id || staticMatch?.id || String(slide.src || ""),
+    src: staticMatch?.src || slide.src || "",
+  };
 }
 
 function ProductImage({ product }: { product: MerchProduct }) {

@@ -393,13 +393,16 @@ function clean(value, maxLength = 500) {
 
 async function loadPublishedOverrides(env) {
   const url = String(env?.DANIELCLANCY_ADMIN_PUBLIC_SITE_DATA_URL || env?.VITE_ADMIN_PUBLIC_SITE_DATA_URL || "").trim();
-  if (!url || !/^https?:\/\//i.test(url)) return [];
+  if (!url || !/^https?:\/\//i.test(url)) return { items: [], settings: {} };
   try {
     const response = await fetch(url, { headers: { accept: "application/json" } });
-    if (!response.ok) return [];
+    if (!response.ok) return { items: [], settings: {} };
     const payload = await response.json();
-    return Array.isArray(payload?.collections?.products) ? payload.collections.products : [];
+    return {
+      items: Array.isArray(payload?.collections?.products) ? payload.collections.products : [],
+      settings: payload?.collections?.productSettings && typeof payload.collections.productSettings === "object" ? payload.collections.productSettings : {}
+    };
   } catch {
-    return [];
+    return { items: [], settings: {} };
   }
 }

@@ -20,7 +20,7 @@ export type MerchProduct = {
   categorySlug?: string;
   primaryCategory?: string;
   primaryCategorySlug?: string;
-  categories?: Array<{ label: string; slug: string; source?: string; enabled?: boolean; sortOrder?: number }>;
+  categories?: MerchCategory[];
   thumbnailUrl?: string;
   images: string[];
   status?: string;
@@ -28,6 +28,7 @@ export type MerchProduct = {
   featured?: boolean;
   visibility?: string;
   priceRange?: { min: number; max: number; currency?: string; text: string } | null;
+  banners?: MerchBanner[];
   variantCount: number;
   imageCount: number;
   variants: MerchVariant[];
@@ -37,6 +38,47 @@ export type MerchProduct = {
   altText?: string;
 };
 
+export type MerchBanner = {
+  label: string;
+  slug: string;
+  enabled?: boolean;
+  sortOrder?: number;
+  theme?: string;
+};
+
+export type MerchCategory = {
+  label: string;
+  slug: string;
+  source?: string;
+  enabled?: boolean;
+  locked?: boolean;
+  sortOrder?: number;
+  description?: string;
+};
+
+export type ShopHeroSlide = {
+  id: string;
+  label?: string;
+  src?: string;
+  enabled?: boolean;
+  sortOrder?: number;
+  source?: string;
+  set?: string;
+};
+
+export type MerchSettings = {
+  baseCurrency?: "AUD";
+  convertedCurrencyDefault?: string;
+  categories?: MerchCategory[];
+  banners?: MerchBanner[];
+  hero?: {
+    activeSet?: string;
+    crossfadeIntervalSeconds?: number;
+    crossfadeDurationSeconds?: number;
+  };
+  heroSlides?: ShopHeroSlide[];
+};
+
 export type MerchFeed = {
   ok: boolean;
   configured: boolean;
@@ -44,6 +86,7 @@ export type MerchFeed = {
   message?: string;
   source?: string;
   count?: number;
+  settings?: MerchSettings;
   products: MerchProduct[];
 };
 
@@ -76,6 +119,7 @@ export async function fetchMerchProducts(signal?: AbortSignal): Promise<MerchFee
     configured: true,
     source: payload.source,
     count: payload.count,
+    settings: payload.settings || {},
     products: Array.isArray(payload.products) ? payload.products : [],
   };
 }
@@ -112,7 +156,7 @@ export function productPath(product: MerchProduct) {
 }
 
 export function productCategoryLabel(product: MerchProduct) {
-  return product.primaryCategory || product.category || product.categories?.find((category) => category.slug !== "all")?.label || "All";
+  return product.primaryCategory || product.category || product.categories?.find((category) => category.slug !== "all")?.label || "All Products";
 }
 
 export function productCategorySlug(product: MerchProduct) {
@@ -127,7 +171,7 @@ export function productMatchesCategory(product: MerchProduct, categorySlug: stri
 
 export function productCategories(products: MerchProduct[]) {
   const map = new Map<string, { label: string; slug: string; count: number; source?: string; sortOrder?: number }>();
-  map.set("all", { label: "All", slug: "all", count: products.length, source: "system", sortOrder: 0 });
+  map.set("all", { label: "All Products", slug: "all", count: products.length, source: "system", sortOrder: 0 });
   products.forEach((product) => {
     (product.categories || []).forEach((category) => {
       const slug = slugify(category.slug || category.label);

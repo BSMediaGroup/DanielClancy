@@ -23,7 +23,7 @@ export async function onRequest(context) {
   }
 
   const lookup = lookupParam(params);
-  const overrides = await loadPublishedOverrides(env);
+  const overrideBundle = await loadPublishedOverrides(env);
   try {
     if (!lookup) {
       const result = await fetchPrintfulProductList(env);
@@ -46,8 +46,9 @@ export async function onRequest(context) {
           source: "printful_legacy_sync_products",
           store: safeStore(result.store),
           count: result.products.length,
-          products: publicProducts(result.products, overrides),
-          overridesConfigured: overrides.length > 0
+          products: publicProducts(result.products, overrideBundle.items, overrideBundle.settings),
+          settings: overrideBundle.settings,
+          overridesConfigured: overrideBundle.items.length > 0
         },
         { headers: CACHE_HEADERS }
       );
@@ -65,14 +66,14 @@ export async function onRequest(context) {
         { status: list.status || 503, headers: ERROR_HEADERS }
       );
     }
-    const publicRows = publicProducts(list.products, overrides);
+    const publicRows = publicProducts(list.products, overrideBundle.items, overrideBundle.settings);
     const lookupKey = normalizeLookupKey(lookup);
     const listed = publicRows.find((product) => productLookupKeys(product).includes(lookupKey));
     if (!listed) {
       return json({ ok: false, configured: true, error: "product_not_found" }, { status: 404, headers: ERROR_HEADERS });
     }
     const result = await fetchPrintfulProductDetail(env, listed.printfulProductId || listed.id || listed.slug);
-    const merged = result.ok ? mergeProductOverrides(result.product, overrides) : listed;
+    const merged = result.ok ? mergeProductOverrides(result.product, overrideBundle.items, overrideBundle.settings) : listed;
     return json(
       {
         ok: true,
@@ -80,7 +81,8 @@ export async function onRequest(context) {
         source: "printful_legacy_sync_product",
         store: safeStore(result.store || list.store),
         product: sanitizePublicProduct(merged),
-        overridesConfigured: overrides.length > 0
+        settings: overrideBundle.settings,
+        overridesConfigured: overrideBundle.items.length > 0
       },
       { headers: CACHE_HEADERS }
     );
@@ -118,14 +120,17 @@ async function loadPublishedOverrides(env) {
       env?.VITE_ADMIN_PUBLIC_SITE_DATA_URL ||
       ""
   ).trim();
-  if (!url || !/^https?:\/\//i.test(url)) return [];
+  if (!url || !/^https?:\/\//i.test(url)) return { items: [], settings: {} };
   try {
     const response = await fetch(url, { headers: { accept: "application/json" } });
-    if (!response.ok) return [];
+    if (!response.ok) return { items: [], settings: {} };
     const payload = await response.json();
     const products = payload?.collections?.products;
-    return Array.isArray(products) ? products : [];
+    return {
+      items: Array.isArray(products) ? products : [],
+      settings: payload?.collections?.productSettings && typeof payload.collections.productSettings === "object" ? payload.collections.productSettings : {}
+    };
   } catch {
-    return [];
+    return { items: [], settings: {} };
   }
 }
