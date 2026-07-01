@@ -22,13 +22,29 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestPost(context) {
-  const secret = sanitizeEnv(context.env?.STRIPE_WEBHOOK_SECRET, 200);
+  const secret = sanitizeEnv(context.env?.STRIPE_MERCH_WEBHOOK_SECRET, 200);
   const storage = merchOrderStorage(context.env);
-  if (!secret) return json({ message: "Webhook signing secret is not configured." }, 503);
+  if (!secret) {
+    return json(
+      {
+        error: "merch_webhook_secret_not_configured",
+        message: "Merch webhook signing secret is not configured."
+      },
+      503
+    );
+  }
   if (!storage) return json({ message: "DC_MERCH_ORDERS_KV is required before merch payment webhooks can update fulfillment state." }, 503);
 
   const verification = await verifyStripeWebhookSignature(context.request, secret);
-  if (!verification.ok || !verification.payload) return json({ message: "Invalid webhook signature." }, 400);
+  if (!verification.ok || !verification.payload) {
+    return json(
+      {
+        error: "merch_webhook_signature_invalid",
+        message: "Invalid merch webhook signature."
+      },
+      400
+    );
+  }
 
   const event = verification.payload;
   const eventId = sanitizeEnv(event?.id, 120);

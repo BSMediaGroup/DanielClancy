@@ -1,5 +1,36 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Merch Stripe Webhook Secret Split / Currency Rates Config Milestone
+
+### Technical
+
+- Updated `POST /api/merch/stripe/webhook` to verify Stripe signatures only with `STRIPE_MERCH_WEBHOOK_SECRET`.
+- Preserved the existing donation/payment Stripe webhook contract: `functions/api/payments/stripe/webhook.js` continues to use `STRIPE_WEBHOOK_SECRET`.
+- Missing merch webhook signing config now fails closed with `merch_webhook_secret_not_configured` before reading the request body, touching KV, or attempting Printful confirmation.
+- Invalid merch webhook signatures now return `merch_webhook_signature_invalid` without leaking secret material.
+- Currency conversion now requires the explicit full endpoint URL `CURRENCY_RATES_API_URL=https://api.frankfurter.dev/v1/latest?base=AUD`; missing, failed, or non-AUD-base rate payloads return an unavailable conversion state while shopping and checkout remain unblocked.
+- `.env.example` and README now document the donation/payment webhook secret and merch webhook secret as separate values.
+
+### Human-readable
+
+- The new merch webhook signing secret is isolated from the existing donation/payment webhook secret.
+- Currency conversion remains display-only and AUD-based. Buyers still check out using server-validated store-currency totals.
+
+### Cloudflare / Stripe setup notes
+
+- Existing donation/payment webhook secret: `STRIPE_WEBHOOK_SECRET`.
+- Merch-specific webhook secret: `STRIPE_MERCH_WEBHOOK_SECRET`.
+- Merch webhook URL: `https://danielclancy.net/api/merch/stripe/webhook`.
+- Merch webhook events: `checkout.session.completed` and `checkout.session.expired`.
+- Currency rates URL: `CURRENCY_RATES_API_URL=https://api.frankfurter.dev/v1/latest?base=AUD`.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `functions/api/merch/currency-rates.js`
+- `functions/api/merch/stripe/webhook.js`
+
 ## Merch Storefront Routing / Pricing / Currency / Category Repair Milestone
 
 ### Technical
@@ -21,7 +52,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
 ### Cloudflare / Stripe setup notes
 
-- Optional conversion endpoint override: `CURRENCY_RATES_API_URL=`. Leave blank to use the built-in AUD rates source and graceful fallback.
+- Optional conversion endpoint override: `CURRENCY_RATES_API_URL=https://api.frankfurter.dev/v1/latest?base=AUD`. Leave blank only when display conversion should be unavailable.
 - Stripe Dashboard webhook URL remains `https://danielclancy.net/api/merch/stripe/webhook`.
 - Stripe webhook events remain `checkout.session.completed` and `checkout.session.expired`.
 
@@ -68,7 +99,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 ### Cloudflare / Stripe setup required
 
 - DanielClancy Pages project: `DC_MERCH_ORDERS_KV -> danielclancy-merch-orders`.
-- DanielClancy Pages project: server-only `PRINTFUL_STORE_API`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` are required before live checkout/webhook behavior can complete.
+- DanielClancy Pages project: server-only `PRINTFUL_STORE_API`, `STRIPE_SECRET_KEY`, and `STRIPE_MERCH_WEBHOOK_SECRET` are required before live merch checkout/webhook behavior can complete. The existing donation/payment webhook continues to use `STRIPE_WEBHOOK_SECRET`.
 - Stripe Dashboard webhook URL: `https://danielclancy.net/api/merch/stripe/webhook`.
 - Stripe webhook events: subscribe to `checkout.session.completed` and `checkout.session.expired`.
 
