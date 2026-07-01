@@ -3,6 +3,16 @@ import { PersonalShell } from "../components/PersonalShell";
 import { PageVisitBeacon } from "../components/PageVisitBeacon";
 import { ProfessionalShell } from "../components/ProfessionalShell";
 import { PublicSiteDataProvider } from "../lib/publicSiteData";
+import {
+  AccountAddressesPage,
+  AccountLoginPage,
+  AccountLogoutPage,
+  AccountOrdersPage,
+  AccountPage,
+  AccountPaymentsPage,
+  AccountPreferencesPage,
+  AccountProfilePage,
+} from "../pages/AccountPage";
 import { ContactPage } from "../pages/ContactPage";
 import { CartPage, ShopCancelPage, ShopSuccessPage } from "../pages/CartPage";
 import { CvPage } from "../pages/CvPage";
@@ -39,6 +49,14 @@ export default function App() {
           <Route path="/donate" element={<DonatePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/account/login" element={<AccountLoginPage />} />
+          <Route path="/account/profile" element={<AccountProfilePage />} />
+          <Route path="/account/orders" element={<AccountOrdersPage />} />
+          <Route path="/account/addresses" element={<AccountAddressesPage />} />
+          <Route path="/account/preferences" element={<AccountPreferencesPage />} />
+          <Route path="/account/payments" element={<AccountPaymentsPage />} />
+          <Route path="/account/logout" element={<AccountLogoutPage />} />
           <Route path="/shop/success" element={<ShopSuccessPage />} />
           <Route path="/shop/cancel" element={<ShopCancelPage />} />
           <Route path="/store" element={<Navigate to="/shop" replace />} />

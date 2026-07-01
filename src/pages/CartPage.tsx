@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/Seo";
+import { fetchCustomerMe } from "../lib/customerAccount";
 import { CurrencyFlag, CurrencySelect, PriceWithFlag, convertAmount, formatMoney, useCurrencyRates, type CurrencyCode } from "../lib/currency";
 import {
   clearCart,
@@ -42,6 +43,30 @@ export function CartPage() {
   const [convertedCurrency, setConvertedCurrency] = useState<CurrencyCode>("USD");
   const [calculatorAmount, setCalculatorAmount] = useState("50");
   const rates = useCurrencyRates();
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchCustomerMe()
+      .then((session) => {
+        if (cancelled || !session.authenticated || !session.defaultAddress) return;
+        const address = session.defaultAddress;
+        setRecipient((current) => ({
+          ...current,
+          name: current.name || address.name || "",
+          email: current.email || session.customer?.email || "",
+          country_code: current.country_code || address.countryCode || "",
+          state_code: current.state_code || (address.region || "").toUpperCase(),
+          city: current.city || address.city || "",
+          zip: current.zip || address.postalCode || "",
+          address1: current.address1 || address.address1 || "",
+          address2: current.address2 || address.address2 || "",
+        }));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     saveCart(items);

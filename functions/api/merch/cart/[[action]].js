@@ -14,6 +14,11 @@ import {
   transitionMerchOrder
 } from "../../../_shared/merch-orders.js";
 import {
+  appendCustomerOrder,
+  putCustomerProfile,
+  readCustomerSession
+} from "../../../_shared/customer-accounts.js";
+import {
   STRIPE_API_VERSION,
   buildOrigin,
   getStripeAvailability,
@@ -119,6 +124,21 @@ async function createMerchCheckout(context) {
   if (!recipient.ok) return json(recipient, { status: 400, headers: ERROR_HEADERS });
   const shipping = await resolveValidatedShipping(context.env, validation, recipient.value, payload?.shippingOption);
   if (!shipping.ok) return json(shipping, { status: shipping.status || 400, headers: ERROR_HEADERS });
+  const customerSession = await readCustomerSession(context.request, context.env);
+  const customerProfile = customerSession.profile || null;
+  const stripeCustomer = customerProfile
+    ? await ensureStripeCustomerForCheckout(context.env, customerSession.storage, customerProfile)
+    : { ok: true, id: "" };
+  if (!stripeCustomer.ok) {
+    return json(
+      {
+        ok: false,
+        error: stripeCustomer.error || "stripe_customer_create_failed",
+        message: "Secure checkout could not attach this signed-in customer to Stripe."
+      },
+      { status: stripeCustomer.status || 502, headers: ERROR_HEADERS }
+    );
+  }
 
   const intentId = crypto.randomUUID();
   let order = createInitialMerchOrder({
@@ -127,6 +147,15 @@ async function createMerchCheckout(context) {
     recipient: recipient.value,
     shipping: shipping.value
   });
+  if (customerProfile) {
+    order.customer = {
+      ...order.customer,
+      customerId: customerProfile.id,
+      email: customerProfile.email,
+      emailMasked: order.customer?.emailMasked || "",
+      stripeCustomerId: stripeCustomer.id || customerProfile.stripeCustomerId || ""
+    };
+  }
   order = await transitionMerchOrder(storage, order, "pending_validation", {
     historyNote: "Checkout intent persisted before Printful draft creation."
   });
@@ -163,7 +192,7 @@ async function createMerchCheckout(context) {
     historyNote: "Printful draft order created with confirmation deferred until Stripe payment succeeds."
   });
 
-  const checkout = await createStripeSession(context.request, context.env, validation, shipping.value, intentId, printfulDraftId);
+  const checkout = await createStripeSession(context.request, context.env, validation, shipping.value, intentId, printfulDraftId, stripeCustomer.id);
   if (!checkout.ok) {
     await transitionMerchOrder(storage, order, "manual_review_required", {
       stripe: { ...order.stripe, paymentStatus: "checkout_failed" },
@@ -181,6 +210,7 @@ async function createMerchCheckout(context) {
     },
     historyNote: "Stripe Checkout Session created."
   });
+  if (customerProfile) await appendCustomerOrder(customerSession.storage, customerProfile.id, intentId);
 
   return json({ ok: true, intentId, url: checkout.url, sessionId: checkout.sessionId }, { headers: ERROR_HEADERS });
 }
@@ -239,7 +269,7 @@ async function serverCartSummary(env, clientItems) {
   return validatePublicCartItems(products.products, clientItems, overrides);
 }
 
-async function createStripeSession(request, env, cart, shipping, intentId, printfulDraftId) {
+async function createStripeSession(request, env, cart, shipping, intentId, printfulDraftId, stripeCustomerId = "") {
   const origin = buildOrigin(request);
   const params = new URLSearchParams();
   params.set("mode", "payment");
@@ -251,7 +281,11 @@ async function createStripeSession(request, env, cart, shipping, intentId, print
   params.set("shipping_address_collection[allowed_countries][2]", "CA");
   params.set("shipping_address_collection[allowed_countries][3]", "GB");
   params.set("shipping_address_collection[allowed_countries][4]", "NZ");
-  params.set("customer_creation", "if_required");
+  if (stripeCustomerId) {
+    params.set("customer", stripeCustomerId);
+  } else {
+    params.set("customer_creation", "if_required");
+  }
   cart.items.forEach((item, index) => {
     params.set(`line_items[${index}][quantity]`, String(item.quantity));
     params.set(`line_items[${index}][price_data][currency]`, cart.currency.toLowerCase());
@@ -267,6 +301,7 @@ async function createStripeSession(request, env, cart, shipping, intentId, print
   params.set("metadata[source]", "danielclancy-merch");
   params.set("metadata[merch_order_intent_id]", intentId);
   params.set("metadata[printful_draft_order_id]", printfulDraftId);
+  if (stripeCustomerId) params.set("metadata[stripe_customer_id]", stripeCustomerId);
   params.set("payment_intent_data[metadata][source]", "danielclancy-merch");
   params.set("payment_intent_data[metadata][merch_order_intent_id]", intentId);
 
@@ -282,6 +317,28 @@ async function createStripeSession(request, env, cart, shipping, intentId, print
   const body = await response.json().catch(() => null);
   if (!response.ok || !body?.url) return { ok: false, status: response.status, error: body?.error?.type || "stripe_error" };
   return { ok: true, url: body.url, sessionId: body.id || "" };
+}
+
+async function ensureStripeCustomerForCheckout(env, storage, profile) {
+  if (!profile || !storage) return { ok: true, id: "" };
+  if (profile.stripeCustomerId) return { ok: true, id: profile.stripeCustomerId };
+  const params = new URLSearchParams();
+  params.set("email", profile.email);
+  params.set("name", profile.displayName || profile.email);
+  params.set("metadata[danielclancy_customer_id]", profile.id);
+  const response = await fetch(`${STRIPE_API_BASE}/customers`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${sanitizeEnv(env?.STRIPE_SECRET_KEY, 200)}`,
+      "content-type": "application/x-www-form-urlencoded",
+      "stripe-version": STRIPE_API_VERSION
+    },
+    body: params.toString()
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body?.id) return { ok: false, status: response.status, error: body?.error?.type || "stripe_error" };
+  const updated = await putCustomerProfile(storage, { ...profile, stripeCustomerId: body.id, updatedAt: new Date().toISOString() });
+  return { ok: true, id: updated.stripeCustomerId };
 }
 
 function safeCart(cart) {

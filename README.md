@@ -45,6 +45,9 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/donate` | Live Stripe and PayPal support page with hosted checkout, PayPal approval redirect, and graceful fallback handling | No |
 | `/shop` | Printful-powered merch storefront with published Admin display overrides where available | Yes |
 | `/cart` | Merch cart, server-side validation, Printful draft creation, Stripe checkout, and safe return status | Yes |
+| `/account` | Customer account overview for profile, orders, addresses, preferences, and payment-method management status | No |
+| `/account/login` | Passwordless customer email magic-link login request route | No |
+| `/account/profile`, `/account/orders`, `/account/addresses`, `/account/preferences`, `/account/payments` | Protected customer account management routes backed by `DC_CUSTOMERS_KV` session state | No |
 | `/shop/success`, `/shop/cancel` | Customer-facing merch checkout return states backed by safe order-status lookups where possible | Yes |
 | `/store`, `/merch` | Cloudflare/client aliases redirecting to `/shop` | Yes |
 | `/products/all`, `/products/:category` | Category browsing routes for the Printful-backed product catalogue | Yes |
@@ -116,21 +119,33 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. That Pages Function forwards sanitized page-visit metadata server-side to DanielClancy-Admin analytics ingest when the analytics URL/secret are configured. The browser sends a per-page-load `eventId` and page fields only; the Pages Function adds `source: "page_visit_kv"`, `live: true`, `recordedAt`, and sanitized Cloudflare `request.cf` city/region/country fields before forwarding. The browser never receives the analytics ingest secret, and forwarding failures do not block page rendering.
 
-## Public login modal and auth origin
+## Customer account foundation
 
-- The personal-shell account widget opens a polished login/signup lightbox modal branded with `assets/logos/logo.webp`, GitHub, Google, Twitter/X, and collapsed email/password sections.
-- Sign in and Create account modes share the OAuth entry flow because provider login/signup both start through the same admin auth origin.
-- The public site does not verify admin passwords in browser code. Email/password and OAuth requests are sent to the DanielClancy-Admin Cloudflare Pages Functions auth origin.
-- The modal does not render or require Cloudflare Turnstile for login, signup, or OAuth start. Turnstile is isolated to the public contact form only.
-- The modal links to `/privacy` and `/terms` without changing OAuth or admin-auth behavior.
-- Email/password signup is scaffolded only. Until durable account storage exists, attempts return a clear storage-required message and do not store passwords client-side.
-- Public session-aware content remains future work. Signing in on the public site must not grant admin dashboard access unless the server-side admin session says the account is admin.
-- The surfaced modal copy stays user-facing and does not expose internal env/provider setup notes.
-- Admin dashboard action/link target: `https://admin.danielclancy.net`.
+- Personal Studio routes: `/account`, `/account/login`, `/account/profile`, `/account/orders`, `/account/addresses`, `/account/preferences`, `/account/payments`, and `/account/logout`.
+- The Personal Studio header links to the same-origin customer account surface and keeps cart access visible. Professional CV/portfolio headers and footers do not advertise customer account routes.
+- Customer auth uses passwordless email magic links through same-origin Pages Functions. Login challenges and session ids are generated with secure random tokens, stored hashed in KV, and expire. Customer sessions use an HttpOnly, SameSite=Lax cookie that is Secure on HTTPS.
+- Customer state is stored only in `DC_CUSTOMERS_KV -> danielclancy-customers`: profiles, email lookup, login challenges, sessions, delivery addresses, contact preferences, order references, and Stripe customer mappings.
+- If `DC_CUSTOMERS_KV` is missing, customer endpoints return `customer_storage_not_configured` / config-needed states. No local filesystem, localStorage, in-memory-only, or Admin KV fallback is used for customer accounts.
+- Magic-link email uses the existing Resend server env (`RESEND_API_KEY` and `MAIL_FROM`). If the provider is unavailable, `POST /api/customer/login/start` returns `customer_email_provider_not_configured` and does not pretend login succeeded.
+- Customer profile fields include email identity, display name, HTTPS avatar URL, optional phone, contact/marketing preferences, delivery addresses, timestamps, status, and Stripe customer id presence. Email is not freely editable in this milestone.
+- `/account/orders` reads linked order ids from `DC_CUSTOMERS_KV` and safe order summaries from `DC_MERCH_ORDERS_KV`, only for the logged-in customer.
+- `/account/payments` never stores or renders raw card numbers, CVCs, bank details, or raw Stripe payment method payloads. Payment methods are managed through Stripe Customer Portal when Stripe configuration and portal setup allow it.
+
+Customer account endpoints:
+
+- `POST /api/customer/login/start`
+- `GET|POST /api/customer/login/verify`
+- `POST /api/customer/logout`
+- `GET /api/customer/me`
+- `PATCH /api/customer/profile`
+- `PATCH /api/customer/preferences`
+- `GET|POST /api/customer/addresses`
+- `PATCH|DELETE /api/customer/addresses/:id`
+- `GET /api/customer/orders`
+- `POST /api/customer/stripe/portal`
 
 Public build-time env:
 
-- `VITE_DC_AUTH_ORIGIN` - expected `https://admin.danielclancy.net`
 - `VITE_ADMIN_PUBLIC_SITE_DATA_URL` - optional sanitized public CMS export endpoint, recommended `https://admin.danielclancy.net/api/public/site-data`
 
 Contact Turnstile env:
@@ -203,7 +218,7 @@ If Printful is not configured or returns no products, `/shop` renders a polished
 
 PayPal merch checkout is deferred. The existing PayPal implementation is donation-specific, uses `NO_SHIPPING`, and captures a one-time donation order; it is not reused for physical product cart checkout in this milestone.
 
-Full public customer account management is a future phase, not implemented here. That phase needs an auth/session model, customer profile storage, order-history integration, delivery-address/contact-preference storage, an Admin Customers page, and Stripe Customer Portal or equivalent handling for saved payment methods rather than raw card storage.
+Signed-in customer checkout remains optional. Guest checkout still uses the anonymous local cart path. When a valid customer session exists, checkout attaches the server-resolved customer id/email to the merch order intent, links the intent under `customer:orders:{customerId}`, pre-fills the cart form from the default delivery address where safe, and passes the stored Stripe customer id to Stripe Checkout when available. If a signed-in customer has no Stripe customer id yet, the server creates one through Stripe before checkout and stores only the Stripe customer id mapping in `DC_CUSTOMERS_KV`.
 
 ## Donation checkout
 
@@ -284,18 +299,21 @@ Public edits show on DanielClancy.net after Admin Save/Sync, Admin Publish site 
   - `src/components/CompanyLogoMark.tsx`
   - `src/components/ContactMap.tsx`
   - `src/components/LegalPageLayout.tsx`
+  - `src/components/PersonalHeaderAccount.tsx`
   - `src/components/PortfolioMediaGallery.tsx`
   - `src/content/brandAssets.ts`
   - `src/content/shopHeroSlides.ts`
   - `src/content/workSetPortfolio.ts`
   - `src/data/public-site-fallback.generated.json`
   - `src/data/public-site-fallback.ts`
+  - `src/lib/customerAccount.ts`
   - `src/lib/merch.ts`
   - `src/lib/merchCart.ts`
   - `src/lib/publicSiteData.tsx`
   - `src/lib/watchFeed.ts`
   - `src/lib/portfolio.ts`
 - Pages:
+  - `src/pages/AccountPage.tsx`
   - `src/pages/HomePage.tsx`
   - `src/pages/CvPage.tsx`
   - `src/pages/PortfolioPage.tsx`
@@ -362,11 +380,14 @@ DanielClancy/
 ├─ functions/
 │  ├─ _shared/
 │  │  ├─ alert-sender.js
+│  │  ├─ customer-accounts.js
 │  │  ├─ merch-orders.js
 │  │  ├─ printful-products.js
 │  │  └─ turnstile.js
 │  └─ api/
 │     ├─ contact.js
+│     ├─ customer/
+│     │  └─ [[path]].js
 │     ├─ donate/
 │     │  ├─ session.js
 │     │  └─ webhook.js
@@ -397,6 +418,7 @@ DanielClancy/
 │  ├─ vite-env.d.ts
 │  ├─ components/
 │  │  ├─ LegalPageLayout.tsx
+│  │  ├─ PersonalHeaderAccount.tsx
 │  │  └─ PageVisitBeacon.tsx
 │  ├─ content/
 │  │  └─ shopHeroSlides.ts
@@ -404,6 +426,7 @@ DanielClancy/
 │  │  ├─ public-site-fallback.generated.json
 │  │  └─ public-site-fallback.ts
 │  ├─ lib/
+│  │  ├─ customerAccount.ts
 │  │  ├─ currency.tsx
 │  │  ├─ donate.ts
 │  │  ├─ merchCart.ts
@@ -413,6 +436,7 @@ DanielClancy/
 │  │  ├─ turnstile.tsx
 │  │  └─ watchFeed.ts
 │  ├─ pages/
+│  │  ├─ AccountPage.tsx
 │  │  ├─ CartPage.tsx
 │  │  ├─ ProductDetailPage.tsx
 │  │  ├─ ShopPage.tsx
@@ -442,5 +466,5 @@ DanielClancy/
 - Later provider migration for the current YouTube-backed `/watch` feed
 - Admin-side content workflow integration
 - Further archive enrichment as more source material is verified
-- Customer account management for display name/avatar, purchase history, cart options, contact preferences, delivery addresses, and Admin customer management, backed by real auth/session, customer profile storage, order history, and Stripe Customer Portal or equivalent payment-method handling
+- Hosted Cloudflare verification of the customer account flow after `DC_CUSTOMERS_KV`, Resend, Stripe, and Stripe Customer Portal settings are configured
 - Potential media-bundle optimisation if the full local WorkSet asset set proves too heavy for final deployment targets

@@ -657,6 +657,179 @@
   text-align: right;
 }
 
+.account-hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(5rem, 10vw, 8rem) 0 2.5rem;
+  color: #fff8f2;
+  background:
+    linear-gradient(135deg, rgba(25, 10, 36, 0.94), rgba(8, 16, 26, 0.95)),
+    radial-gradient(circle at 18% 18%, rgba(245, 134, 93, 0.2), transparent 28%);
+}
+
+.account-hero__inner {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.account-hero h1 {
+  max-width: 820px;
+  margin: 0;
+  font-size: clamp(2.5rem, 7vw, 5.75rem);
+  line-height: 0.94;
+}
+
+.account-hero p {
+  max-width: 740px;
+  margin: 0;
+  color: rgba(255, 248, 242, 0.74);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.account-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.account-tabs a {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 0.6rem 0.95rem;
+  color: rgba(255, 248, 242, 0.78);
+  text-transform: capitalize;
+}
+
+.account-tabs a:hover,
+.account-tabs a:focus-visible {
+  border-color: rgba(245, 134, 93, 0.68);
+  color: #ffffff;
+}
+
+.account-section {
+  padding: 2.25rem 0 clamp(4rem, 8vw, 6rem);
+  color: #fff8f2;
+  background: #090d14;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.account-grid--split {
+  align-items: start;
+}
+
+.account-narrow {
+  max-width: 620px;
+}
+
+.account-panel {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: clamp(1rem, 3vw, 1.4rem);
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+}
+
+.account-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.account-panel h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.account-panel p,
+.account-panel span,
+.account-panel small {
+  color: rgba(255, 248, 242, 0.7);
+}
+
+.account-panel__header a,
+.account-panel a {
+  color: #f8b88a;
+}
+
+.account-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.account-identity img,
+.account-identity > span {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 800;
+  object-fit: cover;
+}
+
+.account-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.account-form label,
+.account-checkbox {
+  display: grid;
+  gap: 0.4rem;
+  color: rgba(255, 248, 242, 0.72);
+}
+
+.account-checkbox {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.account-address-row,
+.account-order-row {
+  display: grid;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 0;
+}
+
+.account-address-row:first-of-type,
+.account-order-row:first-of-type {
+  border-top: 0;
+}
+
+.account-address-summary,
+.account-order-row > div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.account-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.account-order-list {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.account-notice {
+  grid-column: 1 / -1;
+}
+
 .shop-detail-meta {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 2rem 0 0;
@@ -716,6 +889,7 @@
 
 @media (max-width: 620px) {
   .shop-grid,
+  .account-grid,
   .shop-detail-meta,
   .shop-variant-row,
   .shop-purchase-controls,

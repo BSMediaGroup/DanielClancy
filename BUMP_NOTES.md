@@ -1,5 +1,51 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Customer Account Foundation Milestone
+
+### Technical
+
+- Added same-origin customer account routes under the Personal Studio shell: `/account`, `/account/login`, `/account/profile`, `/account/orders`, `/account/addresses`, `/account/preferences`, `/account/payments`, and `/account/logout`.
+- Added `DC_CUSTOMERS_KV` helpers and key families for customer profiles, email lookup, hashed login challenges, hashed sessions, customer order links, recent customer index rows, and Stripe customer mappings.
+- Added passwordless email magic-link endpoints under `/api/customer/*`. Login tokens are generated with secure random bytes, stored hashed, expire, and sessions are stored separately with HttpOnly SameSite=Lax cookies.
+- Reused Resend only when `RESEND_API_KEY` and `MAIL_FROM` are configured; otherwise login start fails safely with `customer_email_provider_not_configured`.
+- Added profile, HTTPS avatar URL, optional phone, contact preferences, marketing opt-in, delivery address add/edit/delete/default, order history, logout, and Stripe Customer Portal API/UI paths.
+- Linked signed-in merch checkout to the server-resolved customer account without trusting client-provided customer ids; guest checkout remains available.
+- When signed in, checkout creates/stores a Stripe customer id server-side where needed, passes it to Stripe Checkout, stores only the Stripe customer id mapping, and links the merch order intent under the customer account.
+- Updated cart prefill to use the signed-in customer default delivery address only when `/api/customer/me` returns one.
+- Replaced the old Personal Studio Admin-origin account modal with a same-origin customer account link in the Personal header and added Cart to the Personal navigation.
+
+### Human-readable
+
+- Customers can request a real passwordless sign-in link, manage profile details, delivery addresses, preferences, linked orders, and Stripe-hosted payment-method management states.
+- Missing customer KV or email/Stripe provider setup shows clear config-needed errors instead of fake login, fake persistence, or fake payment-method data.
+- Raw card numbers, CVCs, bank details, and raw Stripe payment method payloads are not stored or rendered by DanielClancy.net.
+
+### Cloudflare setup required
+
+- DanielClancy Pages project: `DC_CUSTOMERS_KV -> danielclancy-customers`.
+- Magic-link email requires server-side `RESEND_API_KEY` and `MAIL_FROM`.
+- Stripe Customer Portal requires existing `STRIPE_SECRET_KEY` plus Stripe Dashboard Customer Portal configuration.
+
+### Known limitations
+
+- Avatar upload is not implemented in the public storefront; profile supports a HTTPS avatar URL only.
+- Hosted Pages verification is still required after `DC_CUSTOMERS_KV`, Resend, Stripe, and Stripe Customer Portal are configured.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `functions/_shared/customer-accounts.js`
+- `functions/api/customer/[[path]].js`
+- `functions/api/merch/cart/[[action]].js`
+- `src/app/App.tsx`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/components/PersonalShell.tsx`
+- `src/lib/customerAccount.ts`
+- `src/pages/AccountPage.tsx`
+- `src/pages/CartPage.tsx`
+- `src/styles/global.css`
+
 ## Merch Category / Banner / Hero Slide UX Repair Milestone
 
 ### Technical
