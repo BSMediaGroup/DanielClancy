@@ -65,8 +65,8 @@ const termsSections: LegalSectionDefinition[] = [
     children: (
       <>
         <p>
-          Some features may require login. OAuth login providers currently exposed through the public
-          account modal include Google, GitHub, and X/Twitter. Email/password admin login, where
+          Some features may require login. Public customer login is routed through the same-origin
+          account pages and server-side magic-link endpoints. Email/password admin login, where
           available, is handled by server-side auth endpoints.
         </p>
         <p>

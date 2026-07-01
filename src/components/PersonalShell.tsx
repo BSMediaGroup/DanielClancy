@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { HeaderMenuButton } from "./HeaderMenuButton";
-import { PersonalHeaderAccount } from "./PersonalHeaderAccount";
+import { PersonalHeaderAccount, PersonalHeaderCartButton } from "./PersonalHeaderAccount";
 import { SiteBrand } from "./SiteBrand";
 
 const navItems = [
@@ -81,6 +81,7 @@ export function PersonalShell() {
               />
 
               <div className="personal-header__account">
+                <PersonalHeaderCartButton />
                 <PersonalHeaderAccount />
               </div>
             </div>

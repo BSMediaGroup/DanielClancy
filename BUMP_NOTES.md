@@ -1,5 +1,37 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Personal Studio Header Cart / Account Dropdown Milestone
+
+### Technical
+
+- Added a Personal Studio header cart icon button that links to `/cart` and stays scoped to `PersonalShell`.
+- Wired the cart icon badge to the existing `merchCart` local selection helper; the badge hides at zero, updates on cart events/focus/storage changes, and caps visually at `99+`.
+- Replaced the basic Personal Studio account link with a StreamSuites-Dashboard-style dropdown pattern: compact avatar/name pill, dark glass panel, account identity block, icon menu rows, click-outside close, Escape close, and right-aligned desktop/mobile-safe positioning.
+- Added logged-out dropdown rows for sign-in/create account, account overview, cart, order history, and contact help.
+- Added logged-in dropdown rows for overview, profile, orders, delivery addresses, preferences, payment methods, cart, and logout.
+- Logout uses the existing `logoutCustomer()` helper for `POST /api/customer/logout`, clears only in-memory customer UI state after success, closes the dropdown, emits the customer-session update event, and routes to `/account/login`.
+- Updated README, Privacy, and Terms copy to describe the route/API account flow instead of the old public account modal wording.
+
+### Human-readable
+
+- Personal Studio shoppers now have a persistent cart icon and a polished account menu in the shop/account header without changing the professional CV/portfolio header.
+- Signed-out customers can reach login, account, cart, and order-history routes from the dropdown without opening a modal.
+- Signed-in customers can reach all customer account sections and log out from the same header control.
+
+### Known limitations
+
+- The cart badge reflects the existing non-sensitive local cart selections; server validation still happens later through the merch cart APIs.
+- Local static/dev smoke tests can prove the dropdown UI and routing, but a real signed-in customer session still depends on configured `DC_CUSTOMERS_KV` and email provider bindings.
+
+### Files / areas changed
+
+- `README.md`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/components/PersonalShell.tsx`
+- `src/pages/PrivacyPage.tsx`
+- `src/pages/TermsPage.tsx`
+- `src/styles/global.css`
+
 ## Customer Account Foundation Milestone
 
 ### Technical

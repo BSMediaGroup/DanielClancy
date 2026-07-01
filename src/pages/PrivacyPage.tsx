@@ -89,10 +89,9 @@ const privacySections: LegalSectionDefinition[] = [
     children: (
       <>
         <p>
-          The public account modal can start OAuth sign-in or signup with Google, GitHub, and X/Twitter
-          through the DanielClancy-Admin auth origin. OAuth providers may supply profile or account
-          data depending on the provider, consent screen, and provider configuration, such as provider
-          subject ID, display name, email address, username, and avatar URL.
+          The public account dropdown routes customers to same-origin account and magic-link login
+          pages. Customer sessions use server-issued HttpOnly cookies, and public browser code does
+          not receive raw session identifiers.
         </p>
         <p>
           Email/password admin login, where available, is handled server-side by the auth endpoint.
