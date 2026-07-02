@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
+import { PersonalHeaderAccount } from "../components/PersonalHeaderAccount";
 import { SocialLinkRow } from "../components/SocialLinkRow";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
@@ -346,10 +347,9 @@ export function WatchPage() {
                 </a>
               ))}
             </nav>
-            <Link className="watch-chrome__profile" to="/home" aria-label="Open Daniel Clancy personal studio">
-              <img alt="" src={shellAssets.profileAvatar} />
-              <span>Daniel Clancy</span>
-            </Link>
+            <div className="watch-chrome__account">
+              <PersonalHeaderAccount surface="watch" />
+            </div>
           </div>
         </header>
 

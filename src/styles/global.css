@@ -2589,6 +2589,45 @@ select:focus {
   font-size: 0.72rem;
 }
 
+.watch-chrome__account {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.watch-chrome .account-menu__trigger {
+  min-height: 2.2rem;
+  max-width: min(14rem, 26vw);
+  padding: 0.24rem 0.62rem 0.24rem 0.28rem;
+  border-radius: 10px;
+  border-color: rgba(247, 241, 228, 0.28);
+  background:
+    linear-gradient(180deg, rgba(74, 77, 80, 0.82), rgba(37, 38, 42, 0.86)),
+    rgba(255, 255, 255, 0.05);
+}
+
+.watch-chrome .account-menu__avatar {
+  width: 1.42rem;
+  height: 1.42rem;
+  border-radius: 6px;
+}
+
+.watch-chrome .account-menu__label {
+  color: #f7f3ed;
+  font-size: 0.72rem;
+}
+
+.watch-chrome .account-menu__identity {
+  max-width: 7.5rem;
+  color: rgba(247, 241, 228, 0.68);
+}
+
+.watch-chrome .account-menu__panel {
+  z-index: 100;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(151, 105, 255, 0.16), transparent 0 34%),
+    linear-gradient(180deg, rgba(18, 18, 24, 0.98), rgba(8, 8, 12, 0.98));
+}
+
 .watch-hero {
   position: relative;
   isolation: isolate;
@@ -4325,6 +4364,12 @@ select:focus {
   color: var(--text-muted);
 }
 
+.login-modal__status--error {
+  border-color: rgba(255, 120, 146, 0.28);
+  background: rgba(255, 88, 120, 0.08);
+  color: #ffd5dc;
+}
+
 .login-modal__status strong,
 .login-modal__status span {
   display: block;
@@ -5243,6 +5288,31 @@ select:focus {
   }
 
   .watch-chrome__profile img {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .watch-chrome .account-menu__trigger {
+    min-height: 2rem;
+    width: auto;
+    max-width: 5.2rem;
+    padding: 0.22rem 0.48rem 0.22rem 0.22rem;
+  }
+
+  .watch-chrome .account-menu__label {
+    display: block;
+    font-size: 0.62rem;
+  }
+
+  .watch-chrome .account-menu__identity {
+    display: none;
+  }
+
+  .watch-chrome .account-menu__trigger-copy {
+    display: grid;
+  }
+
+  .watch-chrome .account-menu__avatar {
     width: 1.35rem;
     height: 1.35rem;
   }

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { shellAssets } from "../content/brandAssets";
-import { fetchCustomerMe, logoutCustomer, type CustomerProfile } from "../lib/customerAccount";
+import { fetchCustomerMe, logoutCustomer, startCustomerLogin, type CustomerProfile } from "../lib/customerAccount";
 import { cartCount, loadCart } from "../lib/merchCart";
 
 type MenuIconName =
@@ -17,26 +17,28 @@ type MenuIconName =
   | "profile";
 
 type AccountMenuItem = {
-  to: string;
+  to?: string;
   label: string;
   icon: MenuIconName;
+  action?: "login";
 };
 
 const loggedOutItems: AccountMenuItem[] = [
-  { to: "/account/login", label: "Sign in / Create account", icon: "login" },
-  { to: "/account", label: "Account overview", icon: "account" },
-  { to: "/cart", label: "View cart", icon: "cart" },
-  { to: "/account/orders", label: "Orders / purchase history", icon: "orders" },
-  { to: "/contact", label: "Help / contact", icon: "contact" },
+  { label: "Login", icon: "login", action: "login" },
+  { to: "/account", label: "Account", icon: "account" },
+  { to: "/cart", label: "Cart", icon: "cart" },
+  { to: "/shop", label: "Shop", icon: "cart" },
+  { to: "/account/orders", label: "Orders / Purchase history", icon: "orders" },
+  { to: "/contact", label: "Contact / help", icon: "contact" },
 ];
 
 const loggedInItems: AccountMenuItem[] = [
   { to: "/account", label: "Account overview", icon: "account" },
   { to: "/account/profile", label: "Profile", icon: "profile" },
-  { to: "/account/orders", label: "Orders / purchase history", icon: "orders" },
-  { to: "/account/addresses", label: "Delivery addresses", icon: "address" },
+  { to: "/account/orders", label: "Orders", icon: "orders" },
+  { to: "/account/addresses", label: "Addresses", icon: "address" },
   { to: "/account/preferences", label: "Preferences", icon: "preferences" },
-  { to: "/account/payments", label: "Payment methods", icon: "payments" },
+  { to: "/account/payments", label: "Payments", icon: "payments" },
   { to: "/cart", label: "Cart", icon: "cart" },
 ];
 
@@ -77,7 +79,7 @@ export function PersonalHeaderCartButton() {
   );
 }
 
-export function PersonalHeaderAccount() {
+export function PersonalHeaderAccount({ surface = "personal" }: { surface?: "personal" | "watch" } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const menuId = useId();
@@ -86,6 +88,7 @@ export function PersonalHeaderAccount() {
   const [customer, setCustomer] = useState<CustomerProfile | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [logoutBusy, setLogoutBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -163,7 +166,9 @@ export function PersonalHeaderAccount() {
       setCustomer(null);
       setIsOpen(false);
       window.dispatchEvent(new CustomEvent("danielclancy:customer-session-updated"));
-      navigate("/account/login");
+      if (location.pathname.startsWith("/account")) {
+        navigate("/account/login");
+      }
     } catch (logoutError) {
       setError(logoutError instanceof Error ? logoutError.message : "Logout failed. Try again shortly.");
     } finally {
@@ -172,7 +177,7 @@ export function PersonalHeaderAccount() {
   }
 
   return (
-    <div className={`account-menu${isOpen ? " account-menu--open" : ""}`} ref={rootRef}>
+    <div className={`account-menu account-menu--${surface}${isOpen ? " account-menu--open" : ""}`} ref={rootRef}>
       <button
         ref={triggerRef}
         aria-controls={menuId}
@@ -205,10 +210,26 @@ export function PersonalHeaderAccount() {
 
         <div className="account-menu__items">
           {items.map((item) => (
-            <Link className="account-menu__item" key={item.to} role="menuitem" to={item.to} onClick={() => setIsOpen(false)}>
-              <MenuIcon name={item.icon} />
-              <span>{item.label}</span>
-            </Link>
+            item.action === "login" ? (
+              <button
+                className="account-menu__item"
+                key={item.label}
+                role="menuitem"
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  setLoginOpen(true);
+                }}
+              >
+                <MenuIcon name={item.icon} />
+                <span>{item.label}</span>
+              </button>
+            ) : (
+              <Link className="account-menu__item" key={item.to} role="menuitem" to={item.to || "/account"} onClick={() => setIsOpen(false)}>
+                <MenuIcon name={item.icon} />
+                <span>{item.label}</span>
+              </Link>
+            )
           ))}
         </div>
 
@@ -224,7 +245,108 @@ export function PersonalHeaderAccount() {
 
         {error ? <p className="account-menu__error" role="status">{error}</p> : null}
       </div>
+      <CustomerLoginModal open={loginOpen} returnTo={location.pathname || "/account"} onClose={() => setLoginOpen(false)} />
     </div>
+  );
+}
+
+export function CustomerLoginModal({
+  open,
+  returnTo = "/account",
+  onClose,
+}: {
+  open: boolean;
+  returnTo?: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [onClose, open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="login-modal" role="dialog" aria-modal="true" aria-labelledby="customer-login-modal-title">
+      <button className="login-modal__scrim" type="button" aria-label="Close login dialog" onClick={onClose} />
+      <CustomerLoginPanel
+        id="customer-login-modal-title"
+        returnTo={returnTo}
+        onClose={onClose}
+      />
+    </div>
+  );
+}
+
+export function CustomerLoginPanel({
+  id = "customer-login-title",
+  returnTo = "/account",
+  onClose,
+}: {
+  id?: string;
+  returnTo?: string;
+  onClose?: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("Enter your email to request a secure login link.");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const response = await startCustomerLogin(email, safeReturnTo(returnTo));
+      setStatus(response.message || "Check your email for the DanielClancy.net login link.");
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "Login link could not be requested.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="login-modal__panel" aria-labelledby={id}>
+      {onClose ? (
+        <button className="login-modal__close" type="button" aria-label="Close login dialog" onClick={onClose}>
+          x
+        </button>
+      ) : null}
+      <header className="login-modal__header">
+        <span className="login-modal__brand-mark" aria-hidden="true">
+          <img alt="" src={shellAssets.danielLogo} />
+        </span>
+        <h2 id={id}>Login to DanielClancy.net</h2>
+        <p>Customer sessions use a secure email link and a server-managed session cookie.</p>
+      </header>
+
+      <form className="login-modal__form" onSubmit={handleSubmit}>
+        <label>
+          <span>Email</span>
+          <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+        </label>
+        <button className="button" type="submit" disabled={busy}>{busy ? "Sending..." : "Send login link"}</button>
+      </form>
+
+      <div className={`login-modal__status${error ? " login-modal__status--error" : ""}`} role="status" aria-live="polite">
+        <strong>{error ? "Login failed" : "Passwordless login"}</strong>
+        <span>{error || status}</span>
+      </div>
+
+      <Link className="button button--ghost login-modal__admin-link" to="/account">
+        Account overview
+      </Link>
+      <p className="login-modal__legal-links">
+        <Link to="/privacy">Privacy</Link>
+        <span aria-hidden="true">/</span>
+        <Link to="/terms">Terms</Link>
+      </p>
+    </section>
   );
 }
 
@@ -251,11 +373,15 @@ function AccountAvatar({ avatarSrc, initials, signedIn, large = false }: { avata
 }
 
 function resolveCustomerLabel(customer: CustomerProfile | null) {
-  if (!customer) return "Account";
+  if (!customer) return "MORE";
   const displayName = customer.displayName?.trim();
   if (displayName) return displayName;
   const emailPrefix = customer.email?.split("@")[0]?.trim();
   return emailPrefix || "Customer";
+}
+
+function safeReturnTo(value: string) {
+  return value.startsWith("/") && !value.startsWith("//") ? value : "/account";
 }
 
 function resolveCustomerInitials(customer: CustomerProfile | null) {

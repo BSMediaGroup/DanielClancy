@@ -121,7 +121,7 @@ export function sessionCookie(request, env, sessionId, maxAge = CUSTOMER_SESSION
     "SameSite=Lax",
     `Max-Age=${maxAge}`
   ];
-  const domain = cleanText(env?.DC_CUSTOMER_COOKIE_DOMAIN, 180);
+  const domain = sessionCookieDomain(request, env);
   if (domain) attributes.push(`Domain=${domain}`);
   if (isHttps(request)) attributes.push("Secure");
   return attributes.join("; ");
@@ -129,6 +129,13 @@ export function sessionCookie(request, env, sessionId, maxAge = CUSTOMER_SESSION
 
 export function clearSessionCookie(request, env) {
   return sessionCookie(request, env, "", 0);
+}
+
+export function sessionCookieDomain(request, env) {
+  const configured = cleanText(env?.DC_CUSTOMER_COOKIE_DOMAIN || env?.DC_AUTH_COOKIE_DOMAIN, 180);
+  if (configured) return configured;
+  const hostname = new URL(request.url).hostname.toLowerCase();
+  return hostname === "danielclancy.net" || hostname === "admin.danielclancy.net" ? ".danielclancy.net" : "";
 }
 
 export async function readCustomerSession(request, env) {
@@ -201,6 +208,9 @@ export async function putCustomerProfile(storage, profile) {
 
 export function normalizeProfile(raw = {}) {
   const now = new Date().toISOString();
+  const roles = normalizeRoles(raw.roles);
+  const adminAccess = Boolean(raw.adminAccess || raw.admin_access || roles.includes("admin"));
+  const normalizedRoles = adminAccess && !roles.includes("admin") ? [...roles, "admin"] : roles;
   return {
     schemaVersion: Number(raw.schemaVersion) || 1,
     id: cleanId(raw.id) || `cust_${crypto.randomUUID()}`,
@@ -213,12 +223,23 @@ export function normalizeProfile(raw = {}) {
     contactPreferences: normalizePreferences(raw.contactPreferences || raw.preferences || raw.contact_preferences),
     addresses: normalizeAddresses(raw.addresses),
     stripeCustomerId: cleanId(raw.stripeCustomerId || raw.stripe_customer_id),
+    roles: normalizedRoles,
+    adminAccess,
+    adminAccessUpdatedAt: cleanText(raw.adminAccessUpdatedAt || raw.admin_access_updated_at, 80),
+    adminAccessUpdatedBy: cleanText(raw.adminAccessUpdatedBy || raw.admin_access_updated_by, 180),
+    adminAccessRevokedAt: cleanText(raw.adminAccessRevokedAt || raw.admin_access_revoked_at, 80),
+    adminAccessRevokedBy: cleanText(raw.adminAccessRevokedBy || raw.admin_access_revoked_by, 180),
     adminNotes: cleanText(raw.adminNotes || raw.admin_notes, 1000),
     metadata: safeMetadata(raw.metadata),
     createdAt: cleanText(raw.createdAt || raw.created_at, 80) || now,
     updatedAt: cleanText(raw.updatedAt || raw.updated_at, 80) || now,
     lastLoginAt: cleanText(raw.lastLoginAt || raw.last_login_at, 80)
   };
+}
+
+export function normalizeRoles(raw) {
+  const values = Array.isArray(raw) ? raw : [];
+  return Array.from(new Set(values.map((role) => cleanText(role, 40).toLowerCase()).filter(Boolean))).slice(0, 12);
 }
 
 export function publicCustomer(profile) {

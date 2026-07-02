@@ -46,7 +46,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/shop` | Printful-powered merch storefront with published Admin display overrides where available | Yes |
 | `/cart` | Merch cart, server-side validation, Printful draft creation, Stripe checkout, and safe return status | Yes |
 | `/account` | Customer account overview for profile, orders, addresses, preferences, and payment-method management status | No |
-| `/account/login` | Passwordless customer email magic-link login request route | No |
+| `/account/login` | Route-hosted version of the shared customer login panel used by the Personal Studio account dropdown | No |
 | `/account/profile`, `/account/orders`, `/account/addresses`, `/account/preferences`, `/account/payments` | Protected customer account management routes backed by `DC_CUSTOMERS_KV` session state | No |
 | `/shop/success`, `/shop/cancel` | Customer-facing merch checkout return states backed by safe order-status lookups where possible | Yes |
 | `/store`, `/merch` | Cloudflare/client aliases redirecting to `/shop` | Yes |
@@ -122,13 +122,15 @@ Public page visits beacon to this repo's `POST /api/track/page-visit` endpoint. 
 ## Customer account foundation
 
 - Personal Studio routes: `/account`, `/account/login`, `/account/profile`, `/account/orders`, `/account/addresses`, `/account/preferences`, `/account/payments`, and `/account/logout`.
-- The Personal Studio header includes a cart icon button with the local cart count when non-zero and a StreamSuites-style customer account dropdown for signed-in and signed-out account actions. Professional CV/portfolio headers and footers do not advertise customer account routes.
+- The Personal Studio header includes a cart icon button with the local cart count when non-zero and a StreamSuites-style customer account dropdown for signed-in and signed-out account actions. Logged-out headers show `MORE`; the dropdown includes Login, Account, Cart, Shop, Orders / Purchase history, and Contact / help. Signed-in headers show the customer display name/avatar when available and include Logout. Professional CV/portfolio headers and footers do not advertise customer account routes.
+- `/watch` keeps its custom cinematic header, but its account control uses the same customer session state, Login modal trigger, signed-in display name/avatar handling, and Logout action as the Personal Studio header.
 - Customer logout is route/API based through `POST /api/customer/logout` and clears the HttpOnly customer session cookie server-side; browser code only updates in-memory customer UI state after the helper returns.
-- Customer auth uses passwordless email magic links through same-origin Pages Functions. Login challenges and session ids are generated with secure random tokens, stored hashed in KV, and expire. Customer sessions use an HttpOnly, SameSite=Lax cookie that is Secure on HTTPS.
+- Customer auth uses the shared login panel/modal and passwordless email magic links through Pages Functions. Login challenges and session ids are generated with secure random tokens, stored hashed in KV, and expire. Customer sessions use the `dc_customer_session` HttpOnly, SameSite=Lax cookie with Secure on HTTPS. Production requests on `danielclancy.net` or `admin.danielclancy.net` default that cookie to `Domain=.danielclancy.net`; localhost/dev requests omit Domain so local testing remains host-only.
 - Customer state is stored only in `DC_CUSTOMERS_KV -> danielclancy-customers`: profiles, email lookup, login challenges, sessions, delivery addresses, contact preferences, order references, and Stripe customer mappings.
+- The DanielClancy-Admin project also reads and writes compatible `dc_customer_session` records in `DC_CUSTOMERS_KV`, so a successful Admin login can be recognized by the public site and a public login can be recognized by Admin when the customer profile has explicit server-side admin access.
 - If `DC_CUSTOMERS_KV` is missing, customer endpoints return `customer_storage_not_configured` / config-needed states. No local filesystem, localStorage, in-memory-only, or Admin KV fallback is used for customer accounts.
 - Magic-link email uses the existing Resend server env (`RESEND_API_KEY` and `MAIL_FROM`). If the provider is unavailable, `POST /api/customer/login/start` returns `customer_email_provider_not_configured` and does not pretend login succeeded.
-- Customer profile fields include email identity, display name, HTTPS avatar URL, optional phone, contact/marketing preferences, delivery addresses, timestamps, status, and Stripe customer id presence. Email is not freely editable in this milestone.
+- Customer profile fields include email identity, display name, HTTPS avatar URL, optional phone, contact/marketing preferences, delivery addresses, timestamps, status, Stripe customer id presence, and server-only admin access metadata. Public customer responses do not expose admin access metadata.
 - `/account/orders` reads linked order ids from `DC_CUSTOMERS_KV` and safe order summaries from `DC_MERCH_ORDERS_KV`, only for the logged-in customer.
 - `/account/payments` never stores or renders raw card numbers, CVCs, bank details, or raw Stripe payment method payloads. Payment methods are managed through Stripe Customer Portal when Stripe configuration and portal setup allow it.
 
@@ -148,6 +150,11 @@ Customer account endpoints:
 Public build-time env:
 
 - `VITE_ADMIN_PUBLIC_SITE_DATA_URL` - optional sanitized public CMS export endpoint, recommended `https://admin.danielclancy.net/api/public/site-data`
+
+Shared customer session env:
+
+- `DC_CUSTOMERS_KV` - required Pages KV binding for customer profiles, login challenges, session records, and order links.
+- `DC_CUSTOMER_COOKIE_DOMAIN` - optional override for the shared customer cookie domain. Leave blank for localhost/dev. Production defaults to `.danielclancy.net` when the request host is `danielclancy.net` or `admin.danielclancy.net`.
 
 Contact Turnstile env:
 

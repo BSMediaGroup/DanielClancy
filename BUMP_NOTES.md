@@ -1,5 +1,40 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Shared Public/Admin Login + Header Dropdown Repair Milestone
+
+### Technical
+
+- Updated the customer session cookie helper so `dc_customer_session` defaults to `Domain=.danielclancy.net` on production `danielclancy.net` / `admin.danielclancy.net` requests and remains host-only on localhost/dev.
+- Preserved hashed KV-backed customer session lookup and added normalized server-only customer admin access fields to customer profiles without exposing them through public `/api/customer/me` responses.
+- Restored the existing `.login-modal` visual contract as a shared React login modal/panel; Personal Studio dropdown Login opens the modal and `/account/login` renders the same panel instead of a separate stale form.
+- Changed logged-out Personal Studio and `/watch` account labels to `MORE`; logged-in state still resolves the server-returned display name/avatar.
+- Added Login, Account, Cart, Shop, Orders / Purchase history, and Contact / help to the logged-out dropdown, and kept Logout in the logged-in dropdown.
+- Removed the redundant text `Cart` Personal Studio nav item while preserving the cart icon button, badge behavior, `/cart` route, and account-menu Cart links.
+- Replaced `/watch`'s static profile pill with the shared account dropdown while preserving the custom cinematic watch header/chrome.
+- Logout now clears the shared customer cookie server-side and updates local account UI state without clearing cart selections.
+
+### Human-readable
+
+- Public customer login now enters through the main account modal/panel, not a route-only broken login experience.
+- A shared production customer session can be recognized across the public and Admin subdomains when both projects use `DC_CUSTOMERS_KV -> danielclancy-customers`.
+- Professional CV/portfolio shell remains separate from storefront/customer controls.
+
+### Known limitations
+
+- Passwordless customer login still depends on configured `RESEND_API_KEY`, `MAIL_FROM`, and `DC_CUSTOMERS_KV`; missing bindings continue to fail closed with safe config-needed responses.
+- Public logout clears the shared customer session. Admin-specific signed-session logout is handled by the Admin project.
+
+### Files / areas changed
+
+- `.env.example`
+- `README.md`
+- `functions/_shared/customer-accounts.js`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/components/PersonalShell.tsx`
+- `src/pages/AccountPage.tsx`
+- `src/pages/WatchPage.tsx`
+- `src/styles/global.css`
+
 ## Personal Studio Header Cart / Account Dropdown Milestone
 
 ### Technical

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { CustomerLoginPanel } from "../components/PersonalHeaderAccount";
 import { Seo } from "../components/Seo";
 import {
   deleteCustomerAddress,
@@ -8,7 +9,6 @@ import {
   logoutCustomer,
   openStripeCustomerPortal,
   saveCustomerAddress,
-  startCustomerLogin,
   updateCustomerPreferences,
   updateCustomerProfile,
   type CustomerAddress,
@@ -39,17 +39,27 @@ const protectedAccountPaths: Record<string, string> = {
 };
 
 function useCustomerSession() {
+  const location = useLocation();
   const [session, setSession] = useState<CustomerSessionResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchCustomerMe(controller.signal)
+    setLoading(true);
+    void fetchCustomerMe(controller.signal)
       .then(setSession)
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const refresh = () => {
+      void fetchCustomerMe().then(setSession).finally(() => setLoading(false));
+    };
+    window.addEventListener("danielclancy:customer-session-updated", refresh);
+    return () => window.removeEventListener("danielclancy:customer-session-updated", refresh);
   }, []);
 
   return { session, customer: session?.customer || null, loading };
@@ -91,39 +101,15 @@ export function AccountPage() {
 
 export function AccountLoginPage() {
   const location = useLocation();
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("Enter your email to request a passwordless sign-in link.");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      const response = await startCustomerLogin(email, safeReturnTo(location.state && typeof location.state === "object" && "returnTo" in location.state ? String(location.state.returnTo) : "/account"));
-      setStatus(response.message || "If that email can receive account links, a sign-in link has been sent.");
-    } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Sign-in link could not be requested.");
-    } finally {
-      setBusy(false);
-    }
-  }
+  const returnTo = safeReturnTo(location.state && typeof location.state === "object" && "returnTo" in location.state ? String(location.state.returnTo) : "/account");
 
   return (
     <>
       <Seo title="Account Login" description="Passwordless customer login for DanielClancy.net." path="/account/login" noIndex />
-      <AccountHero title="Sign in to your customer account" intro="Passwordless email links are used for customer sessions. The site does not store customer passwords." />
+      <AccountHero title="Login to your customer account" intro="Use the same login panel as the Personal Studio header. The site does not store customer passwords." />
       <section className="account-section">
         <div className="container account-narrow">
-          <form className="account-panel account-form" onSubmit={handleSubmit}>
-            <label>
-              <span>Email</span>
-              <input className="input" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-            </label>
-            <button className="button" type="submit" disabled={busy}>{busy ? "Sending..." : "Send sign-in link"}</button>
-            {error ? <p className="form-status form-status--error">{error}</p> : <p className="form-status">{status}</p>}
-          </form>
+          <CustomerLoginPanel returnTo={returnTo} />
         </div>
       </section>
     </>
@@ -333,7 +319,7 @@ function ProtectedAccountPage({ title, loading, customer, session, children }: {
 }
 
 function LoginRequired({ session }: { session: CustomerSessionResponse | null }) {
-  const message = session?.message || "Sign in with a customer magic link before managing this page.";
+  const message = session?.message || "Login before managing this customer account page.";
   return <AccountNotice title={session?.requiredBinding ? "Configuration needed" : "Sign in required"} message={message} action={<Link className="button" to="/account/login">Sign in</Link>} />;
 }
 
