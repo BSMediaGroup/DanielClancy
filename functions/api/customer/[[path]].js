@@ -141,7 +141,14 @@ async function logout(context) {
     const value = /(?:^|;\s*)dc_customer_session=([^;]+)/.exec(cookie)?.[1] || "";
     if (value) await storage.delete(`customer:session:${await sha256(decodeURIComponent(value))}`);
   }
-  return json({ ok: true }, 200, { "set-cookie": clearSessionCookie(context.request, context.env) });
+  return jsonWithCookies(
+    { ok: true },
+    200,
+    [
+      clearSessionCookie(context.request, context.env),
+      clearAdminAuthCookie(context.request, context.env)
+    ]
+  );
 }
 
 async function handleMe(context) {
@@ -365,6 +372,37 @@ function requireMethod(request, method) {
 
 function json(payload, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(payload), { status, headers: { ...JSON_HEADERS, ...extraHeaders } });
+}
+
+function jsonWithCookies(payload, status = 200, cookies = []) {
+  const headers = new Headers(JSON_HEADERS);
+  cookies.filter(Boolean).forEach((cookie) => headers.append("set-cookie", cookie));
+  return new Response(JSON.stringify(payload), { status, headers });
+}
+
+function clearAdminAuthCookie(request, env) {
+  const attributes = [
+    "dc_auth_session=",
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    "Max-Age=0"
+  ];
+  const domain = cleanText(env?.DC_AUTH_COOKIE_DOMAIN || env?.DC_CUSTOMER_COOKIE_DOMAIN, 180) || sharedCookieDomain(request);
+  if (domain) attributes.push(`Domain=${domain}`);
+  if (requestIsHttps(request)) attributes.push("Secure");
+  return attributes.join("; ");
+}
+
+function sharedCookieDomain(request) {
+  const hostname = new URL(request.url).hostname.toLowerCase();
+  return hostname === "danielclancy.net" || hostname === "admin.danielclancy.net" ? ".danielclancy.net" : "";
+}
+
+function requestIsHttps(request) {
+  const forwarded = request.headers.get("x-forwarded-proto");
+  if (forwarded) return forwarded.split(",")[0].trim() === "https";
+  return new URL(request.url).protocol === "https:";
 }
 
 function htmlEscape(value) {

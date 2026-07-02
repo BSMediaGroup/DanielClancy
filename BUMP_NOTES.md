@@ -1,5 +1,41 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Restored Customer Login, Cart Drawer, Account Titles, And Merch Banner Sync Milestone
+
+### Technical
+
+- Replaced the passwordless-only customer login panel as the primary UI with the restored shared login modal pattern: OAuth provider buttons plus a collapsed manual email/password section backed by DanielClancy-Admin auth endpoints.
+- Kept legacy `POST /api/customer/login/start` magic-link behavior available as a secondary endpoint, but removed it from the primary header and `/account/login` customer experience.
+- Added `VITE_ADMIN_AUTH_ORIGIN` support for the public login panel, defaulting to `https://admin.danielclancy.net`, without exposing Admin secrets or storing session tokens in localStorage.
+- Updated public logout to clear both `dc_customer_session` and the shared `dc_auth_session` cookie name with production `.danielclancy.net` domain behavior and host-only local/dev behavior.
+- Converted the Personal Studio cart icon from a direct `/cart` link into a right-side drawer trigger. The drawer reads the existing local cart helper, validates totals through the existing merch cart API, supports quantity/remove controls, closes on Escape/backdrop, and keeps a prominent `Open Cart` link to the full `/cart` page.
+- Reduced account/customer hero title sizing by more than half through the account-scoped `.account-hero h1` style.
+- Changed public merch product APIs and Admin site-data fetches to no-store/no-cache reads so refreshed product cards/details and cart validation can see current published banner/settings data.
+- Updated README notes for the restored OAuth/manual login model, secondary magic-link status, shared cookies, cart drawer, and merch banner refresh behavior.
+
+### Human-readable
+
+- Public `MORE > Login`, `/account/login`, and `/watch` account login now use the restored OAuth/manual login modal instead of a broken magic-link-only screen.
+- The cart icon opens a cart drawer first while preserving the full `/cart` page.
+- Account pages no longer use oversized hero titles.
+- Product promo banners saved from Admin can appear on public `/shop` and product detail refreshes once the Admin save publishes the sanitized snapshot.
+
+### Known limitations
+
+- Real OAuth/manual login still depends on the DanielClancy-Admin Pages project env vars, OAuth apps, and shared `DC_CUSTOMERS_KV` binding.
+- OAuth providers that do not return a verified email may not create a public-recognizable customer profile until an email identity exists.
+
+### Files / areas changed
+
+- `README.md`
+- `functions/api/customer/[[path]].js`
+- `functions/api/merch/cart/[[action]].js`
+- `functions/api/merch/products/[[lookup]].js`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/lib/customerAccount.ts`
+- `src/pages/AccountPage.tsx`
+- `src/styles/global.css`
+
 ## Shared Public/Admin Login + Header Dropdown Repair Milestone
 
 ### Technical

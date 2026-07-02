@@ -452,7 +452,12 @@ async function loadPublishedOverrides(env) {
   const url = String(env?.DANIELCLANCY_ADMIN_PUBLIC_SITE_DATA_URL || env?.VITE_ADMIN_PUBLIC_SITE_DATA_URL || "").trim();
   if (!url || !/^https?:\/\//i.test(url)) return { items: [], settings: {} };
   try {
-    const response = await fetch(url, { headers: { accept: "application/json" } });
+    const freshUrl = new URL(url);
+    freshUrl.searchParams.set("_dc_merch", String(Date.now()));
+    const response = await fetch(freshUrl.toString(), {
+      cache: "no-store",
+      headers: { accept: "application/json", "cache-control": "no-cache", pragma: "no-cache" }
+    });
     if (!response.ok) return { items: [], settings: {} };
     const payload = await response.json();
     return {

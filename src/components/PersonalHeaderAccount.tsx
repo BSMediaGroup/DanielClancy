@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { shellAssets } from "../content/brandAssets";
-import { fetchCustomerMe, logoutCustomer, startCustomerLogin, type CustomerProfile } from "../lib/customerAccount";
-import { cartCount, loadCart } from "../lib/merchCart";
+import { shellAssets, socialIcons } from "../content/brandAssets";
+import {
+  fetchCustomerMe,
+  loginCustomerWithPassword,
+  logoutCustomer,
+  requestCustomerSignup,
+  startCustomerOAuth,
+  type CustomerOAuthProvider,
+  type CustomerProfile,
+} from "../lib/customerAccount";
+import { cartCount, loadCart, removeCartItem, saveCart, updateCartQuantity, validateCart, type MerchCartItem, type ServerCartSummary } from "../lib/merchCart";
 
 type MenuIconName =
   | "account"
@@ -22,6 +30,12 @@ type AccountMenuItem = {
   icon: MenuIconName;
   action?: "login";
 };
+
+const oauthProviders: Array<{ provider: CustomerOAuthProvider; label: string; icon: string }> = [
+  { provider: "github", label: "Continue with GitHub", icon: socialIcons.github },
+  { provider: "google", label: "Continue with Google", icon: socialIcons.google },
+  { provider: "twitter", label: "Continue with X", icon: socialIcons.x },
+];
 
 const loggedOutItems: AccountMenuItem[] = [
   { label: "Login", icon: "login", action: "login" },
@@ -44,6 +58,7 @@ const loggedInItems: AccountMenuItem[] = [
 
 export function PersonalHeaderCartButton() {
   const [count, setCount] = useState(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     const refreshCount = () => {
@@ -67,15 +82,175 @@ export function PersonalHeaderCartButton() {
   }, []);
 
   const countLabel = count > 99 ? "99+" : String(count);
-  const ariaLabel = count > 0 ? `View cart, ${count} item${count === 1 ? "" : "s"}` : "View cart";
+  const ariaLabel = count > 0 ? `Open cart drawer, ${count} item${count === 1 ? "" : "s"}` : "Open cart drawer";
 
   return (
-    <Link aria-label={ariaLabel} className="personal-cart-button" to="/cart">
-      <span className="personal-cart-button__icon" aria-hidden="true">
-        <CartGlyph />
-      </span>
-      {count > 0 ? <span className="personal-cart-button__badge">{countLabel}</span> : null}
-    </Link>
+    <>
+      <button aria-label={ariaLabel} className="personal-cart-button" type="button" onClick={() => setDrawerOpen(true)}>
+        <span className="personal-cart-button__icon" aria-hidden="true">
+          <CartGlyph />
+        </span>
+        {count > 0 ? <span className="personal-cart-button__badge">{countLabel}</span> : null}
+      </button>
+      <CartDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    </>
+  );
+}
+
+function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const titleId = useId();
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+  const [items, setItems] = useState<MerchCartItem[]>([]);
+  const [summary, setSummary] = useState<ServerCartSummary | null>(null);
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [validating, setValidating] = useState(false);
+
+  const refreshItems = useCallback(() => {
+    try {
+      const nextItems = loadCart();
+      setItems(nextItems);
+      if (!nextItems.length) setSummary(null);
+    } catch {
+      setItems([]);
+      setSummary(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    refreshItems();
+    window.setTimeout(() => closeRef.current?.focus(), 0);
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("danielclancy:cart-updated", refreshItems);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("danielclancy:cart-updated", refreshItems);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose, open, refreshItems]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!items.length) {
+      setStatus("Your cart is empty.");
+      setError("");
+      setValidating(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    setValidating(true);
+    setError("");
+    setStatus("Checking cart totals...");
+    void validateCart(items, controller.signal)
+      .then((cart) => {
+        setSummary(cart);
+        setStatus("Cart totals are current.");
+      })
+      .catch((cartError) => {
+        if (controller.signal.aborted) return;
+        setSummary(null);
+        setError(cartError instanceof Error ? cartError.message : "Cart totals could not be checked.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setValidating(false);
+      });
+
+    return () => controller.abort();
+  }, [items, open]);
+
+  if (!open) return null;
+
+  const summaryByKey = new Map((summary?.items || []).map((item) => [cartDrawerKey(item.productId, item.variantId), item]));
+
+  function commitItems(nextItems: MerchCartItem[]) {
+    saveCart(nextItems);
+    setItems(nextItems);
+  }
+
+  function setQuantity(item: MerchCartItem, quantity: number) {
+    commitItems(updateCartQuantity(loadCart(), item.productId, item.variantId, quantity));
+  }
+
+  function removeItem(item: MerchCartItem) {
+    commitItems(removeCartItem(loadCart(), item.productId, item.variantId));
+  }
+
+  return (
+    <div className="cart-drawer" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <button className="cart-drawer__scrim" type="button" aria-label="Close cart drawer" onClick={onClose} />
+      <aside className="cart-drawer__panel">
+        <header className="cart-drawer__header">
+          <div>
+            <span>Shopping cart</span>
+            <h2 id={titleId}>Cart</h2>
+          </div>
+          <button ref={closeRef} className="cart-drawer__close" type="button" aria-label="Close cart drawer" onClick={onClose}>
+            x
+          </button>
+        </header>
+
+        <div className="cart-drawer__body">
+          {items.length ? (
+            <ul className="cart-drawer__items">
+              {items.map((item) => {
+                const verified = summaryByKey.get(cartDrawerKey(item.productId, item.variantId));
+                const title = verified?.title || item.slug || item.productId;
+                const variant = verified?.variantName || item.variantId;
+                return (
+                  <li className="cart-drawer__item" key={cartDrawerKey(item.productId, item.variantId)}>
+                    {verified?.image ? <img alt="" src={verified.image} /> : <span className="cart-drawer__item-placeholder" aria-hidden="true"><CartGlyph /></span>}
+                    <div className="cart-drawer__item-copy">
+                      <strong>{title}</strong>
+                      <span>{variant}</span>
+                      {verified ? <small>{formatCartDrawerAmount(verified.lineAmount, verified.currency)}</small> : null}
+                    </div>
+                    <div className="cart-drawer__quantity" aria-label={`Quantity for ${title}`}>
+                      <button type="button" aria-label={`Decrease ${title} quantity`} disabled={item.quantity <= 1} onClick={() => setQuantity(item, item.quantity - 1)}>
+                        -
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button type="button" aria-label={`Increase ${title} quantity`} onClick={() => setQuantity(item, item.quantity + 1)}>
+                        +
+                      </button>
+                    </div>
+                    <button className="cart-drawer__remove" type="button" aria-label={`Remove ${title} from cart`} onClick={() => removeItem(item)}>
+                      Remove
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="cart-drawer__empty">
+              <CartGlyph />
+              <p>Your cart is empty.</p>
+              <Link className="button button--ghost" to="/shop" onClick={onClose}>Browse shop</Link>
+            </div>
+          )}
+
+          <p className={`cart-drawer__status${error ? " cart-drawer__status--error" : ""}`} role="status" aria-live="polite">
+            {error || status}
+          </p>
+        </div>
+
+        <footer className="cart-drawer__footer">
+          <div className="cart-drawer__subtotal">
+            <span>{validating ? "Checking" : "Subtotal"}</span>
+            <strong>{summary?.subtotalText || (items.length ? "Pending" : "$0.00")}</strong>
+          </div>
+          <div className="cart-drawer__actions">
+            <button className="button button--ghost" type="button" onClick={onClose}>Close</button>
+            <Link className="button" to="/cart" onClick={onClose}>Open Cart</Link>
+          </div>
+        </footer>
+      </aside>
+    </div>
   );
 }
 
@@ -291,24 +466,50 @@ export function CustomerLoginPanel({
   returnTo?: string;
   onClose?: () => void;
 }) {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [emailOpen, setEmailOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState("Enter your email to request a secure login link.");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState("Choose an OAuth provider, or use the manual email/password option.");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true);
+    setBusyAction(mode);
     setError("");
     try {
-      const response = await startCustomerLogin(email, safeReturnTo(returnTo));
-      setStatus(response.message || "Check your email for the DanielClancy.net login link.");
+      if (mode === "signup") {
+        const response = await requestCustomerSignup(email, password);
+        setStatus(response.message || "Account creation request received.");
+        return;
+      }
+      await loginCustomerWithPassword(email, password);
+      setStatus("Login verified.");
+      window.dispatchEvent(new CustomEvent("danielclancy:customer-session-updated"));
+      onClose?.();
+      navigate(safeReturnTo(returnTo));
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Login link could not be requested.");
+      setError(loginError instanceof Error ? loginError.message : "Login failed. Check the details and try again.");
     } finally {
-      setBusy(false);
+      setBusyAction("");
     }
   }
+
+  function handleOAuth(provider: CustomerOAuthProvider) {
+    setBusyAction(provider);
+    setError("");
+    setStatus(`Opening ${providerLabel(provider)} login...`);
+    try {
+      startCustomerOAuth(provider, safeReturnTo(returnTo));
+    } catch (oauthError) {
+      setBusyAction("");
+      setError(oauthError instanceof Error ? oauthError.message : "OAuth login could not be opened.");
+    }
+  }
+
+  const busy = Boolean(busyAction);
 
   return (
     <section className="login-modal__panel" aria-labelledby={id}>
@@ -322,19 +523,77 @@ export function CustomerLoginPanel({
           <img alt="" src={shellAssets.danielLogo} />
         </span>
         <h2 id={id}>Login to DanielClancy.net</h2>
-        <p>Customer sessions use a secure email link and a server-managed session cookie.</p>
+        <p>Use OAuth or the manual email/password option. Sessions are server-managed with HttpOnly shared cookies.</p>
       </header>
 
-      <form className="login-modal__form" onSubmit={handleSubmit}>
-        <label>
-          <span>Email</span>
-          <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-        </label>
-        <button className="button" type="submit" disabled={busy}>{busy ? "Sending..." : "Send login link"}</button>
-      </form>
+      <div className="login-modal__providers" aria-label="OAuth login options">
+        {oauthProviders.map((provider) => (
+          <button
+            className="button button--ghost login-modal__provider"
+            disabled={busy}
+            key={provider.provider}
+            type="button"
+            onClick={() => handleOAuth(provider.provider)}
+          >
+            <img alt="" className="login-modal__provider-icon" src={provider.icon} />
+            <span>{busyAction === provider.provider ? "Opening..." : provider.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="login-modal__divider" aria-hidden="true">
+        <span>or</span>
+      </div>
+
+      <div className="login-modal__tabs" role="tablist" aria-label="Manual account mode">
+        <button
+          className={`login-modal__tab${mode === "signin" ? " login-modal__tab--active" : ""}`}
+          type="button"
+          role="tab"
+          aria-selected={mode === "signin"}
+          onClick={() => {
+            setMode("signin");
+            setError("");
+          }}
+        >
+          Sign in
+        </button>
+        <button
+          className={`login-modal__tab${mode === "signup" ? " login-modal__tab--active" : ""}`}
+          type="button"
+          role="tab"
+          aria-selected={mode === "signup"}
+          onClick={() => {
+            setMode("signup");
+            setError("");
+          }}
+        >
+          Create
+        </button>
+      </div>
+
+      <div className="login-modal__email">
+        <button className="login-modal__email-toggle" type="button" aria-expanded={emailOpen} onClick={() => setEmailOpen((current) => !current)}>
+          <span>Use email instead</span>
+          <span aria-hidden="true">{emailOpen ? "-" : "+"}</span>
+        </button>
+        {emailOpen ? (
+          <form className="login-modal__form" onSubmit={handleSubmit}>
+            <label>
+              <span>Email</span>
+              <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+            </label>
+            <label>
+              <span>Password</span>
+              <input type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(event) => setPassword(event.target.value)} required />
+            </label>
+            <button className="button" type="submit" disabled={busy}>{busyAction === mode ? "Checking..." : mode === "signin" ? "Sign in" : "Create account"}</button>
+          </form>
+        ) : null}
+      </div>
 
       <div className={`login-modal__status${error ? " login-modal__status--error" : ""}`} role="status" aria-live="polite">
-        <strong>{error ? "Login failed" : "Passwordless login"}</strong>
+        <strong>{error ? "Login failed" : mode === "signup" ? "Manual account" : "Customer login"}</strong>
         <span>{error || status}</span>
       </div>
 
@@ -378,6 +637,20 @@ function resolveCustomerLabel(customer: CustomerProfile | null) {
   if (displayName) return displayName;
   const emailPrefix = customer.email?.split("@")[0]?.trim();
   return emailPrefix || "Customer";
+}
+
+function providerLabel(provider: CustomerOAuthProvider) {
+  if (provider === "github") return "GitHub";
+  if (provider === "google") return "Google";
+  return "X";
+}
+
+function cartDrawerKey(productId: string, variantId: string) {
+  return `${productId}:${variantId}`;
+}
+
+function formatCartDrawerAmount(amount: number, currency: string) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(Number(amount || 0) / 100);
 }
 
 function safeReturnTo(value: string) {

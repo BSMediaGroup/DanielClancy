@@ -105,8 +105,8 @@ export function AccountLoginPage() {
 
   return (
     <>
-      <Seo title="Account Login" description="Passwordless customer login for DanielClancy.net." path="/account/login" noIndex />
-      <AccountHero title="Login to your customer account" intro="Use the same login panel as the Personal Studio header. The site does not store customer passwords." />
+      <Seo title="Account Login" description="Customer login for DanielClancy.net." path="/account/login" noIndex />
+      <AccountHero title="Login to your customer account" intro="Use the same OAuth or manual email/password login panel as the Personal Studio header. Sessions are stored server-side in HttpOnly cookies." />
       <section className="account-section">
         <div className="container account-narrow">
           <CustomerLoginPanel returnTo={returnTo} />

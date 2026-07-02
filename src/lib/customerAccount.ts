@@ -58,6 +58,8 @@ export type CustomerOrder = {
   items: Array<{ title: string; variantName: string; quantity: number }>;
 };
 
+export type CustomerOAuthProvider = "github" | "google" | "twitter";
+
 async function readJson(response: Response) {
   return response.json().catch(() => null);
 }
@@ -75,6 +77,24 @@ async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> 
   return payload as T;
 }
 
+function adminAuthOrigin() {
+  return String(import.meta.env.VITE_ADMIN_AUTH_ORIGIN || "https://admin.danielclancy.net").replace(/\/+$/g, "");
+}
+
+function adminAuthUrl(path: string) {
+  return `${adminAuthOrigin()}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function safeReturnPath(value: string) {
+  return value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/api/") ? value : "/account";
+}
+
+function absolutePublicReturnTo(returnTo: string) {
+  const safePath = safeReturnPath(returnTo);
+  if (typeof window === "undefined") return safePath;
+  return new URL(safePath, window.location.origin).toString();
+}
+
 export async function fetchCustomerMe(signal?: AbortSignal): Promise<CustomerSessionResponse> {
   const response = await fetch("/api/customer/me", { credentials: "include", headers: { accept: "application/json" }, cache: "no-store", signal });
   const payload = await readJson(response);
@@ -90,6 +110,30 @@ export async function fetchCustomerMe(signal?: AbortSignal): Promise<CustomerSes
     };
   }
   return payload as CustomerSessionResponse;
+}
+
+export function customerOAuthStartUrl(provider: CustomerOAuthProvider, returnTo = "/account") {
+  const url = new URL(adminAuthUrl(`/api/auth/oauth/${provider}/start`));
+  url.searchParams.set("return_to", absolutePublicReturnTo(returnTo));
+  return url.toString();
+}
+
+export function startCustomerOAuth(provider: CustomerOAuthProvider, returnTo = "/account") {
+  window.location.assign(customerOAuthStartUrl(provider, returnTo));
+}
+
+export async function loginCustomerWithPassword(email: string, password: string) {
+  return requestJson<{ ok: true; session?: unknown }>(adminAuthUrl("/api/auth/login"), {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function requestCustomerSignup(email: string, password: string) {
+  return requestJson<{ ok: true; message?: string; session?: unknown }>(adminAuthUrl("/api/auth/signup"), {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
 }
 
 export async function startCustomerLogin(email: string, returnTo = "/account") {

@@ -10,7 +10,7 @@ import {
 } from "../../../_shared/printful-products.js";
 
 const CACHE_HEADERS = {
-  "cache-control": "public, max-age=120, stale-while-revalidate=300"
+  "cache-control": "no-store"
 };
 const ERROR_HEADERS = {
   "cache-control": "no-store"
@@ -122,7 +122,12 @@ async function loadPublishedOverrides(env) {
   ).trim();
   if (!url || !/^https?:\/\//i.test(url)) return { items: [], settings: {} };
   try {
-    const response = await fetch(url, { headers: { accept: "application/json" } });
+    const freshUrl = new URL(url);
+    freshUrl.searchParams.set("_dc_merch", String(Date.now()));
+    const response = await fetch(freshUrl.toString(), {
+      cache: "no-store",
+      headers: { accept: "application/json", "cache-control": "no-cache", pragma: "no-cache" }
+    });
     if (!response.ok) return { items: [], settings: {} };
     const payload = await response.json();
     const products = payload?.collections?.products;
