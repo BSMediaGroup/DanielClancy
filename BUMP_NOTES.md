@@ -1,5 +1,41 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Cart Drawer, Customer Profile Refresh, And Merch Banner Diagnostics Repair
+
+### Technical
+
+- Moved the Personal Studio cart drawer into a React portal attached to `document.body` so fixed positioning is not trapped by the header/page stacking context; CSS now explicitly uses a high-z fixed viewport overlay, a full fixed scrim, and a `100dvh` right-side panel.
+- Preserved the existing cart icon-only trigger and full `/cart` page while keeping drawer close behavior on backdrop/outside click, Escape, close button, and `Open Cart` navigation.
+- Customer profile saves now use the returned server customer profile immediately, dispatch the existing `danielclancy:customer-session-updated` event with that profile, and refetch `/api/customer/me` with `cache: "no-store"` so header/account state refreshes before and after hard reloads.
+- `PATCH /api/customer/profile` now rejects non-HTTPS avatar URLs with `valid_avatar_url_required` and preserves the existing stored avatar unless an explicit clear flag is sent.
+- Public merch product APIs now report safe override diagnostics (`overrideSource`, `overrideRevision`, `overrideUpdatedAt`, `productOverrideCount`, `bannerCount`, and warning when applicable) while keeping Admin public site-data reads no-store/cache-busted.
+- Public merch banner normalization now filters disabled product-level banner assignments as well as disabled registry banners.
+- Added focused public banner merge coverage for enabled assigned banners, disabled registry/assignment filtering, and safe ad-hoc banner labels.
+
+### Human-readable
+
+- `/shop` cart now opens as a real right-side drawer instead of appearing squashed in the header area.
+- Saving display name/avatar from `/account/profile` updates the header/account UI immediately and still relies on the KV-backed `/api/customer/me` profile after refresh.
+- Public product responses now make it clear whether live Admin banner overrides were used, missing, or unavailable.
+
+### Known limitations
+
+- Live banner/profile proof still depends on deployed Pages bindings and configured `DC_CUSTOMERS_KV`, `PRINTFUL_STORE_API`, and Admin public site-data URL.
+- No OAuth/manual login modal behavior was replaced; the restored OAuth provider plus collapsed email/password login remains the primary public login UI.
+
+### Files / areas changed
+
+- `README.md`
+- `functions/_shared/printful-products.js`
+- `functions/api/customer/[[path]].js`
+- `functions/api/merch/products/[[lookup]].js`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/lib/customerAccount.ts`
+- `src/lib/merch.ts`
+- `src/pages/AccountPage.tsx`
+- `src/styles/global.css`
+- `tests/merch-product-banners.test.mjs`
+
 ## Restored Customer Login, Cart Drawer, Account Titles, And Merch Banner Sync Milestone
 
 ### Technical

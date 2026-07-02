@@ -24,6 +24,7 @@ export async function onRequest(context) {
 
   const lookup = lookupParam(params);
   const overrideBundle = await loadPublishedOverrides(env);
+  const overrideMeta = overrideDiagnostics(overrideBundle);
   try {
     if (!lookup) {
       const result = await fetchPrintfulProductList(env);
@@ -34,6 +35,7 @@ export async function onRequest(context) {
             configured: Boolean(result.configured),
             error: result.error || "printful_products_unavailable",
             message: result.message || "Printful products are unavailable.",
+            ...overrideMeta,
             products: []
           },
           { status: result.status || 503, headers: ERROR_HEADERS }
@@ -48,7 +50,8 @@ export async function onRequest(context) {
           count: result.products.length,
           products: publicProducts(result.products, overrideBundle.items, overrideBundle.settings),
           settings: overrideBundle.settings,
-          overridesConfigured: overrideBundle.items.length > 0
+          overridesConfigured: overrideBundle.items.length > 0,
+          ...overrideMeta
         },
         { headers: CACHE_HEADERS }
       );
@@ -61,7 +64,8 @@ export async function onRequest(context) {
           ok: false,
           configured: Boolean(list.configured),
           error: list.error || "printful_products_unavailable",
-          message: list.message || "Printful products are unavailable."
+          message: list.message || "Printful products are unavailable.",
+          ...overrideMeta
         },
         { status: list.status || 503, headers: ERROR_HEADERS }
       );
@@ -82,7 +86,8 @@ export async function onRequest(context) {
         store: safeStore(result.store || list.store),
         product: sanitizePublicProduct(merged),
         settings: overrideBundle.settings,
-        overridesConfigured: overrideBundle.items.length > 0
+        overridesConfigured: overrideBundle.items.length > 0,
+        ...overrideMeta
       },
       { headers: CACHE_HEADERS }
     );
@@ -92,7 +97,8 @@ export async function onRequest(context) {
         ok: false,
         configured: true,
         error: "printful_products_unavailable",
-        message: "Printful products are temporarily unavailable."
+        message: "Printful products are temporarily unavailable.",
+        ...overrideMeta
       },
       { status: 502, headers: ERROR_HEADERS }
     );
@@ -120,7 +126,14 @@ async function loadPublishedOverrides(env) {
       env?.VITE_ADMIN_PUBLIC_SITE_DATA_URL ||
       ""
   ).trim();
-  if (!url || !/^https?:\/\//i.test(url)) return { items: [], settings: {} };
+  if (!url || !/^https?:\/\//i.test(url)) {
+    return {
+      items: [],
+      settings: {},
+      source: "none",
+      warning: "admin_public_site_data_url_missing"
+    };
+  }
   try {
     const freshUrl = new URL(url);
     freshUrl.searchParams.set("_dc_merch", String(Date.now()));
@@ -128,14 +141,58 @@ async function loadPublishedOverrides(env) {
       cache: "no-store",
       headers: { accept: "application/json", "cache-control": "no-cache", pragma: "no-cache" }
     });
-    if (!response.ok) return { items: [], settings: {} };
+    if (!response.ok) {
+      return {
+        items: [],
+        settings: {},
+        source: "fallback",
+        warning: "admin_public_site_data_fetch_failed"
+      };
+    }
     const payload = await response.json();
+    if (payload?.ok !== true || !payload?.collections || typeof payload.collections !== "object") {
+      return {
+        items: [],
+        settings: {},
+        source: "fallback",
+        warning: "admin_public_site_data_invalid"
+      };
+    }
     const products = payload?.collections?.products;
+    const settings = payload?.collections?.productSettings && typeof payload.collections.productSettings === "object" ? payload.collections.productSettings : {};
     return {
       items: Array.isArray(products) ? products : [],
-      settings: payload?.collections?.productSettings && typeof payload.collections.productSettings === "object" ? payload.collections.productSettings : {}
+      settings,
+      source: "live",
+      revision: safeMeta(payload?.revision),
+      updatedAt: safeMeta(payload?.updatedAt || payload?.generatedAt || payload?.publishedAt),
+      publishedAt: safeMeta(payload?.publishedAt),
+      productOverrideCount: Array.isArray(products) ? products.length : 0,
+      bannerCount: Array.isArray(settings?.banners) ? settings.banners.length : 0
     };
   } catch {
-    return { items: [], settings: {} };
+    return {
+      items: [],
+      settings: {},
+      source: "fallback",
+      warning: "admin_public_site_data_read_failed"
+    };
   }
+}
+
+function overrideDiagnostics(bundle = {}) {
+  const settings = bundle.settings && typeof bundle.settings === "object" ? bundle.settings : {};
+  return {
+    overrideSource: bundle.source || "none",
+    overrideRevision: safeMeta(bundle.revision),
+    overrideUpdatedAt: safeMeta(bundle.updatedAt),
+    overridePublishedAt: safeMeta(bundle.publishedAt),
+    productOverrideCount: Number.isFinite(Number(bundle.productOverrideCount)) ? Number(bundle.productOverrideCount) : Array.isArray(bundle.items) ? bundle.items.length : 0,
+    bannerCount: Number.isFinite(Number(bundle.bannerCount)) ? Number(bundle.bannerCount) : Array.isArray(settings.banners) ? settings.banners.length : 0,
+    ...(bundle.warning ? { overrideWarning: safeMeta(bundle.warning) } : {})
+  };
+}
+
+function safeMeta(value) {
+  return String(value || "").replace(/[<>]/g, "").trim().slice(0, 180);
 }

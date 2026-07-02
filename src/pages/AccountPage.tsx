@@ -7,6 +7,7 @@ import {
   fetchCustomerMe,
   fetchCustomerOrders,
   logoutCustomer,
+  notifyCustomerSessionUpdated,
   openStripeCustomerPortal,
   saveCustomerAddress,
   updateCustomerPreferences,
@@ -55,7 +56,12 @@ function useCustomerSession() {
   }, [location.pathname]);
 
   useEffect(() => {
-    const refresh = () => {
+    const refresh = (event?: Event) => {
+      const detail = (event as CustomEvent<{ customer?: CustomerProfile | null }> | undefined)?.detail;
+      if (detail && Object.prototype.hasOwnProperty.call(detail, "customer")) {
+        setSession({ ok: true, authenticated: Boolean(detail.customer), customer: detail.customer || null });
+        setLoading(false);
+      }
       void fetchCustomerMe().then(setSession).finally(() => setLoading(false));
     };
     window.addEventListener("danielclancy:customer-session-updated", refresh);
@@ -130,7 +136,9 @@ export function AccountProfilePage() {
     event.preventDefault();
     setBusy(true);
     try {
-      await updateCustomerProfile(form);
+      const response = await updateCustomerProfile(form);
+      setForm({ displayName: response.customer.displayName || "", avatarUrl: response.customer.avatarUrl || "", phone: response.customer.phone || "" });
+      notifyCustomerSessionUpdated(response.customer);
       setStatus("Profile saved.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Profile could not be saved.");

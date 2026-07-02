@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { shellAssets, socialIcons } from "../content/brandAssets";
 import {
@@ -181,10 +182,10 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     commitItems(removeCartItem(loadCart(), item.productId, item.variantId));
   }
 
-  return (
+  const drawer = (
     <div className="cart-drawer" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <button className="cart-drawer__scrim" type="button" aria-label="Close cart drawer" onClick={onClose} />
-      <aside className="cart-drawer__panel">
+      <aside className="cart-drawer__panel" onClick={(event) => event.stopPropagation()}>
         <header className="cart-drawer__header">
           <div>
             <span>Shopping cart</span>
@@ -246,12 +247,13 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           </div>
           <div className="cart-drawer__actions">
             <button className="button button--ghost" type="button" onClick={onClose}>Close</button>
-            <Link className="button" to="/cart" onClick={onClose}>Open Cart</Link>
+            <Link className="button" to="/cart" aria-label="Open full cart page" onClick={onClose}>Open Cart</Link>
           </div>
         </footer>
       </aside>
     </div>
   );
+  return typeof document === "undefined" ? null : createPortal(drawer, document.body);
 }
 
 export function PersonalHeaderAccount({ surface = "personal" }: { surface?: "personal" | "watch" } = {}) {
@@ -286,7 +288,12 @@ export function PersonalHeaderAccount({ surface = "personal" }: { surface?: "per
   }, [refreshSession]);
 
   useEffect(() => {
-    const refreshOnSignal = () => {
+    const refreshOnSignal = (event?: Event) => {
+      const detail = (event as CustomEvent<{ customer?: CustomerProfile | null }> | undefined)?.detail;
+      if (detail && Object.prototype.hasOwnProperty.call(detail, "customer")) {
+        setCustomer(detail.customer || null);
+        setSessionChecked(true);
+      }
       void refreshSession();
     };
 

@@ -166,10 +166,15 @@ async function handleProfile(context) {
   if (context.request.method !== "PATCH") return methodNotAllowed();
   const payload = await parseRequestJson(context.request);
   const now = new Date().toISOString();
+  const requestedAvatar = cleanText(payload?.avatarUrl ?? payload?.avatar_url ?? "", 1000);
+  const clearAvatar = payload?.clearAvatar === true || payload?.clear_avatar === true;
+  if (requestedAvatar && !/^https:\/\//i.test(requestedAvatar)) {
+    return json({ ok: false, error: "valid_avatar_url_required", message: "Avatar URL must be a valid HTTPS image URL." }, 400);
+  }
   const profile = await putCustomerProfile(session.storage, {
     ...session.profile,
     displayName: cleanText(payload?.displayName || payload?.display_name, 120),
-    avatarUrl: /^https:\/\//i.test(cleanText(payload?.avatarUrl || payload?.avatar_url, 1000)) ? cleanText(payload?.avatarUrl || payload?.avatar_url, 1000) : "",
+    avatarUrl: requestedAvatar || (clearAvatar ? "" : session.profile.avatarUrl),
     phone: cleanText(payload?.phone, 60),
     updatedAt: now
   });

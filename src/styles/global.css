@@ -3852,14 +3852,17 @@ select:focus {
 .cart-drawer {
   position: fixed;
   inset: 0;
-  z-index: 95;
+  z-index: 10000;
   display: flex;
   justify-content: flex-end;
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
   pointer-events: none;
 }
 
 .cart-drawer__scrim {
-  position: absolute;
+  position: fixed;
   inset: 0;
   border: 0;
   background: rgba(3, 4, 6, 0.46);
@@ -3868,10 +3871,14 @@ select:focus {
 }
 
 .cart-drawer__panel {
-  position: relative;
+  position: fixed;
+  top: 0;
+  right: 0;
   z-index: 1;
-  width: min(26rem, calc(100vw - 1.25rem));
-  height: 100%;
+  width: min(420px, 92vw);
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 0;
@@ -4675,7 +4682,7 @@ select:focus {
 
 @media (max-width: 520px) {
   .cart-drawer__panel {
-    width: min(100vw, 23rem);
+    width: min(100vw, 24rem);
   }
 
   .cart-drawer__item {

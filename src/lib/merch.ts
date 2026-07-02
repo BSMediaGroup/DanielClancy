@@ -85,6 +85,13 @@ export type MerchFeed = {
   error?: string;
   message?: string;
   source?: string;
+  overrideSource?: "live" | "admin" | "fallback" | "none" | string;
+  overrideRevision?: string;
+  overrideUpdatedAt?: string;
+  overridePublishedAt?: string;
+  productOverrideCount?: number;
+  bannerCount?: number;
+  overrideWarning?: string;
   count?: number;
   settings?: MerchSettings;
   products: MerchProduct[];
@@ -96,6 +103,13 @@ export type MerchDetail = {
   error?: string;
   message?: string;
   product?: MerchProduct;
+  overrideSource?: "live" | "admin" | "fallback" | "none" | string;
+  overrideRevision?: string;
+  overrideUpdatedAt?: string;
+  overridePublishedAt?: string;
+  productOverrideCount?: number;
+  bannerCount?: number;
+  overrideWarning?: string;
 };
 
 export async function fetchMerchProducts(signal?: AbortSignal): Promise<MerchFeed> {
@@ -118,6 +132,13 @@ export async function fetchMerchProducts(signal?: AbortSignal): Promise<MerchFee
     ok: true,
     configured: true,
     source: payload.source,
+    overrideSource: payload.overrideSource,
+    overrideRevision: payload.overrideRevision,
+    overrideUpdatedAt: payload.overrideUpdatedAt,
+    overridePublishedAt: payload.overridePublishedAt,
+    productOverrideCount: payload.productOverrideCount,
+    bannerCount: payload.bannerCount,
+    overrideWarning: payload.overrideWarning,
     count: payload.count,
     settings: payload.settings || {},
     products: Array.isArray(payload.products) ? payload.products : [],
@@ -147,6 +168,13 @@ export async function fetchMerchProduct(lookup: string, signal?: AbortSignal): P
     ok: true,
     configured: true,
     product: payload.product,
+    overrideSource: payload.overrideSource,
+    overrideRevision: payload.overrideRevision,
+    overrideUpdatedAt: payload.overrideUpdatedAt,
+    overridePublishedAt: payload.overridePublishedAt,
+    productOverrideCount: payload.productOverrideCount,
+    bannerCount: payload.bannerCount,
+    overrideWarning: payload.overrideWarning,
   };
 }
 

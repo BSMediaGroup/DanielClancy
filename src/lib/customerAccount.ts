@@ -68,6 +68,7 @@ async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> 
   const response = await fetch(path, {
     credentials: "include",
     headers: { accept: "application/json", ...(init.body ? { "content-type": "application/json" } : {}), ...(init.headers || {}) },
+    cache: "no-store",
     ...init,
   });
   const payload = await readJson(response);
@@ -152,6 +153,10 @@ export async function updateCustomerProfile(profile: { displayName: string; avat
     method: "PATCH",
     body: JSON.stringify(profile),
   });
+}
+
+export function notifyCustomerSessionUpdated(customer?: CustomerProfile | null) {
+  window.dispatchEvent(new CustomEvent("danielclancy:customer-session-updated", { detail: { customer } }));
 }
 
 export async function updateCustomerPreferences(preferences: CustomerPreferences & { marketingOptIn: boolean }) {
