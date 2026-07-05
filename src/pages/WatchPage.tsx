@@ -174,14 +174,22 @@ function resolveVideos(feed: WatchFeedResponse | null, manualWatchMedia: PublicW
 
   return normalized
     .filter((item): item is WatchFeedVideo => {
-    if (!item?.id || seen.has(item.id)) {
+    const key = watchMediaDedupeKey(item);
+    if (!item?.id || seen.has(key)) {
       return false;
     }
 
-    seen.add(item.id);
+    seen.add(key);
     return true;
     })
     .sort((left, right) => sortTime(right) - sortTime(left));
+}
+
+function watchMediaDedupeKey(item: WatchFeedVideo) {
+  const platform = normalizePlatform(item);
+  const type = String(item.entryType || "video").toLowerCase();
+  const source = item.videoUrl || item.externalUrl || item.canonicalUrl || item.embedUrl || "";
+  return `${platform}:${type}:${item.platformVideoId || item.id}:${source}`;
 }
 
 function normalizeYouTubeFeedItem(item: WatchFeedVideo | null | undefined): WatchFeedVideo | null {
@@ -219,7 +227,8 @@ function normalizeManualWatchMediaItem(item: PublicWatchMedia): WatchFeedVideo |
     excerpt: item.excerpt || item.description || "",
     publishedAt: item.publishedAt || null,
     enteredAt: item.enteredAt,
-    sortDate: item.sortDate || item.publishedAt || item.enteredAt || item.updatedAt,
+    sortDate: item.sortDate || item.publishedAt || item.enteredAt || item.createdAt || item.updatedAt,
+    createdAt: item.createdAt,
     thumbnailUrl,
     videoUrl: sourceUrl,
     embedUrl: item.embedUrl || "",
@@ -239,7 +248,7 @@ function normalizeManualWatchMediaItem(item: PublicWatchMedia): WatchFeedVideo |
 }
 
 function sortTime(item: WatchFeedVideo | null) {
-  const parsed = new Date(item?.sortDate || item?.publishedAt || item?.enteredAt || 0).getTime();
+  const parsed = new Date(item?.sortDate || item?.publishedAt || item?.enteredAt || item?.createdAt || 0).getTime();
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
@@ -326,7 +335,7 @@ function ChevronIcon({ direction }: { direction: "previous" | "next" }) {
 }
 
 export function WatchPage() {
-  const { watchMedia } = usePublicSiteData();
+  const { watchMedia, metadata: publicSiteMetadata } = usePublicSiteData();
   const [feed, setFeed] = useState<WatchFeedResponse | null>(null);
   const [status, setStatus] = useState<FeedStatus>("loading");
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
@@ -388,7 +397,7 @@ export function WatchPage() {
     activeVideo?.excerpt ||
     feed?.message ||
     "The watch page keeps the latest release in focus and stays usable even when the live feed is temporarily unavailable.";
-  const heroDate = activeVideo ? formatWatchDate(activeVideo.publishedAt) : "Feed status";
+  const heroDate = activeVideo ? formatWatchDate(activeVideo.sortDate || activeVideo.publishedAt) : "Feed status";
   const platformLabel = getPlatformLabel(activeVideo);
   const ctaLabel = getSourceCtaLabel(activeVideo);
   const sourceIcon = getPlatformIcon(activeVideo);
@@ -396,6 +405,14 @@ export function WatchPage() {
     status === "ready"
       ? "The complete fetched catalogue remains available below the cinematic player."
       : "The gallery holds its place and returns to live uploads as soon as the channel feed becomes available again.";
+  const watchDebugMeta = {
+    youtubeCount: feed?.metadata?.youtubeCount ?? (feed?.items?.length || 0),
+    manualMediaCount: watchMedia.filter((item) => item.source === "manual" || item.sourcePlatform === "rumble").length,
+    mergedCount: videos.length,
+    heroId: activeVideo?.id || "",
+    overrideRevision: publicSiteMetadata.revision || "",
+    overrideUpdatedAt: publicSiteMetadata.publishedAt || publicSiteMetadata.generatedAt || "",
+  };
 
   function selectAdjacentVideo(direction: -1 | 1) {
     if (!heroCandidates.length) {
@@ -567,6 +584,11 @@ export function WatchPage() {
           </div>
 
           {status !== "ready" ? <p className="watch-hero__feed-note">{feed?.message || FALLBACK_MESSAGE}</p> : null}
+          <p className="watch-feed-diagnostics" aria-label="Watch media feed status">
+            YouTube {watchDebugMeta.youtubeCount} / manual {watchDebugMeta.manualMediaCount} / merged {watchDebugMeta.mergedCount}
+            {watchDebugMeta.heroId ? ` / hero ${watchDebugMeta.heroId}` : ""}
+            {watchDebugMeta.overrideRevision ? ` / revision ${watchDebugMeta.overrideRevision}` : ""}
+          </p>
         </section>
 
         <div className="watch-selector-strip" aria-label="More watch content">

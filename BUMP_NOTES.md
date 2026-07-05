@@ -1,5 +1,25 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Watch Media Hard Repair Follow-Up
+
+### Technical notes
+- Raised the server-side YouTube watch feed request from the old 7-item cap to named `WATCH_FEED_TARGET_COUNT = 12`.
+- Added safe watch feed metadata for YouTube count and target count, and added subtle `/watch` diagnostics for YouTube/manual/merged counts, hero id, and public export revision.
+- Tightened `/watch` merge sorting to use `sortDate`, `publishedAt`, `enteredAt`, then `createdAt`, descending newest-first.
+- Changed `/watch` dedupe to include platform, entry type, id/platform id, and source/embed URL so valid YouTube/Rumble/Short entries are not collapsed by a bare id collision.
+- Preserved Rumble iframe hero rendering through sanitized `https://rumble.com/embed/...` URLs, with Rumble shorts staying gallery-only and non-hero.
+- Added public-safe `createdAt` watch-media normalization from Admin exports.
+- Scoped the login modal DC logo fix to `.login-modal__brand-mark`: white-filtered logo, smaller mark image, and rounded-square container instead of a pill.
+
+### Human-readable notes
+- `/watch` can now render 12+ real fetched/merged entries when YouTube and Admin manual media provide them; it does not duplicate videos to hit the target.
+- The newest embeddable dated item is the hero, while a newer Rumble short remains in the gallery only.
+- The restored OAuth/manual email-password login modal remains primary; no passwordless-only flow was reintroduced.
+
+### Known limitations
+- Local Vite cannot prove live Cloudflare Pages Functions or Admin KV public-export propagation by itself.
+- If YouTube returns fewer than 12 uploads, `/watch` reports the real count rather than filling with fake items.
+
 ## Watch Media Merge, Login Modal Viewport, And Dark Scrollbar Milestone
 
 ### Technical

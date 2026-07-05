@@ -1,7 +1,7 @@
 const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
 const SUCCESS_CACHE_CONTROL = "public, max-age=0, s-maxage=900, stale-while-revalidate=3600";
 const ERROR_CACHE_CONTROL = "no-store";
-const MAX_RECENT_UPLOADS = 7;
+const WATCH_FEED_TARGET_COUNT = 12;
 
 function json(body, status = 200, cacheControl = ERROR_CACHE_CONTROL) {
   return new Response(JSON.stringify(body), {
@@ -117,6 +117,10 @@ async function buildWatchFeed(env) {
       featured: null,
       recentUploads: [],
       items: [],
+      metadata: {
+        youtubeCount: 0,
+        targetCount: WATCH_FEED_TARGET_COUNT,
+      },
     };
   }
 
@@ -134,6 +138,10 @@ async function buildWatchFeed(env) {
       featured: null,
       recentUploads: [],
       items: [],
+      metadata: {
+        youtubeCount: 0,
+        targetCount: WATCH_FEED_TARGET_COUNT,
+      },
     };
   }
 
@@ -163,10 +171,14 @@ async function buildWatchFeed(env) {
           title: channelTitle,
           url: channelUrl,
         },
-        featured: null,
-        recentUploads: [],
-        items: [],
-      };
+          featured: null,
+          recentUploads: [],
+          items: [],
+          metadata: {
+            youtubeCount: 0,
+            targetCount: WATCH_FEED_TARGET_COUNT,
+          },
+        };
     }
 
     const uploadsResponse = await fetchYouTubeJson(
@@ -174,7 +186,7 @@ async function buildWatchFeed(env) {
       {
         part: "snippet,contentDetails",
         playlistId: uploadsPlaylistId,
-        maxResults: String(MAX_RECENT_UPLOADS),
+        maxResults: String(WATCH_FEED_TARGET_COUNT),
       },
       apiKey,
     );
@@ -203,6 +215,10 @@ async function buildWatchFeed(env) {
       featured,
       recentUploads,
       items,
+      metadata: {
+        youtubeCount: items.length,
+        targetCount: WATCH_FEED_TARGET_COUNT,
+      },
     };
   } catch (_error) {
     return {
@@ -218,6 +234,10 @@ async function buildWatchFeed(env) {
       featured: null,
       recentUploads: [],
       items: [],
+      metadata: {
+        youtubeCount: 0,
+        targetCount: WATCH_FEED_TARGET_COUNT,
+      },
     };
   }
 }

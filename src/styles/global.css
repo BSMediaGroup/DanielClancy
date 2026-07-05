@@ -2970,6 +2970,19 @@ select:focus {
   transform: translateX(-50%);
 }
 
+.watch-feed-diagnostics {
+  position: relative;
+  z-index: 5;
+  width: min(100% - 2rem, 58rem);
+  margin: -1.35rem auto 1rem;
+  color: rgba(247, 241, 228, 0.5);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .watch-selector-strip {
   position: relative;
   z-index: 5;
@@ -4507,10 +4520,10 @@ select:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: min(7rem, 48vw);
-  height: 3.45rem;
+  width: 4.25rem;
+  height: 4.25rem;
   border: 1px solid rgba(219, 201, 166, 0.28);
-  border-radius: 999px;
+  border-radius: 16px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
     rgba(219, 201, 166, 0.06);
@@ -4518,9 +4531,10 @@ select:focus {
 }
 
 .login-modal__brand-mark img {
-  width: min(5.8rem, 34vw);
-  max-height: 3.1rem;
+  width: 2.7rem;
+  max-height: 2.7rem;
   object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .login-modal__header h2 {

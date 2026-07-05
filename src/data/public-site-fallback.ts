@@ -90,6 +90,7 @@ export type PublicWatchMedia = {
   publishedAt?: string | null;
   enteredAt?: string;
   sortDate?: string;
+  createdAt?: string;
   visible?: boolean;
   featured?: boolean;
   manualHeroEligible?: boolean;

@@ -41,7 +41,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | Route | Purpose | Indexed |
 | --- | --- | --- |
 | `/home` | Personal landing page for channels and supporter paths | No |
-| `/watch` | Featured latest-video page hydrated from a server-side YouTube feed, with a clean provider seam for later migration | No |
+| `/watch` | Featured latest-video page hydrated from a server-side YouTube feed plus sanitized Admin manual watch media, targeting at least 12 fetched YouTube items where the upstream feed supports it | No |
 | `/donate` | Live Stripe and PayPal support page with hosted checkout, PayPal approval redirect, and graceful fallback handling | No |
 | `/shop` | Printful-powered merch storefront with published Admin display overrides where available | Yes |
 | `/cart` | Merch cart, server-side validation, Printful draft creation, Stripe checkout, and safe return status | Yes |
@@ -185,8 +185,10 @@ Cloudflare setup checkpoint after this local scaffold:
 - Manual Rumble media comes from DanielClancy-Admin `collections.watchMedia` in `GET /api/public/site-data`; the public client never calls Admin CMS routes or receives Admin KV/binding names.
 - `/watch` merges visible YouTube feed items and manual Admin watch media by `sortDate`, `publishedAt`, `enteredAt`, or `createdAt` fallback. It does not invent dates.
 - Hero selection uses the most recent visible embeddable item. Rumble videos can be hero items when they have a safe `https://rumble.com/embed/...` iframe URL. Rumble shorts are always gallery-only, portrait `9:16`, non-embeddable, and link to their source URL from the gallery.
+- `functions/api/watch-feed.js` requests a named `WATCH_FEED_TARGET_COUNT` of 12 YouTube uploads. If YouTube returns fewer, `/watch` shows the real count through subtle feed diagnostics and does not duplicate or invent items.
 - YouTube Shorts stay on the existing YouTube embed path and are rendered as portrait gallery cards when detected from short metadata while remaining hero-eligible where the existing YouTube iframe behavior supports it.
 - Fallback behavior: if env/runtime or the upstream API is unavailable, `/watch` keeps its static share metadata, shows a polished fallback hero/state, still renders any valid Admin manual media available through public site-data, and avoids exposing any secret in the client bundle.
+- To verify live sync, save a Rumble video in Admin Media, confirm the Admin public export revision/updated timestamp changes, refresh `/watch`, and check the diagnostic line for `manual`, `merged`, and `hero` values. The newest embeddable item should be the hero; a newer Rumble short should stay gallery-only.
 
 ## Printful merch storefront
 
@@ -291,7 +293,7 @@ The public client uses `cache: "no-store"` for runtime fetches and preserves int
 
 The normalized model preserves legacy project fields while accepting admin public fields such as `thumbnailPath`, `heroImage`, ordered `galleryPaths`, `documentPath`, `companyId`/`companyName`, `clientName`/`clientLabel`, `platformIds`, and `platformLabels`. Portfolio cards use `thumbnailPath` first, project detail uses `heroImage` or the first ordered gallery image, gallery ordering follows configured `galleryPaths`, company/studio displays as a text chip, and platform/software icons resolve to full-color SVG logo assets where available.
 
-The normalized model also accepts `collections.watchMedia` for `/watch`. That collection is public-safe only: manual Rumble videos/shorts include title, description/excerpt, thumbnail, source/embed URLs, sort date, visibility, hero/gallery flags, aspect, tags, and platform ids where available. Admin-only override/audit fields are stripped before the public site receives the snapshot. Media CMS saves in Admin auto-publish the public site-data snapshot when live Admin KV is available, so a public refresh can see manual media changes without a hidden manual publish step.
+The normalized model also accepts `collections.watchMedia` for `/watch`. That collection is public-safe only: manual Rumble videos/shorts include title, description/excerpt, thumbnail, source/embed URLs, `sortDate`, `publishedAt`, `enteredAt`, `createdAt`, visibility, hero/gallery flags, aspect, tags, and platform ids where available. Admin-only override/audit fields are stripped before the public site receives the snapshot. Media CMS saves in Admin auto-publish the public site-data snapshot when live Admin KV is available, so a public refresh can see manual media changes without a hidden manual publish step.
 
 Project detail routes resolve against the fallback archive immediately by normalized slug, ID, legacy code, title-derived key, and existing URL/path tail aliases. When Admin published data arrives, it merges into the fallback archive without dropping fallback-only projects; unknown project routes show a loading-safe state while live hydration is pending and only show Not Found after the live fetch has resolved or failed. Asset paths used by cards, heroes, galleries, and document links are kept root-relative for `/media/portfolio/...` and `/docs/...`, while absolute CDN/R2 URLs remain valid on nested direct routes.
 

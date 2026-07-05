@@ -10,6 +10,7 @@ export type WatchFeedVideo = {
   publishedAt: string | null;
   enteredAt?: string;
   sortDate?: string;
+  createdAt?: string;
   thumbnailUrl: string;
   videoUrl: string;
   embedUrl: string;
@@ -42,6 +43,10 @@ export type WatchFeedResponse = {
   featured: WatchFeedVideo | null;
   recentUploads: WatchFeedVideo[];
   items: WatchFeedVideo[];
+  metadata?: {
+    youtubeCount?: number;
+    targetCount?: number;
+  };
 };
 
 export function formatWatchDate(value: string | null) {
