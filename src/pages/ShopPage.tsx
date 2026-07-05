@@ -97,8 +97,8 @@ export function ShopPage() {
         ) : null}
         <div className="container shop-hero__grid">
           <div className="shop-hero__copy">
-            <p className="shop-hero__eyebrow">DanielClancy.net Shop</p>
-            <h1>DanielClancy.net Shop</h1>
+            <p className="shop-hero__eyebrow">danielclancy.net/shop</p>
+            <h1>Shop DC Merchandise</h1>
             <p>
               Premium merch drops with server-validated AUD pricing, Printful product data, and a clean checkout handoff.
             </p>
