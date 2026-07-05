@@ -7,6 +7,7 @@ import {
   type PublicPosition,
   type PublicProject,
   type PublicSiteDataModel,
+  type PublicWatchMedia,
 } from "../data/public-site-fallback";
 
 type PublicSiteDataContextValue = {
@@ -26,6 +27,7 @@ type PublicSiteDataContextValue = {
   companies: PublicCompany[];
   platforms: PublicPlatform[];
   positions: PublicPosition[];
+  watchMedia: PublicWatchMedia[];
 };
 
 const PublicSiteDataContext = createContext<PublicSiteDataContextValue>({
@@ -44,6 +46,7 @@ const PublicSiteDataContext = createContext<PublicSiteDataContextValue>({
   companies: publicSiteFallback.collections.companies,
   platforms: publicSiteFallback.collections.platforms,
   positions: publicSiteFallback.collections.positions,
+  watchMedia: publicSiteFallback.collections.watchMedia,
 });
 
 const ADMIN_PUBLIC_SITE_DATA_URL = import.meta.env.VITE_ADMIN_PUBLIC_SITE_DATA_URL || "";
@@ -133,6 +136,7 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
       companies: data.collections.companies,
       platforms: data.collections.platforms,
       positions: data.collections.positions,
+      watchMedia: data.collections.watchMedia,
     };
   }, [data, loading]);
 
@@ -157,6 +161,7 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
   const fallbackCompanies = fallback.collections.companies;
   const fallbackPlatforms = fallback.collections.platforms;
   const fallbackPositions = fallback.collections.positions;
+  const fallbackWatchMedia = fallback.collections.watchMedia || [];
   const companies = mergeById(
     fallbackCompanies,
     normalizeRows(rawCollections.companies, normalizeCompany),
@@ -171,6 +176,7 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
   const positions = normalizeRows(rawCollections.positions, (position) =>
     normalizePosition(position, fallbackPositions, companies),
   );
+  const watchMedia = normalizeRows(rawCollections.watchMedia, normalizeWatchMedia);
 
   return {
     schemaVersion: "danielclancy-public-site-data.v1",
@@ -184,9 +190,51 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
       companies: companies.length ? companies : fallbackCompanies,
       platforms: platforms.length ? platforms : fallbackPlatforms,
       positions: positions.length ? mergeById(fallbackPositions, positions) : fallbackPositions,
+      watchMedia: watchMedia.length ? watchMedia : fallbackWatchMedia,
     },
     assets: normalizeAssets(payload.assets, fallback.assets),
     warnings: Array.isArray(payload.warnings) ? payload.warnings.map(asString).filter(Boolean) : [],
+  };
+}
+
+function normalizeWatchMedia(raw: unknown): PublicWatchMedia | null {
+  if (!isRecord(raw)) return null;
+  const id = asString(raw.id || raw.platformVideoId || raw.title);
+  const title = asString(raw.title);
+  const sourcePlatform = asString(raw.sourcePlatform || raw.platform || raw.provider);
+  const sourceUrl = asString(raw.sourceUrl || raw.videoUrl || raw.externalUrl);
+  const externalUrl = asString(raw.externalUrl || raw.canonicalUrl || sourceUrl);
+  const embedUrl = asString(raw.embedUrl);
+  if (!id || !title || !sourcePlatform || (!sourceUrl && !externalUrl && !embedUrl)) return null;
+  const entryType = asString(raw.entryType || raw.type) || "video";
+  const visible = raw.visible !== false;
+  const galleryOnly = Boolean(raw.galleryOnly || (sourcePlatform === "rumble" && entryType === "short"));
+  return {
+    id,
+    sourcePlatform,
+    entryType,
+    source: asString(raw.source) || "manual",
+    title,
+    description: asString(raw.description),
+    excerpt: asString(raw.excerpt || raw.description),
+    thumbnailUrl: safeHttpsUrl(raw.thumbnailUrl || raw.thumbnailPath),
+    sourceUrl: safeHttpsUrl(sourceUrl),
+    embedUrl: safeEmbedUrl(embedUrl),
+    externalUrl: safeHttpsUrl(externalUrl),
+    canonicalUrl: safeHttpsUrl(raw.canonicalUrl || externalUrl || sourceUrl),
+    platformVideoId: asString(raw.platformVideoId),
+    platformChannelId: asString(raw.platformChannelId),
+    publishedAt: asString(raw.publishedAt) || null,
+    enteredAt: asString(raw.enteredAt),
+    sortDate: asString(raw.sortDate || raw.publishedAt || raw.enteredAt || raw.updatedAt),
+    visible,
+    featured: Boolean(raw.featured),
+    manualHeroEligible: Boolean(raw.manualHeroEligible),
+    heroEmbeddable: Boolean(raw.heroEmbeddable && !galleryOnly),
+    galleryOnly,
+    aspect: asString(raw.aspect) || (entryType === "short" ? "portrait" : "landscape"),
+    tags: arrayOfStrings(raw.tags),
+    updatedAt: asString(raw.updatedAt),
   };
 }
 
@@ -503,6 +551,30 @@ function firstPath(...values: Array<string | undefined>) {
 
 function isCleanPublicPath(value?: string) {
   return Boolean(normalizePublicAssetPath(value));
+}
+
+function safeHttpsUrl(value: unknown) {
+  const text = asString(value);
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function safeEmbedUrl(value: unknown) {
+  const text = safeHttpsUrl(value);
+  if (!text) return "";
+  try {
+    const url = new URL(text);
+    if (url.hostname === "rumble.com" && url.pathname.startsWith("/embed/")) return url.toString();
+    if (url.hostname.endsWith("youtube.com") && url.pathname.startsWith("/embed/")) return url.toString();
+    return "";
+  } catch {
+    return "";
+  }
 }
 
 function fileNameFromPath(value: string) {

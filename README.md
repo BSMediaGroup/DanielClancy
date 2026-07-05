@@ -177,12 +177,16 @@ Cloudflare setup checkpoint after this local scaffold:
 
 - UI route: `/watch`
 - Server endpoint: `functions/api/watch-feed.js`
-- Provider phase: YouTube first, with a normalized response shape ready for a later Rumble-backed swap
+- Provider phase: YouTube auto-fetch plus sanitized Admin manual watch media from the public site-data export
 - Server-only env usage:
   - `YOUTUBE_API_KEY_DANIEL`
   - `YOUTUBE_CHANNEL_ID_DANIEL`
 - Channel identifier used now: the stable channel ID from `YOUTUBE_CHANNEL_ID_DANIEL`
-- Fallback behavior: if env/runtime or the upstream API is unavailable, `/watch` keeps its static share metadata, shows a polished fallback hero/state, and avoids exposing any secret in the client bundle
+- Manual Rumble media comes from DanielClancy-Admin `collections.watchMedia` in `GET /api/public/site-data`; the public client never calls Admin CMS routes or receives Admin KV/binding names.
+- `/watch` merges visible YouTube feed items and manual Admin watch media by `sortDate`, `publishedAt`, `enteredAt`, or `createdAt` fallback. It does not invent dates.
+- Hero selection uses the most recent visible embeddable item. Rumble videos can be hero items when they have a safe `https://rumble.com/embed/...` iframe URL. Rumble shorts are always gallery-only, portrait `9:16`, non-embeddable, and link to their source URL from the gallery.
+- YouTube Shorts stay on the existing YouTube embed path and are rendered as portrait gallery cards when detected from short metadata while remaining hero-eligible where the existing YouTube iframe behavior supports it.
+- Fallback behavior: if env/runtime or the upstream API is unavailable, `/watch` keeps its static share metadata, shows a polished fallback hero/state, still renders any valid Admin manual media available through public site-data, and avoids exposing any secret in the client bundle.
 
 ## Printful merch storefront
 
@@ -286,6 +290,8 @@ The public site fetches only the sanitized public endpoint. It does not call `/a
 The public client uses `cache: "no-store"` for runtime fetches and preserves internal source metadata: `source`, `revision`, `publishedAt`, `generatedAt`, `usingFallback`, `loading`, and a safe error summary. Development builds log one compact diagnostic when the live endpoint is missing, loaded, or unavailable; production builds do not add noisy console output.
 
 The normalized model preserves legacy project fields while accepting admin public fields such as `thumbnailPath`, `heroImage`, ordered `galleryPaths`, `documentPath`, `companyId`/`companyName`, `clientName`/`clientLabel`, `platformIds`, and `platformLabels`. Portfolio cards use `thumbnailPath` first, project detail uses `heroImage` or the first ordered gallery image, gallery ordering follows configured `galleryPaths`, company/studio displays as a text chip, and platform/software icons resolve to full-color SVG logo assets where available.
+
+The normalized model also accepts `collections.watchMedia` for `/watch`. That collection is public-safe only: manual Rumble videos/shorts include title, description/excerpt, thumbnail, source/embed URLs, sort date, visibility, hero/gallery flags, aspect, tags, and platform ids where available. Admin-only override/audit fields are stripped before the public site receives the snapshot. Media CMS saves in Admin auto-publish the public site-data snapshot when live Admin KV is available, so a public refresh can see manual media changes without a hidden manual publish step.
 
 Project detail routes resolve against the fallback archive immediately by normalized slug, ID, legacy code, title-derived key, and existing URL/path tail aliases. When Admin published data arrives, it merges into the fallback archive without dropping fallback-only projects; unknown project routes show a loading-safe state while live hydration is pending and only show Not Found after the live fetch has resolved or failed. Asset paths used by cards, heroes, galleries, and document links are kept root-relative for `/media/portfolio/...` and `/docs/...`, while absolute CDN/R2 URLs remain valid on nested direct routes.
 
@@ -456,6 +462,7 @@ DanielClancy/
 │  ├─ merch-product-banners.test.mjs
 │  ├─ page-visit-forwarder.test.mjs
 │  ├─ public-site-data-client.test.mjs
+│  ├─ watch-media-merge.test.mjs
 │  └─ version-consistency.test.mjs
 ├─ tools/
 │  └─ rebuild-public-fallback.mjs

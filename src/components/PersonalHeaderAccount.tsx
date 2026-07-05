@@ -452,7 +452,7 @@ export function CustomerLoginModal({
 
   if (!open) return null;
 
-  return (
+  const modal = (
     <div className="login-modal" role="dialog" aria-modal="true" aria-labelledby="customer-login-modal-title">
       <button className="login-modal__scrim" type="button" aria-label="Close login dialog" onClick={onClose} />
       <CustomerLoginPanel
@@ -462,6 +462,8 @@ export function CustomerLoginModal({
       />
     </div>
   );
+
+  return typeof document === "undefined" ? null : createPortal(modal, document.body);
 }
 
 export function CustomerLoginPanel({

@@ -1,5 +1,41 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Watch Media Merge, Login Modal Viewport, And Dark Scrollbar Milestone
+
+### Technical
+
+- Extended `/watch` to merge server-fetched YouTube feed items with sanitized Admin `collections.watchMedia` rows from public site-data.
+- Added normalized watch media handling for `sourcePlatform`, `entryType`, manual/autofetch source, sort date, hero eligibility, gallery-only state, portrait/landscape aspect, source/embed URLs, tags, and public-safe metadata.
+- Hero selection now uses the most recent visible embeddable item by sort date and excludes gallery-only Rumble shorts.
+- Rumble videos render through safe iframe embed URLs when available; invalid/non-embeddable media falls back to thumbnail/source CTA.
+- Rumble shorts render as portrait `9:16` gallery/source links and never become the hero.
+- YouTube auto-fetch behavior remains server-side through `functions/api/watch-feed.js`; YouTube Shorts are detected where possible for portrait gallery rendering while preserving existing YouTube hero iframe behavior.
+- Moved the shared customer login modal into a `document.body` portal and raised its fixed viewport overlay above cart/header/watch chrome.
+- Added scoped slim dark scrollbars for the cart drawer, watch selector rail, and login modal panel.
+- Added focused source coverage for watch media merge/hero/short behavior.
+
+### Human-readable
+
+- Admin-entered Rumble videos can appear on `/watch` after public site-data refresh and can become the hero when newest and embeddable.
+- Admin-entered Rumble shorts appear as portrait gallery links only.
+- Public Login from `/shop` and `/watch` now opens centered in the viewport instead of being pinned around the header.
+
+### Known limitations
+
+- True live verification of Admin-entered media on production depends on the deployed Admin public site-data URL and configured `DC_ADMIN_KV`.
+- Rumble metadata resolution can fail if Rumble blocks server-side fetches; manual title/description/thumbnail/date fields remain the fallback.
+
+### Files / areas changed
+
+- `README.md`
+- `src/components/PersonalHeaderAccount.tsx`
+- `src/data/public-site-fallback.ts`
+- `src/lib/publicSiteData.tsx`
+- `src/lib/watchFeed.ts`
+- `src/pages/WatchPage.tsx`
+- `src/styles/global.css`
+- `tests/watch-media-merge.test.mjs`
+
 ## Cart Drawer, Customer Profile Refresh, And Merch Banner Diagnostics Repair
 
 ### Technical

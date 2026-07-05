@@ -5,7 +5,9 @@ import { SocialLinkRow } from "../components/SocialLinkRow";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { shellAssets, socialIcons } from "../content/brandAssets";
+import { usePublicSiteData } from "../lib/publicSiteData";
 import { formatWatchDate, type WatchFeedResponse, type WatchFeedVideo } from "../lib/watchFeed";
+import type { PublicWatchMedia } from "../data/public-site-fallback";
 
 type FeedStatus = "loading" | "ready" | "empty" | "error";
 
@@ -62,13 +64,14 @@ function normalizePlatform(video: WatchFeedVideo | null) {
 
 function getPlatformLabel(video: WatchFeedVideo | null) {
   const platform = normalizePlatform(video);
+  const type = String(video?.entryType || "").toLowerCase();
 
   if (platform === "youtube") {
-    return "YouTube";
+    return type === "short" || isLikelyYouTubeShort(video) ? "YouTube Short" : "YouTube";
   }
 
   if (platform === "rumble") {
-    return "Rumble";
+    return type === "short" ? "Rumble Short" : "Rumble";
   }
 
   return "Source platform";
@@ -126,7 +129,15 @@ function getYouTubeVideoId(video: WatchFeedVideo | null) {
 }
 
 function buildEmbedUrl(video: WatchFeedVideo | null, options: EmbedOptions) {
-  if (!video || normalizePlatform(video) !== "youtube") {
+  if (!video) {
+    return "";
+  }
+
+  if (normalizePlatform(video) === "rumble") {
+    return video.heroEmbeddable === false || video.galleryOnly ? "" : safeRumbleEmbedUrl(video.embedUrl);
+  }
+
+  if (normalizePlatform(video) !== "youtube") {
     return "";
   }
 
@@ -151,20 +162,113 @@ function buildEmbedUrl(video: WatchFeedVideo | null, options: EmbedOptions) {
   }
 }
 
-function resolveVideos(feed: WatchFeedResponse | null) {
+function resolveVideos(feed: WatchFeedResponse | null, manualWatchMedia: PublicWatchMedia[]) {
   const sourceItems = feed?.items?.length
     ? feed.items
     : [feed?.featured, ...(feed?.recentUploads || [])].filter(Boolean);
   const seen = new Set<string>();
+  const normalized = [
+    ...sourceItems.map(normalizeYouTubeFeedItem),
+    ...manualWatchMedia.map(normalizeManualWatchMediaItem),
+  ].filter((item): item is WatchFeedVideo => Boolean(item?.id && item.title && (item.visible ?? true)));
 
-  return sourceItems.filter((item): item is WatchFeedVideo => {
+  return normalized
+    .filter((item): item is WatchFeedVideo => {
     if (!item?.id || seen.has(item.id)) {
       return false;
     }
 
     seen.add(item.id);
     return true;
-  });
+    })
+    .sort((left, right) => sortTime(right) - sortTime(left));
+}
+
+function normalizeYouTubeFeedItem(item: WatchFeedVideo | null | undefined): WatchFeedVideo | null {
+  if (!item?.id) return null;
+  const short = isLikelyYouTubeShort(item);
+  return {
+    ...item,
+    provider: "youtube",
+    sourcePlatform: "youtube",
+    source: "autofetch",
+    entryType: short ? "short" : "video",
+    sortDate: item.publishedAt || null || undefined,
+    visible: true,
+    heroEmbeddable: true,
+    galleryOnly: false,
+    aspect: short ? "portrait" : "landscape",
+  };
+}
+
+function normalizeManualWatchMediaItem(item: PublicWatchMedia): WatchFeedVideo | null {
+  if (!item?.id || item.visible === false) return null;
+  const sourcePlatform = String(item.sourcePlatform || "manual").toLowerCase();
+  const entryType = String(item.entryType || "video").toLowerCase();
+  const sourceUrl = item.sourceUrl || item.externalUrl || item.canonicalUrl || "";
+  const thumbnailUrl = item.thumbnailUrl || "";
+  const galleryOnly = Boolean(item.galleryOnly || (sourcePlatform === "rumble" && entryType === "short"));
+  return {
+    id: item.id,
+    provider: sourcePlatform as WatchFeedVideo["provider"],
+    sourcePlatform,
+    entryType,
+    source: item.source || "manual",
+    title: item.title,
+    description: item.description || "",
+    excerpt: item.excerpt || item.description || "",
+    publishedAt: item.publishedAt || null,
+    enteredAt: item.enteredAt,
+    sortDate: item.sortDate || item.publishedAt || item.enteredAt || item.updatedAt,
+    thumbnailUrl,
+    videoUrl: sourceUrl,
+    embedUrl: item.embedUrl || "",
+    externalUrl: item.externalUrl || sourceUrl,
+    canonicalUrl: item.canonicalUrl || sourceUrl,
+    platformVideoId: item.platformVideoId,
+    platformChannelId: item.platformChannelId,
+    channelTitle: sourcePlatform === "rumble" ? "Daniel Clancy on Rumble" : "Daniel Clancy",
+    visible: true,
+    featured: item.featured,
+    manualHeroEligible: item.manualHeroEligible,
+    heroEmbeddable: Boolean(item.heroEmbeddable && !galleryOnly && item.embedUrl),
+    galleryOnly,
+    aspect: item.aspect || (entryType === "short" ? "portrait" : "landscape"),
+    tags: item.tags || [],
+  };
+}
+
+function sortTime(item: WatchFeedVideo | null) {
+  const parsed = new Date(item?.sortDate || item?.publishedAt || item?.enteredAt || 0).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function isHeroCandidate(item: WatchFeedVideo) {
+  if (item.galleryOnly) return false;
+  if (item.heroEmbeddable === false) return false;
+  if (normalizePlatform(item) === "rumble") return Boolean(safeRumbleEmbedUrl(item.embedUrl));
+  return Boolean(buildEmbedUrl(item, { autoplay: false, muted: true }));
+}
+
+function isPortraitItem(item: WatchFeedVideo) {
+  return item.aspect === "portrait" || item.entryType === "short" || isLikelyYouTubeShort(item);
+}
+
+function isLikelyYouTubeShort(video: WatchFeedVideo | null) {
+  if (!video || normalizePlatform(video) !== "youtube") return false;
+  const text = `${video.title || ""} ${video.description || ""} ${video.videoUrl || ""}`.toLowerCase();
+  return text.includes("#shorts") || text.includes("/shorts/");
+}
+
+function safeRumbleEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "rumble.com" && url.pathname.startsWith("/embed/")
+      ? url.toString()
+      : "";
+  } catch {
+    return "";
+  }
 }
 
 function getBackdropStyle(video: WatchFeedVideo | null): CSSProperties | undefined {
@@ -222,6 +326,7 @@ function ChevronIcon({ direction }: { direction: "previous" | "next" }) {
 }
 
 export function WatchPage() {
+  const { watchMedia } = usePublicSiteData();
   const [feed, setFeed] = useState<WatchFeedResponse | null>(null);
   const [status, setStatus] = useState<FeedStatus>("loading");
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
@@ -265,14 +370,15 @@ export function WatchPage() {
     return () => controller.abort();
   }, []);
 
-  const videos = useMemo(() => resolveVideos(feed), [feed]);
-  const activeVideo = videos.find((item) => item.id === activeVideoId) || videos[0] || null;
-  const sourceUrl = activeVideo?.videoUrl || "";
+  const videos = useMemo(() => resolveVideos(feed, watchMedia), [feed, watchMedia]);
+  const heroCandidates = useMemo(() => videos.filter(isHeroCandidate), [videos]);
+  const activeVideo = heroCandidates.find((item) => item.id === activeVideoId) || heroCandidates[0] || null;
+  const sourceUrl = activeVideo?.videoUrl || activeVideo?.externalUrl || activeVideo?.canonicalUrl || "";
   const heroEmbedUrl = buildEmbedUrl(activeVideo, { autoplay: autoplayEnabled, muted });
   const canEmbedHero = Boolean(heroEmbedUrl);
   const catalogueItems = videos;
-  const activeIndex = activeVideo ? videos.findIndex((item) => item.id === activeVideo.id) : -1;
-  const hasSelectableVideos = videos.length > 1;
+  const activeIndex = activeVideo ? heroCandidates.findIndex((item) => item.id === activeVideo.id) : -1;
+  const hasSelectableVideos = heroCandidates.length > 1;
   const hasChannelLink = Boolean(feed?.channel.url);
   const heroTitle = stripDecorativeLiveMarker(
     activeVideo?.title ||
@@ -292,23 +398,23 @@ export function WatchPage() {
       : "The gallery holds its place and returns to live uploads as soon as the channel feed becomes available again.";
 
   function selectAdjacentVideo(direction: -1 | 1) {
-    if (!videos.length) {
+    if (!heroCandidates.length) {
       return;
     }
 
     const currentIndex = activeIndex >= 0 ? activeIndex : 0;
-    const nextIndex = (currentIndex + direction + videos.length) % videos.length;
-    setActiveVideoId(videos[nextIndex].id);
+    const nextIndex = (currentIndex + direction + heroCandidates.length) % heroCandidates.length;
+    setActiveVideoId(heroCandidates[nextIndex].id);
   }
 
   useEffect(() => {
-    if (!videos.length) {
+    if (!heroCandidates.length) {
       setActiveVideoId(null);
       return;
     }
 
-    setActiveVideoId((current) => (current && videos.some((item) => item.id === current) ? current : videos[0].id));
-  }, [videos]);
+    setActiveVideoId((current) => (current && heroCandidates.some((item) => item.id === current) ? current : heroCandidates[0].id));
+  }, [heroCandidates]);
 
   return (
     <>
@@ -487,12 +593,31 @@ export function WatchPage() {
               <div className="watch-selector__rail" aria-label="Video selector">
                 {catalogueItems.map((item) => {
                   const isActive = activeVideo?.id === item.id;
+                  const portrait = isPortraitItem(item);
+                  const itemSourceUrl = item.videoUrl || item.externalUrl || item.canonicalUrl || "";
+
+                  if (item.galleryOnly || !isHeroCandidate(item)) {
+                    return (
+                      <a
+                        key={item.id}
+                        className={`watch-selector__item watch-selector__item--link${portrait ? " watch-selector__item--portrait" : ""}`}
+                        href={itemSourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open ${item.title} on the source platform`}
+                      >
+                        <span className="watch-selector__thumb">
+                          {item.thumbnailUrl ? <img src={item.thumbnailUrl} alt="" loading="lazy" /> : null}
+                        </span>
+                      </a>
+                    );
+                  }
 
                   return (
                     <button
                       key={item.id}
                       type="button"
-                      className={`watch-selector__item${isActive ? " watch-selector__item--active" : ""}`}
+                      className={`watch-selector__item${isActive ? " watch-selector__item--active" : ""}${portrait ? " watch-selector__item--portrait" : ""}`}
                       aria-current={isActive ? "true" : undefined}
                       aria-label={`Show ${item.title} in the hero player`}
                       onClick={() => setActiveVideoId(item.id)}
@@ -539,10 +664,13 @@ export function WatchPage() {
           </div>
         ) : catalogueItems.length ? (
           <div className="project-grid">
-            {catalogueItems.map((item) => (
-              <article key={item.id} className="surface surface--compact watch-card">
+            {catalogueItems.map((item) => {
+              const sourceHref = item.videoUrl || item.externalUrl || item.canonicalUrl || "";
+              const portrait = isPortraitItem(item);
+              return (
+              <article key={item.id} className={`surface surface--compact watch-card${portrait ? " watch-card--portrait" : ""}`}>
                 <a
-                  href={item.videoUrl}
+                  href={sourceHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="watch-card__thumb-link"
@@ -554,14 +682,15 @@ export function WatchPage() {
                     <span className="watch-card__thumb watch-card__thumb--placeholder" aria-hidden="true" />
                   )}
                 </a>
-                <p className="kicker">{formatWatchDate(item.publishedAt)}</p>
+                <p className="kicker">{getPlatformLabel(item)} / {formatWatchDate(item.publishedAt || item.sortDate || null)}</p>
                 <h3>{item.title}</h3>
                 <p>{item.excerpt || "Open the upload on the source platform for the full release notes."}</p>
-                <a className="text-link" href={item.videoUrl} target="_blank" rel="noopener noreferrer">
+                <a className="text-link" href={sourceHref} target="_blank" rel="noopener noreferrer">
                   {getSourceCtaLabel(item)}
                 </a>
               </article>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <article className="surface watch-empty-state">

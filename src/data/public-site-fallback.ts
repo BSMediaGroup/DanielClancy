@@ -72,6 +72,34 @@ export type PublicProject = PortfolioItem & {
   source?: string;
 };
 
+export type PublicWatchMedia = {
+  id: string;
+  sourcePlatform: "youtube" | "rumble" | "manual" | string;
+  entryType: "video" | "short" | "livestream" | "other" | string;
+  source: "autofetch" | "manual" | string;
+  title: string;
+  description?: string;
+  excerpt?: string;
+  thumbnailUrl?: string;
+  sourceUrl?: string;
+  embedUrl?: string;
+  externalUrl?: string;
+  canonicalUrl?: string;
+  platformVideoId?: string;
+  platformChannelId?: string;
+  publishedAt?: string | null;
+  enteredAt?: string;
+  sortDate?: string;
+  visible?: boolean;
+  featured?: boolean;
+  manualHeroEligible?: boolean;
+  heroEmbeddable?: boolean;
+  galleryOnly?: boolean;
+  aspect?: "landscape" | "portrait" | string;
+  tags?: string[];
+  updatedAt?: string;
+};
+
 export type PublicSiteDataModel = {
   schemaVersion: "danielclancy-public-site-data.v1";
   generatedAt: string;
@@ -85,6 +113,7 @@ export type PublicSiteDataModel = {
     companies: PublicCompany[];
     platforms: PublicPlatform[];
     positions: PublicPosition[];
+    watchMedia: PublicWatchMedia[];
   };
   assets: {
     portfolioThumbs: Array<{ path: string; label?: string }>;
@@ -127,6 +156,7 @@ const builtInFallback: PublicSiteDataModel = {
     companies: experienceItems.map(toFallbackCompany),
     platforms: platformList.map(toFallbackPlatform),
     positions: experienceItems.map(toFallbackPosition),
+    watchMedia: [],
   },
   assets: {
     portfolioThumbs: Object.values(thumbnailBySlug).map((path) => ({ path })),
@@ -213,6 +243,7 @@ function normalizeGeneratedFallback(value: PublicSiteDataModel): PublicSiteDataM
       companies: value.collections.companies.length ? value.collections.companies : builtInFallback.collections.companies,
       platforms: value.collections.platforms.length ? value.collections.platforms : builtInFallback.collections.platforms,
       positions: value.collections.positions.length ? value.collections.positions : builtInFallback.collections.positions,
+      watchMedia: Array.isArray(value.collections.watchMedia) ? value.collections.watchMedia : [],
     },
     assets: {
       portfolioThumbs: value.assets.portfolioThumbs.length ? value.assets.portfolioThumbs : builtInFallback.assets.portfolioThumbs,

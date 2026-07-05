@@ -3021,6 +3021,8 @@ select:focus {
   padding: 0.25rem 0.15rem 0.5rem;
   scroll-padding-inline: 0.3rem;
   scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 116, 150, 0.72) rgba(8, 9, 13, 0.88);
 }
 
 .watch-selector__rail--loading {
@@ -3028,17 +3030,21 @@ select:focus {
 }
 
 .watch-selector__rail::-webkit-scrollbar {
-  height: 0.38rem;
+  height: 0.34rem;
 }
 
 .watch-selector__rail::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(8, 9, 13, 0.88);
   border-radius: 999px;
 }
 
 .watch-selector__rail::-webkit-scrollbar-thumb {
-  background: rgba(247, 241, 228, 0.32);
+  background: rgba(128, 116, 150, 0.72);
   border-radius: 999px;
+}
+
+.watch-selector__rail::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 147, 204, 0.86);
 }
 
 .watch-selector__item {
@@ -3058,6 +3064,18 @@ select:focus {
     box-shadow 180ms ease,
     transform 180ms ease,
     opacity 180ms ease;
+}
+
+.watch-selector__item--link {
+  display: block;
+}
+
+.watch-selector__item--portrait {
+  flex-basis: clamp(6.5rem, 9vw, 9rem);
+}
+
+.watch-selector__item--portrait .watch-selector__thumb {
+  aspect-ratio: 9 / 16;
 }
 
 .watch-selector__item:hover,
@@ -3336,6 +3354,16 @@ select:focus {
   border-radius: calc(var(--radius-sm) - 2px);
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.watch-card--portrait {
+  max-width: 22rem;
+}
+
+.watch-card--portrait .watch-card__thumb {
+  width: min(100%, 14rem);
+  aspect-ratio: 9 / 16;
+  margin-inline: auto;
 }
 
 .watch-card__thumb--placeholder {
@@ -3937,6 +3965,29 @@ select:focus {
   align-content: start;
   gap: 0.85rem;
   padding: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 116, 150, 0.74) rgba(8, 9, 13, 0.92);
+}
+
+.cart-drawer__body::-webkit-scrollbar,
+.login-modal__panel::-webkit-scrollbar {
+  width: 0.42rem;
+}
+
+.cart-drawer__body::-webkit-scrollbar-track,
+.login-modal__panel::-webkit-scrollbar-track {
+  background: rgba(8, 9, 13, 0.92);
+}
+
+.cart-drawer__body::-webkit-scrollbar-thumb,
+.login-modal__panel::-webkit-scrollbar-thumb {
+  background: rgba(128, 116, 150, 0.74);
+  border-radius: 999px;
+}
+
+.cart-drawer__body::-webkit-scrollbar-thumb:hover,
+.login-modal__panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 147, 204, 0.88);
 }
 
 .cart-drawer__items {
@@ -4395,10 +4446,13 @@ select:focus {
 .login-modal {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 11000;
   display: grid;
   place-items: center;
   padding: 1rem;
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .login-modal__scrim {
@@ -4414,6 +4468,7 @@ select:focus {
   z-index: 1;
   width: min(100%, 33rem);
   max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
   overflow: auto;
   display: grid;
   gap: 1.05rem;
@@ -4424,6 +4479,8 @@ select:focus {
     radial-gradient(circle at 50% -12%, rgba(219, 201, 166, 0.16), transparent 0 34%),
     linear-gradient(180deg, rgba(20, 24, 28, 0.99), rgba(8, 10, 13, 0.99));
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 116, 150, 0.74) rgba(8, 9, 13, 0.92);
 }
 
 .login-modal__close {

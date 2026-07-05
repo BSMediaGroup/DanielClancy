@@ -1,14 +1,30 @@
 export type WatchFeedVideo = {
   id: string;
-  provider: "youtube" | (string & {});
+  provider: "youtube" | "rumble" | "manual" | (string & {});
+  sourcePlatform?: "youtube" | "rumble" | "manual" | (string & {});
+  entryType?: "video" | "short" | "livestream" | "other" | (string & {});
+  source?: "autofetch" | "manual" | (string & {});
   title: string;
   description: string;
   excerpt: string;
   publishedAt: string | null;
+  enteredAt?: string;
+  sortDate?: string;
   thumbnailUrl: string;
   videoUrl: string;
   embedUrl: string;
+  externalUrl?: string;
+  canonicalUrl?: string;
+  platformVideoId?: string;
+  platformChannelId?: string;
   channelTitle: string;
+  visible?: boolean;
+  featured?: boolean;
+  manualHeroEligible?: boolean;
+  heroEmbeddable?: boolean;
+  galleryOnly?: boolean;
+  aspect?: "landscape" | "portrait" | (string & {});
+  tags?: string[];
 };
 
 export type WatchFeedState = "ready" | "partial" | "empty" | "unavailable";
