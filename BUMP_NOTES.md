@@ -1,5 +1,24 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Dedicated Public Live Page Milestone
+
+### Technical notes
+- Added the public `/live` route inside the Personal Studio shell and navigation without changing the existing `/watch` route or watch catalogue behavior.
+- Added `src/pages/LivePage.tsx` as a dedicated livestream viewing surface that consumes existing public site-data `watchMedia` rows and renders live, upcoming, offline, and replay/ended viewer states when those optional fields are present.
+- Extracted the livestream-ready source resolver from `/watch` into `src/lib/watchPlayer.ts` so `/watch` and `/live` share future-safe player source handling for Cloudflare Stream UID/embed URLs, external HLS URLs, custom embeds, YouTube/Rumble-style embeds, and clean offline/upcoming/no-source states.
+- Extended public watch-media typing/normalization with optional `scheduledStartAt`, `startedAt`, and `endedAt` fields while keeping existing public data compatible and fallback data truthful.
+- Added theatre/fullscreen/detail/autoplay/mute controls to the `/live` player surface and kept likes, dislikes, and live discussion as disabled frontend-ready sections until persistent interaction storage exists.
+- Admin livestream settings, Cloudflare Stream API integration, persistent comments, persistent likes/dislikes, D1 storage, Turnstile, and broadcast ingest/setup handling are intentionally deferred to later tasks.
+
+### Human-readable notes
+- Visitors now have a dedicated `/live` page for broadcasts, scheduled streams, and replays.
+- When no public livestream is available, the page shows a polished offline state instead of pretending a stream is active.
+- The page includes a large dark player, theatre/fullscreen viewing, stream details, support/social links, and clearly non-persistent viewer interaction areas.
+
+### Known limitations
+- This milestone is frontend/public-site only and does not create live chat, saved reactions, stream scheduling, Cloudflare Stream management, or Admin livestream controls.
+- Local static/Vite validation can prove route rendering and browser behavior, but it cannot prove future deployed public site-data or livestream provider configuration.
+
 ## Public Watch Repair And Livestream-Ready Player Foundation Milestone
 
 ### Technical notes

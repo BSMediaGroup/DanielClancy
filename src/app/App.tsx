@@ -18,6 +18,7 @@ import { CartPage, ShopCancelPage, ShopSuccessPage } from "../pages/CartPage";
 import { CvPage } from "../pages/CvPage";
 import { DonatePage } from "../pages/DonatePage";
 import { HomePage } from "../pages/HomePage";
+import { LivePage } from "../pages/LivePage";
 import { PersonalHomePage } from "../pages/PersonalHomePage";
 import { PortfolioDetailPage } from "../pages/PortfolioDetailPage";
 import { PortfolioPage } from "../pages/PortfolioPage";
@@ -45,6 +46,7 @@ export default function App() {
 
         <Route element={<PersonalShell />}>
           <Route path="/home" element={<PersonalHomePage />} />
+          <Route path="/live" element={<LivePage />} />
           <Route path="/watch" element={<WatchPage />} />
           <Route path="/donate" element={<DonatePage />} />
           <Route path="/shop" element={<ShopPage />} />

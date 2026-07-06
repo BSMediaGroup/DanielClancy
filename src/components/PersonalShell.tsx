@@ -6,6 +6,7 @@ import { SiteBrand } from "./SiteBrand";
 
 const navItems = [
   { to: "/home", label: "Home" },
+  { to: "/live", label: "Live" },
   { to: "/watch", label: "Watch" },
   { to: "/donate", label: "Donate" },
   { to: "/shop", label: "Shop" },

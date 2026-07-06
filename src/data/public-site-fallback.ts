@@ -92,6 +92,9 @@ export type PublicWatchMedia = {
   platformVideoId?: string;
   platformChannelId?: string;
   liveStatus?: string;
+  scheduledStartAt?: string;
+  startedAt?: string;
+  endedAt?: string;
   publishedAt?: string | null;
   enteredAt?: string;
   sortDate?: string;

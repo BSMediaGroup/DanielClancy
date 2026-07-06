@@ -208,6 +208,9 @@ function normalizeWatchMedia(raw: unknown): PublicWatchMedia | null {
   const embedUrl = asString(raw.embedUrl);
   const entryType = asString(raw.entryType || raw.type) || "video";
   const liveStatus = asString(raw.liveStatus || raw.streamStatus || raw.availability || raw.status);
+  const scheduledStartAt = asString(raw.scheduledStartAt || raw.scheduledAt || raw.startsAt || raw.startTime);
+  const startedAt = asString(raw.startedAt || raw.startAt || raw.liveStartedAt);
+  const endedAt = asString(raw.endedAt || raw.endAt || raw.liveEndedAt);
   const cloudflareStreamUid = asString(raw.cloudflareStreamUid || raw.streamUid || raw.playerUid);
   const hlsUrl = asString(raw.hlsUrl || raw.streamUrl);
   const customEmbedUrl = asString(raw.customEmbedUrl || raw.playerUrl);
@@ -241,6 +244,9 @@ function normalizeWatchMedia(raw: unknown): PublicWatchMedia | null {
     platformVideoId: asString(raw.platformVideoId),
     platformChannelId: asString(raw.platformChannelId),
     liveStatus,
+    scheduledStartAt,
+    startedAt,
+    endedAt,
     publishedAt: asString(raw.publishedAt) || null,
     enteredAt: asString(raw.enteredAt),
     sortDate: asString(raw.sortDate || raw.publishedAt || raw.enteredAt || raw.createdAt || raw.updatedAt),

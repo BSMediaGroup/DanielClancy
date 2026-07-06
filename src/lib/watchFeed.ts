@@ -23,7 +23,10 @@ export type WatchFeedVideo = {
   platformVideoId?: string;
   platformChannelId?: string;
   channelTitle: string;
-  liveStatus?: "ready" | "live" | "offline" | "upcoming" | "no-live-source" | (string & {});
+  liveStatus?: "ready" | "live" | "offline" | "upcoming" | "no-live-source" | "replay" | "ended" | (string & {});
+  scheduledStartAt?: string;
+  startedAt?: string;
+  endedAt?: string;
   visible?: boolean;
   featured?: boolean;
   manualHeroEligible?: boolean;

@@ -328,6 +328,7 @@ Public CMS edits show on DanielClancy.net after Admin Save/Sync, Admin Publish s
   - `src/lib/merch.ts`
   - `src/lib/merchCart.ts`
   - `src/lib/publicSiteData.tsx`
+  - `src/lib/watchPlayer.ts`
   - `src/lib/watchFeed.ts`
   - `src/lib/portfolio.ts`
 - Pages:
@@ -340,6 +341,7 @@ Public CMS edits show on DanielClancy.net after Admin Save/Sync, Admin Publish s
   - `src/pages/PrivacyPage.tsx`
   - `src/pages/TermsPage.tsx`
   - `src/pages/PersonalHomePage.tsx`
+  - `src/pages/LivePage.tsx`
   - `src/pages/WatchPage.tsx`
   - `src/pages/DonatePage.tsx`
   - `src/pages/CartPage.tsx`
@@ -452,10 +454,12 @@ DanielClancy/
 │  │  ├─ portfolio.ts
 │  │  ├─ publicSiteData.tsx
 │  │  ├─ turnstile.tsx
+│  │  ├─ watchPlayer.ts
 │  │  └─ watchFeed.ts
 │  ├─ pages/
 │  │  ├─ AccountPage.tsx
 │  │  ├─ CartPage.tsx
+│  │  ├─ LivePage.tsx
 │  │  ├─ ProductDetailPage.tsx
 │  │  ├─ ShopPage.tsx
 │  │  ├─ PrivacyPage.tsx
