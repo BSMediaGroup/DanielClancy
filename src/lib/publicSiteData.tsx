@@ -9,6 +9,7 @@ import {
   type PublicSiteDataModel,
   type PublicWatchMedia,
 } from "../data/public-site-fallback";
+import { isScaffoldWatchMediaEntry } from "./watchFeed";
 
 type PublicSiteDataContextValue = {
   data: PublicSiteDataModel;
@@ -72,7 +73,7 @@ export function PublicSiteDataProvider({ children }: { children: ReactNode }) {
 
     const controller = new AbortController();
     setLoading(true);
-    fetch(ADMIN_PUBLIC_SITE_DATA_URL, {
+    fetch(cacheBustedPublicSiteDataUrl(ADMIN_PUBLIC_SITE_DATA_URL), {
       method: "GET",
       headers: { accept: "application/json" },
       cache: "no-store",
@@ -161,7 +162,6 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
   const fallbackCompanies = fallback.collections.companies;
   const fallbackPlatforms = fallback.collections.platforms;
   const fallbackPositions = fallback.collections.positions;
-  const fallbackWatchMedia = fallback.collections.watchMedia || [];
   const companies = mergeById(
     fallbackCompanies,
     normalizeRows(rawCollections.companies, normalizeCompany),
@@ -190,7 +190,7 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
       companies: companies.length ? companies : fallbackCompanies,
       platforms: platforms.length ? platforms : fallbackPlatforms,
       positions: positions.length ? mergeById(fallbackPositions, positions) : fallbackPositions,
-      watchMedia: watchMedia.length ? watchMedia : fallbackWatchMedia,
+      watchMedia,
     },
     assets: normalizeAssets(payload.assets, fallback.assets),
     warnings: Array.isArray(payload.warnings) ? payload.warnings.map(asString).filter(Boolean) : [],
@@ -199,6 +199,7 @@ export function normalizePublicSiteData(payload: unknown, fallback: PublicSiteDa
 
 function normalizeWatchMedia(raw: unknown): PublicWatchMedia | null {
   if (!isRecord(raw)) return null;
+  if (isScaffoldWatchMediaEntry(raw)) return null;
   const id = asString(raw.id || raw.platformVideoId || raw.title);
   const title = asString(raw.title);
   const sourcePlatform = asString(raw.sourcePlatform || raw.platform || raw.provider);
@@ -245,6 +246,16 @@ function normalizeSource(value: unknown): PublicSiteDataModel["source"] {
     return source;
   }
   return "baseline_fallback";
+}
+
+function cacheBustedPublicSiteDataUrl(value: string) {
+  try {
+    const url = new URL(value, window.location.href);
+    url.searchParams.set("_", String(Date.now()));
+    return url.toString();
+  } catch {
+    return value;
+  }
 }
 
 function safeErrorMessage(error: unknown) {

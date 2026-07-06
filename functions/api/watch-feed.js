@@ -1,5 +1,5 @@
 const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
-const SUCCESS_CACHE_CONTROL = "public, max-age=0, s-maxage=900, stale-while-revalidate=3600";
+const SUCCESS_CACHE_CONTROL = "no-store";
 const ERROR_CACHE_CONTROL = "no-store";
 const WATCH_FEED_TARGET_COUNT = 12;
 

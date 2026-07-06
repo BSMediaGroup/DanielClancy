@@ -3,6 +3,10 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 ## Watch Media Hard Repair Follow-Up
 
 ### Technical notes
+- Added canonical public watch helpers for scaffold filtering, visibility, newest-first sorting, platform normalization, and hero eligibility. Gallery and hero selection now share the same `sortDate`, `publishedAt`, `enteredAt`, `createdAt`, then `updatedAt` precedence.
+- Public site-data watch media normalization now rejects scaffold/demo/sample/placeholder rows, keeps live `watchMedia: []` empty instead of falling back to stale committed watch rows, and cache-busts configured live public site-data reads.
+- `/watch` now promotes the first/newest eligible hero after feed or public site-data refresh, so a newly newest safe Rumble video replaces an older YouTube hero while user thumbnail selection still works between data refreshes.
+- The watch feed function returns `Cache-Control: no-store`; the browser feed request already uses `cache: "no-store"`.
 - Raised the server-side YouTube watch feed request from the old 7-item cap to named `WATCH_FEED_TARGET_COUNT = 12`.
 - Added safe watch feed metadata for YouTube count and target count, and added subtle `/watch` diagnostics for YouTube/manual/merged counts, hero id, and public export revision.
 - Tightened `/watch` merge sorting to use `sortDate`, `publishedAt`, `enteredAt`, then `createdAt`, descending newest-first.
@@ -12,13 +16,16 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Scoped the login modal DC logo fix to `.login-modal__brand-mark`: white-filtered logo, smaller mark image, and rounded-square container instead of a pill.
 
 ### Human-readable notes
+- Rejected watch-media scaffold rows cannot render from committed fallback, live public site-data, or merged `/watch` gallery/hero state.
 - `/watch` can now render 12+ real fetched/merged entries when YouTube and Admin manual media provide them; it does not duplicate videos to hit the target.
 - The newest embeddable dated item is the hero, while a newer Rumble short remains in the gallery only.
 - The restored OAuth/manual email-password login modal remains primary; no passwordless-only flow was reintroduced.
+- The login modal DC logo remains white, smaller, and inside the rounded-square `.login-modal__brand-mark` container.
 
 ### Known limitations
 - Local Vite cannot prove live Cloudflare Pages Functions or Admin KV public-export propagation by itself.
 - If YouTube returns fewer than 12 uploads, `/watch` reports the real count rather than filling with fake items.
+- Live public sync still requires `VITE_ADMIN_PUBLIC_SITE_DATA_URL` to point at the deployed Admin public site-data endpoint.
 
 ## Watch Media Merge, Login Modal Viewport, And Dark Scrollbar Milestone
 

@@ -6,7 +6,17 @@ import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { shellAssets, socialIcons } from "../content/brandAssets";
 import { usePublicSiteData } from "../lib/publicSiteData";
-import { formatWatchDate, type WatchFeedResponse, type WatchFeedVideo } from "../lib/watchFeed";
+import {
+  compareWatchMediaNewestFirst,
+  formatWatchDate,
+  isScaffoldWatchMediaEntry,
+  isVisibleWatchMediaEntry,
+  isWatchHeroEligible,
+  normalizeWatchPlatform,
+  safeRumbleEmbedUrl,
+  type WatchFeedResponse,
+  type WatchFeedVideo,
+} from "../lib/watchFeed";
 import type { PublicWatchMedia } from "../data/public-site-fallback";
 
 type FeedStatus = "loading" | "ready" | "empty" | "error";
@@ -48,18 +58,7 @@ type EmbedOptions = {
 };
 
 function normalizePlatform(video: WatchFeedVideo | null) {
-  const provider = String(video?.provider || "").toLowerCase();
-  const source = String(video?.videoUrl || video?.embedUrl || "").toLowerCase();
-
-  if (provider.includes("youtube") || source.includes("youtube.com") || source.includes("youtu.be")) {
-    return "youtube";
-  }
-
-  if (provider.includes("rumble") || source.includes("rumble.com")) {
-    return "rumble";
-  }
-
-  return provider || "source";
+  return normalizeWatchPlatform(video);
 }
 
 function getPlatformLabel(video: WatchFeedVideo | null) {
@@ -170,7 +169,7 @@ function resolveVideos(feed: WatchFeedResponse | null, manualWatchMedia: PublicW
   const normalized = [
     ...sourceItems.map(normalizeYouTubeFeedItem),
     ...manualWatchMedia.map(normalizeManualWatchMediaItem),
-  ].filter((item): item is WatchFeedVideo => Boolean(item?.id && item.title && (item.visible ?? true)));
+  ].filter((item): item is WatchFeedVideo => Boolean(item?.id && item.title && isVisibleWatchMediaEntry(item)));
 
   return normalized
     .filter((item): item is WatchFeedVideo => {
@@ -182,7 +181,7 @@ function resolveVideos(feed: WatchFeedResponse | null, manualWatchMedia: PublicW
     seen.add(key);
     return true;
     })
-    .sort((left, right) => sortTime(right) - sortTime(left));
+    .sort(compareWatchMediaNewestFirst);
 }
 
 function watchMediaDedupeKey(item: WatchFeedVideo) {
@@ -201,7 +200,7 @@ function normalizeYouTubeFeedItem(item: WatchFeedVideo | null | undefined): Watc
     sourcePlatform: "youtube",
     source: "autofetch",
     entryType: short ? "short" : "video",
-    sortDate: item.publishedAt || null || undefined,
+    sortDate: item.sortDate || item.publishedAt || undefined,
     visible: true,
     heroEmbeddable: true,
     galleryOnly: false,
@@ -210,7 +209,7 @@ function normalizeYouTubeFeedItem(item: WatchFeedVideo | null | undefined): Watc
 }
 
 function normalizeManualWatchMediaItem(item: PublicWatchMedia): WatchFeedVideo | null {
-  if (!item?.id || item.visible === false) return null;
+  if (!item?.id || !isVisibleWatchMediaEntry(item) || isScaffoldWatchMediaEntry(item)) return null;
   const sourcePlatform = String(item.sourcePlatform || "manual").toLowerCase();
   const entryType = String(item.entryType || "video").toLowerCase();
   const sourceUrl = item.sourceUrl || item.externalUrl || item.canonicalUrl || "";
@@ -247,16 +246,8 @@ function normalizeManualWatchMediaItem(item: PublicWatchMedia): WatchFeedVideo |
   };
 }
 
-function sortTime(item: WatchFeedVideo | null) {
-  const parsed = new Date(item?.sortDate || item?.publishedAt || item?.enteredAt || item?.createdAt || 0).getTime();
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function isHeroCandidate(item: WatchFeedVideo) {
-  if (item.galleryOnly) return false;
-  if (item.heroEmbeddable === false) return false;
-  if (normalizePlatform(item) === "rumble") return Boolean(safeRumbleEmbedUrl(item.embedUrl));
-  return Boolean(buildEmbedUrl(item, { autoplay: false, muted: true }));
+  return isWatchHeroEligible(item);
 }
 
 function isPortraitItem(item: WatchFeedVideo) {
@@ -267,17 +258,6 @@ function isLikelyYouTubeShort(video: WatchFeedVideo | null) {
   if (!video || normalizePlatform(video) !== "youtube") return false;
   const text = `${video.title || ""} ${video.description || ""} ${video.videoUrl || ""}`.toLowerCase();
   return text.includes("#shorts") || text.includes("/shorts/");
-}
-
-function safeRumbleEmbedUrl(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && url.hostname === "rumble.com" && url.pathname.startsWith("/embed/")
-      ? url.toString()
-      : "";
-  } catch {
-    return "";
-  }
 }
 
 function getBackdropStyle(video: WatchFeedVideo | null): CSSProperties | undefined {
@@ -410,6 +390,8 @@ export function WatchPage() {
     manualMediaCount: watchMedia.filter((item) => item.source === "manual" || item.sourcePlatform === "rumble").length,
     mergedCount: videos.length,
     heroId: activeVideo?.id || "",
+    heroTitle: activeVideo?.title || "",
+    heroPlatform: activeVideo ? getPlatformLabel(activeVideo) : "",
     overrideRevision: publicSiteMetadata.revision || "",
     overrideUpdatedAt: publicSiteMetadata.publishedAt || publicSiteMetadata.generatedAt || "",
   };
@@ -430,8 +412,8 @@ export function WatchPage() {
       return;
     }
 
-    setActiveVideoId((current) => (current && heroCandidates.some((item) => item.id === current) ? current : heroCandidates[0].id));
-  }, [heroCandidates]);
+    setActiveVideoId(heroCandidates[0].id);
+  }, [heroCandidates[0]?.id]);
 
   return (
     <>
@@ -586,7 +568,7 @@ export function WatchPage() {
           {status !== "ready" ? <p className="watch-hero__feed-note">{feed?.message || FALLBACK_MESSAGE}</p> : null}
           <p className="watch-feed-diagnostics" aria-label="Watch media feed status">
             YouTube {watchDebugMeta.youtubeCount} / manual {watchDebugMeta.manualMediaCount} / merged {watchDebugMeta.mergedCount}
-            {watchDebugMeta.heroId ? ` / hero ${watchDebugMeta.heroId}` : ""}
+            {watchDebugMeta.heroId ? ` / hero ${watchDebugMeta.heroId} (${watchDebugMeta.heroPlatform}: ${watchDebugMeta.heroTitle})` : ""}
             {watchDebugMeta.overrideRevision ? ` / revision ${watchDebugMeta.overrideRevision}` : ""}
           </p>
         </section>
@@ -704,7 +686,7 @@ export function WatchPage() {
                     <span className="watch-card__thumb watch-card__thumb--placeholder" aria-hidden="true" />
                   )}
                 </a>
-                <p className="kicker">{getPlatformLabel(item)} / {formatWatchDate(item.publishedAt || item.sortDate || null)}</p>
+                <p className="kicker">{getPlatformLabel(item)} / {formatWatchDate(item.sortDate || item.publishedAt || null)}</p>
                 <h3>{item.title}</h3>
                 <p>{item.excerpt || "Open the upload on the source platform for the full release notes."}</p>
                 <a className="text-link" href={sourceHref} target="_blank" rel="noopener noreferrer">

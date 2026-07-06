@@ -244,7 +244,7 @@ function normalizeGeneratedFallback(value: PublicSiteDataModel): PublicSiteDataM
       companies: value.collections.companies.length ? value.collections.companies : builtInFallback.collections.companies,
       platforms: value.collections.platforms.length ? value.collections.platforms : builtInFallback.collections.platforms,
       positions: value.collections.positions.length ? value.collections.positions : builtInFallback.collections.positions,
-      watchMedia: Array.isArray(value.collections.watchMedia) ? value.collections.watchMedia : [],
+      watchMedia: Array.isArray(value.collections.watchMedia) ? value.collections.watchMedia.filter((item) => !isScaffoldFallbackWatchMedia(item)) : [],
     },
     assets: {
       portfolioThumbs: value.assets.portfolioThumbs.length ? value.assets.portfolioThumbs : builtInFallback.assets.portfolioThumbs,
@@ -326,6 +326,22 @@ function normalizeGeneratedProject(project: PublicProject): PublicProject {
     documentPath: cleanPublicPath(project.documentPath),
     documentationAvailable: Boolean(project.documentationUrl || cleanPublicPath(project.documentPath)),
   };
+}
+
+function isScaffoldFallbackWatchMedia(item: PublicWatchMedia) {
+  const terms = ["scaffold", "demo", "sample", "placeholder", "seeded watch media", "local placeholder"];
+  const exact = new Set([
+    "latest-youtube-release-scaffold",
+    "latest youtube release scaffold",
+    "scheduled-livestream-scaffold",
+    "scheduled livestream scaffold",
+    "archived-replay-scaffold",
+    "archived replay scaffold",
+  ]);
+  return [item.id, item.title]
+    .map((value) => String(value || "").trim().toLowerCase())
+    .filter(Boolean)
+    .some((value) => exact.has(value) || terms.some((term) => value.includes(term)));
 }
 
 function slugifyPlatform(value: string) {

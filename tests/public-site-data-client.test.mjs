@@ -8,6 +8,7 @@ test("public data client uses configured live endpoint with no-store and diagnos
   const source = await readFile(new URL("../src/lib/publicSiteData.tsx", import.meta.url), "utf8");
   assert.match(source, /VITE_ADMIN_PUBLIC_SITE_DATA_URL/);
   assert.match(source, /cache:\s*"no-store"/);
+  assert.match(source, /cacheBustedPublicSiteDataUrl\(ADMIN_PUBLIC_SITE_DATA_URL\)/);
   assert.match(source, /hasLoggedPublicDataDiagnostics/);
   assert.match(source, /console\.info\("\[DanielClancy\] public site-data status"/);
   assert.match(source, /VITE_ADMIN_PUBLIC_SITE_DATA_URL is not configured; using committed public-site fallback data/);
@@ -49,7 +50,17 @@ test("live admin response merges without emptying fallback-only collections", as
   assert.match(source, /companies:\s*companies\.length \? companies : fallbackCompanies/);
   assert.match(source, /platforms:\s*platforms\.length \? platforms : fallbackPlatforms/);
   assert.match(source, /positions:\s*positions\.length \? mergeById\(fallbackPositions, positions\) : fallbackPositions/);
+  assert.match(source, /watchMedia,\s*$/m);
   assert.match(source, /getPublicProjectLookupKeys\(row\)\.some/);
+});
+
+test("public data client filters scaffold watch media instead of falling back to stale watch rows", async () => {
+  const source = await readFile(new URL("../src/lib/publicSiteData.tsx", import.meta.url), "utf8");
+  const fallbackSource = await readFile(new URL("../src/data/public-site-fallback.ts", import.meta.url), "utf8");
+  assert.match(source, /isScaffoldWatchMediaEntry/);
+  assert.match(source, /if \(isScaffoldWatchMediaEntry\(raw\)\) return null/);
+  assert.doesNotMatch(source, /watchMedia:\s*watchMedia\.length \? watchMedia : fallbackWatchMedia/);
+  assert.match(fallbackSource, /isScaffoldFallbackWatchMedia/);
 });
 
 test("project detail route resolves fallback projects by slug, id, code, and legacy path aliases", async () => {
