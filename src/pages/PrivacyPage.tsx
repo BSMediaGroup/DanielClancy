@@ -138,7 +138,7 @@ const privacySections: LegalSectionDefinition[] = [
     children: (
       <>
         <p>
-          The /watch page currently uses a server-side YouTube feed to display the latest public
+          The /watch page currently uses server-side YouTube data to display the latest public
           channel release and recent uploads. The public browser receives normalized display data, not
           the server-side YouTube API key.
         </p>
@@ -191,7 +191,7 @@ const privacySections: LegalSectionDefinition[] = [
     children: (
       <>
         <p>
-          Streaming platform integrations or embeds may display public channel/feed information,
+          Streaming platform integrations or embeds may display public channel information,
           livestream state, thumbnails, titles, channel names, profile links, scheduled stream details,
           and related metadata. DanielClancy.net should not claim broad account access unless a
           feature actually requests consented provider access.
@@ -357,8 +357,8 @@ const privacySections: LegalSectionDefinition[] = [
         </p>
         <p>
           Public media/API data used for display may be cached or normalized for performance and
-          reliability. If provider data changes or becomes unavailable, the site may show fallback
-          states rather than pretending current data is available.
+          reliability. If provider data changes or becomes unavailable, the site may show an
+          unavailable state rather than pretending current data is available.
         </p>
       </>
     ),

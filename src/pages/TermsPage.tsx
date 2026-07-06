@@ -111,12 +111,12 @@ const termsSections: LegalSectionDefinition[] = [
           The /watch page can display public media content and platform metadata, including titles,
           thumbnails, channel names, upload dates, stream state, embed URLs, video URLs, and related
           public details. The current implemented provider phase is YouTube through a server-side
-          feed.
+          integration.
         </p>
         <p>
-          Platform APIs, embeds, feeds, policies, limits, and availability may change without notice.
+          Platform APIs, embeds, policies, limits, and availability may change without notice.
           A provider outage, API change, rate limit, content removal, or configuration issue may cause
-          media content to be unavailable or to fall back to a non-live state.
+          media content to be unavailable or shown as not live.
         </p>
       </>
     ),

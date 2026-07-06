@@ -113,43 +113,47 @@ export function PersonalShell() {
         <Outlet />
       </main>
 
-      {isWatchRoute ? null : (
-        <footer className="site-footer site-footer--personal">
-        <div className="container footer-grid footer-grid--personal">
-          <div>
-            <p className="kicker">Personal pages</p>
-            <h2>Channels, releases, and supporter tools in one quiet shell.</h2>
-            <p className="footer-copy">
-              These pages are kept separate from the professional portfolio while staying aligned to
-              the Daniel Clancy visual system.
-            </p>
-          </div>
+      {isWatchRoute ? null : <PersonalFooter />}
+    </div>
+  );
+}
 
-          <div>
-            <p className="kicker">Browse</p>
-            <div className="footer-link-list">
-              {navItems.map((item) => (
-                <NavLink key={item.to} to={item.to}>
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-          </div>
+export function PersonalFooter() {
+  return (
+    <footer className="site-footer site-footer--personal">
+      <div className="container footer-grid footer-grid--personal">
+        <div>
+          <p className="kicker">Personal pages</p>
+          <h2>Channels, releases, and supporter tools in one quiet shell.</h2>
+          <p className="footer-copy">
+            These pages are kept separate from the professional portfolio while staying aligned to
+            the Daniel Clancy visual system.
+          </p>
+        </div>
 
-          <div>
-            <p className="kicker">Professional site</p>
-            <div className="footer-link-list">
-              <NavLink to="/">Portfolio and CV</NavLink>
-              {legalItems.map((item) => (
-                <NavLink key={item.to} to={item.to}>
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
+        <div>
+          <p className="kicker">Browse</p>
+          <div className="footer-link-list">
+            {navItems.map((item) => (
+              <NavLink key={item.to} to={item.to}>
+                {item.label}
+              </NavLink>
+            ))}
           </div>
         </div>
-        </footer>
-      )}
-    </div>
+
+        <div>
+          <p className="kicker">Professional site</p>
+          <div className="footer-link-list">
+            <NavLink to="/">Portfolio and CV</NavLink>
+            {legalItems.map((item) => (
+              <NavLink key={item.to} to={item.to}>
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }

@@ -1,5 +1,29 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Public Watch Repair And Livestream-Ready Player Foundation Milestone
+
+### Technical notes
+- Extended `/watch` player resolution to handle the current YouTube/Rumble iframe paths plus future config-driven Cloudflare Stream UID/embed, external HTTPS HLS, custom HTTPS embed, and offline/upcoming/no-live-source states without adding Cloudflare Stream API calls, backend secrets, RTMP keys, Admin settings, D1, likes, comments, or a `/live` route.
+- Added discreet hero controls for overlay visibility, theatre mode, and browser Fullscreen API viewing with theatre-mode fallback when fullscreen is unavailable or blocked.
+- Kept the title/description/details overlay visible by default while allowing viewers to hide it for a cleaner video view.
+- Normalized public watch-media thumbnail selection so safe HTTPS and root-relative public thumbnail/poster/image fields survive public site-data normalization and render consistently in the hero, selector rail, and gallery.
+- Reworked the selector rail below the hero to be full width, removed the visible `More content` label, hid horizontal scrollbars while preserving pointer/trackpad/keyboard scrolling, and changed rail arrows to scroll through all lineup items instead of only cycling hero-eligible videos.
+- Added a subtle selected-item glow for the active hero video in the selector rail and gallery cards.
+- Moved merged watch diagnostics out of the production viewer UI; the local development diagnostic line is smaller and no longer presents internal hero/feed wording to public viewers.
+- Reworked the `/watch` gallery into separate paginated rows for widescreen videos, additional widescreen videos, portrait 9:16 shorts, and square 1:1 clips using existing aspect metadata only.
+- Reused the shared Personal Studio footer on `/watch` by exporting the existing personal footer component from `PersonalShell`.
+- Cleaned public-facing copy in Watch, Personal Home, Portfolio Detail, Shop, Product Detail, Privacy, and Terms where wording exposed implementation mechanics such as fetched catalogue/feed/hydration/fallback language.
+
+### Human-readable notes
+- `/watch` now feels more like a clean viewer page: the feature player has quiet controls, the text overlay can be hidden, fullscreen/theatre viewing is available, and the row below the player shows the whole lineup more reliably.
+- Manually entered Rumble thumbnails and other valid manual thumbnails should now appear consistently wherever the video appears.
+- The video library is easier to browse by format, with separate paged rows for standard videos, vertical shorts, and square clips.
+- Cloudflare Stream/Admin/API integration, RTMP ingest, livestream comments/likes/storage, and the dedicated `/live` page are intentionally deferred to later tasks.
+
+### Known limitations
+- This milestone is frontend-only and config-ready; it does not create or verify real Cloudflare Stream, HLS, Admin livestream, comments, likes, or D1 runtime behavior.
+- Local Vite/static validation cannot prove deployed Cloudflare Pages Function behavior or production public site-data propagation.
+
 ## Watch Media Hard Repair Follow-Up
 
 ### Technical notes

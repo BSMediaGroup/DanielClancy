@@ -2636,6 +2636,10 @@ select:focus {
   background: #030303;
 }
 
+.watch-hero--theatre {
+  min-height: clamp(44rem, calc(100vh - 3.6rem), 72rem);
+}
+
 .watch-hero::before,
 .watch-hero::after {
   content: "";
@@ -2685,6 +2689,11 @@ select:focus {
   box-shadow:
     0 0 90px rgba(0, 0, 0, 0.72),
     0 0 160px rgba(65, 34, 151, 0.34);
+}
+
+.watch-hero--theatre .watch-hero__media {
+  width: 100vw;
+  max-width: none;
 }
 
 .watch-hero__embed,
@@ -2742,6 +2751,12 @@ select:focus {
   background:
     linear-gradient(90deg, rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.14) 34%, rgba(0, 0, 0, 0.18) 62%, rgba(0, 0, 0, 0.7)),
     linear-gradient(0deg, rgba(0, 0, 0, 0.96), rgba(0, 0, 0, 0.64) 22%, rgba(0, 0, 0, 0.14) 64%, rgba(0, 0, 0, 0.1));
+}
+
+.watch-hero--clean .watch-hero__shade {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.42), transparent 28%, rgba(0, 0, 0, 0.42)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.24), transparent 34%, transparent 66%, rgba(0, 0, 0, 0.24));
 }
 
 .watch-hero__shade::before {
@@ -2974,11 +2989,11 @@ select:focus {
   position: relative;
   z-index: 5;
   width: min(100% - 2rem, 58rem);
-  margin: -1.35rem auto 1rem;
-  color: rgba(247, 241, 228, 0.5);
+  margin: -1.2rem auto 0.85rem;
+  color: rgba(247, 241, 228, 0.34);
   font-family: "SUSE Mono", monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
+  font-size: 0.58rem;
+  letter-spacing: 0.02em;
   text-align: center;
   text-transform: uppercase;
 }
@@ -2987,7 +3002,7 @@ select:focus {
   position: relative;
   z-index: 5;
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: clamp(0.6rem, 1.4vw, 1.1rem);
   min-height: 9.7rem;
@@ -3002,7 +3017,6 @@ select:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.watch-selector-strip__label,
 .watch-selector-strip__empty {
   margin: 0;
   font-family: "Recharge", sans-serif;
@@ -3011,16 +3025,8 @@ select:focus {
   text-transform: uppercase;
 }
 
-.watch-selector-strip__label {
-  align-self: start;
-  padding-top: 0.35rem;
-  color: rgba(247, 241, 228, 0.86);
-  font-size: clamp(0.9rem, 1.35vw, 1.08rem);
-  white-space: nowrap;
-}
-
 .watch-selector-strip__empty {
-  grid-column: 2 / -1;
+  grid-column: 1 / -1;
   color: rgba(247, 241, 228, 0.62);
   font-size: 0.9rem;
 }
@@ -3034,30 +3040,15 @@ select:focus {
   padding: 0.25rem 0.15rem 0.5rem;
   scroll-padding-inline: 0.3rem;
   scroll-snap-type: x proximity;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(128, 116, 150, 0.72) rgba(8, 9, 13, 0.88);
+  scrollbar-width: none;
 }
 
 .watch-selector__rail--loading {
-  grid-column: 2 / -1;
+  grid-column: 1 / -1;
 }
 
 .watch-selector__rail::-webkit-scrollbar {
-  height: 0.34rem;
-}
-
-.watch-selector__rail::-webkit-scrollbar-track {
-  background: rgba(8, 9, 13, 0.88);
-  border-radius: 999px;
-}
-
-.watch-selector__rail::-webkit-scrollbar-thumb {
-  background: rgba(128, 116, 150, 0.72);
-  border-radius: 999px;
-}
-
-.watch-selector__rail::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 147, 204, 0.86);
+  display: none;
 }
 
 .watch-selector__item {
@@ -3091,6 +3082,14 @@ select:focus {
   aspect-ratio: 9 / 16;
 }
 
+.watch-selector__item--square {
+  flex-basis: clamp(8.8rem, 12vw, 12rem);
+}
+
+.watch-selector__item--square .watch-selector__thumb {
+  aspect-ratio: 1 / 1;
+}
+
 .watch-selector__item:hover,
 .watch-selector__item--active {
   border-color: rgba(247, 241, 228, 0.62);
@@ -3110,6 +3109,14 @@ select:focus {
   border: 2px solid rgba(247, 241, 228, 0.62);
   border-radius: inherit;
   pointer-events: none;
+}
+
+.watch-selector__item--active {
+  border-color: rgba(219, 201, 166, 0.86);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(219, 201, 166, 0.24),
+    0 0 28px rgba(219, 201, 166, 0.22);
 }
 
 .watch-selector__item--loading {
@@ -3157,6 +3164,72 @@ select:focus {
 .watch-catalogue-section {
   background:
     linear-gradient(180deg, #050505, #07080a 40%, #030405 100%);
+}
+
+.watch-gallery-stack {
+  display: grid;
+  gap: clamp(1.4rem, 3vw, 2.35rem);
+}
+
+.watch-gallery-row {
+  display: grid;
+  gap: 1rem;
+}
+
+.watch-gallery-row__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.watch-gallery-row__header h3 {
+  margin: 0 0 0.35rem;
+  font-family: "Recharge", sans-serif;
+  font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.watch-gallery-row__header p,
+.watch-gallery-row__empty {
+  margin: 0;
+  color: rgba(247, 241, 228, 0.66);
+}
+
+.watch-gallery-row__pager {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(247, 241, 228, 0.58);
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.watch-gallery-row__pager button {
+  min-height: 2rem;
+  border: 1px solid rgba(247, 241, 228, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(247, 241, 228, 0.76);
+  font: inherit;
+  padding: 0.42rem 0.72rem;
+  text-transform: uppercase;
+}
+
+.watch-gallery-row__pager button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.watch-gallery-row__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
+  gap: clamp(0.85rem, 1.5vw, 1.15rem);
 }
 
 .portfolio-gallery__stage {
@@ -3379,6 +3452,18 @@ select:focus {
   margin-inline: auto;
 }
 
+.watch-card--square .watch-card__thumb {
+  aspect-ratio: 1 / 1;
+}
+
+.watch-card--active {
+  border-color: rgba(219, 201, 166, 0.42);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(219, 201, 166, 0.16),
+    0 0 30px rgba(219, 201, 166, 0.14);
+}
+
 .watch-card__thumb--placeholder {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
@@ -3415,7 +3500,8 @@ select:focus {
 .watch-hero__secondary-button:focus-visible,
 .watch-selector__arrow:focus-visible,
 .watch-selector__item:focus-visible,
-.watch-card__thumb-link:focus-visible {
+.watch-card__thumb-link:focus-visible,
+.watch-gallery-row__pager button:focus-visible {
   outline: 2px solid rgba(219, 201, 166, 0.56);
   outline-offset: 3px;
 }
@@ -5757,14 +5843,9 @@ select:focus {
   }
 
   .watch-selector-strip {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     min-height: 0;
     padding: 0.72rem 0.7rem 0.85rem;
-  }
-
-  .watch-selector-strip__label {
-    grid-column: 1;
-    padding-top: 0.45rem;
   }
 
   .watch-selector__rail {

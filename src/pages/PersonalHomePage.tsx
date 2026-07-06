@@ -8,7 +8,7 @@ import { shellAssets, socialIcons } from "../content/brandAssets";
 const channelHighlights = [
   {
     title: "Watch",
-    body: "Featured video layout, server-hydrated YouTube releases, and a clean seam for a later Rumble migration.",
+    body: "Featured video layout, current YouTube releases, and room for additional platforms later.",
     to: "/watch",
   },
   {
@@ -69,7 +69,7 @@ export function PersonalHomePage() {
                 </span>
               </div>
               <p>
-                The shell stays ready for future channel hydration, supporter links, and account-aware
+                The space is ready for future channel updates, supporter links, and account-aware
                 features while remaining clean and intentional today.
               </p>
             </article>

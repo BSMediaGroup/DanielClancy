@@ -41,15 +41,14 @@ export function PortfolioDetailPage() {
               <>
                 <h1>Checking the public project archive.</h1>
                 <p className="hero-copy__lead">
-                  The committed fallback archive is available immediately; the public data refresh is
-                  still resolving this project alias.
+                  The public project archive is still checking this project link.
                 </p>
               </>
             ) : (
               <>
                 <h1>Project not found.</h1>
                 <p className="hero-copy__lead">
-                  No public fallback or published project record matches this route.
+                  No published project record matches this route.
                   {metadata.error ? ` Public data status: ${metadata.error}.` : ""}
                 </p>
               </>

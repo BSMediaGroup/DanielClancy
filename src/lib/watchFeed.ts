@@ -1,7 +1,7 @@
 export type WatchFeedVideo = {
   id: string;
-  provider: "youtube" | "rumble" | "manual" | (string & {});
-  sourcePlatform?: "youtube" | "rumble" | "manual" | (string & {});
+  provider: "youtube" | "rumble" | "manual" | "cloudflare_stream" | "hls" | "custom_embed" | (string & {});
+  sourcePlatform?: "youtube" | "rumble" | "manual" | "cloudflare_stream" | "hls" | "custom_embed" | (string & {});
   entryType?: "video" | "short" | "livestream" | "other" | (string & {});
   source?: "autofetch" | "manual" | (string & {});
   title: string;
@@ -16,15 +16,20 @@ export type WatchFeedVideo = {
   embedUrl: string;
   externalUrl?: string;
   canonicalUrl?: string;
+  cloudflareStreamUid?: string;
+  streamUid?: string;
+  hlsUrl?: string;
+  customEmbedUrl?: string;
   platformVideoId?: string;
   platformChannelId?: string;
   channelTitle: string;
+  liveStatus?: "ready" | "live" | "offline" | "upcoming" | "no-live-source" | (string & {});
   visible?: boolean;
   featured?: boolean;
   manualHeroEligible?: boolean;
   heroEmbeddable?: boolean;
   galleryOnly?: boolean;
-  aspect?: "landscape" | "portrait" | (string & {});
+  aspect?: "landscape" | "portrait" | "square" | "16:9" | "9:16" | "1:1" | (string & {});
   tags?: string[];
 };
 
@@ -101,9 +106,16 @@ export function isVisibleWatchMediaEntry(item: WatchMediaLike | null | undefined
 
 export function normalizeWatchPlatform(item: WatchMediaLike | null | undefined) {
   const provider = String(item?.sourcePlatform || item?.provider || item?.platform || "").toLowerCase();
-  const source = String(`${item?.videoUrl || ""} ${item?.embedUrl || ""} ${item?.externalUrl || ""} ${item?.canonicalUrl || ""}`).toLowerCase();
+  const source = String(
+    `${item?.videoUrl || ""} ${item?.embedUrl || ""} ${item?.externalUrl || ""} ${item?.canonicalUrl || ""} ${
+      item?.hlsUrl || ""
+    } ${item?.customEmbedUrl || ""} ${item?.cloudflareStreamUid || ""} ${item?.streamUid || ""}`,
+  ).toLowerCase();
   if (provider.includes("youtube") || source.includes("youtube.com") || source.includes("youtu.be")) return "youtube";
   if (provider.includes("rumble") || source.includes("rumble.com")) return "rumble";
+  if (provider.includes("cloudflare") || source.includes("videodelivery.net")) return "cloudflare_stream";
+  if (provider === "hls" || source.includes(".m3u8")) return "hls";
+  if (provider.includes("custom") || provider.includes("embed")) return "custom_embed";
   return provider || "source";
 }
 
@@ -112,11 +124,22 @@ export function isWatchHeroEligible(item: WatchMediaLike | null | undefined) {
   if (item?.galleryOnly || item?.heroEmbeddable === false) return false;
   const platform = normalizeWatchPlatform(item);
   const entryType = String(item?.entryType || "video").toLowerCase();
+  const liveStatus = String(item?.liveStatus || "").toLowerCase();
+  if (["offline", "upcoming", "no-live-source"].includes(liveStatus)) return false;
   if (platform === "rumble") {
     return entryType === "video" && Boolean(safeRumbleEmbedUrl(item?.embedUrl || ""));
   }
   if (platform === "youtube") {
     return Boolean(safeYouTubeEmbedUrl(item?.embedUrl || "") || safeYouTubeVideoId(item));
+  }
+  if (platform === "cloudflare_stream") {
+    return Boolean(safeCloudflareStreamUid(item?.cloudflareStreamUid || item?.streamUid || "") || safeCloudflareStreamEmbedUrl(item?.embedUrl || ""));
+  }
+  if (platform === "hls") {
+    return Boolean(safeHlsUrl(item?.hlsUrl || item?.videoUrl || ""));
+  }
+  if (platform === "custom_embed") {
+    return Boolean(safeCustomEmbedUrl(item?.customEmbedUrl || item?.embedUrl || ""));
   }
   return false;
 }
@@ -127,6 +150,40 @@ export function safeRumbleEmbedUrl(value: string) {
     return url.protocol === "https:" && url.hostname === "rumble.com" && url.pathname.startsWith("/embed/")
       ? url.toString()
       : "";
+  } catch {
+    return "";
+  }
+}
+
+export function safeCloudflareStreamUid(value: string) {
+  const text = String(value || "").trim();
+  return /^[A-Za-z0-9._-]{8,128}$/.test(text) && !text.includes("/") ? text : "";
+}
+
+export function safeCloudflareStreamEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "iframe.videodelivery.net" && safeCloudflareStreamUid(url.pathname.replace(/^\/+/, "").split("/")[0] || "")
+      ? url.toString()
+      : "";
+  } catch {
+    return "";
+  }
+}
+
+export function safeHlsUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && /\.m3u8($|\?)/i.test(`${url.pathname}${url.search}`) ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+export function safeCustomEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : "";
   } catch {
     return "";
   }

@@ -85,8 +85,13 @@ export type PublicWatchMedia = {
   embedUrl?: string;
   externalUrl?: string;
   canonicalUrl?: string;
+  cloudflareStreamUid?: string;
+  streamUid?: string;
+  hlsUrl?: string;
+  customEmbedUrl?: string;
   platformVideoId?: string;
   platformChannelId?: string;
+  liveStatus?: string;
   publishedAt?: string | null;
   enteredAt?: string;
   sortDate?: string;
@@ -96,7 +101,7 @@ export type PublicWatchMedia = {
   manualHeroEligible?: boolean;
   heroEmbeddable?: boolean;
   galleryOnly?: boolean;
-  aspect?: "landscape" | "portrait" | string;
+  aspect?: "landscape" | "portrait" | "square" | "16:9" | "9:16" | "1:1" | string;
   tags?: string[];
   updatedAt?: string;
 };

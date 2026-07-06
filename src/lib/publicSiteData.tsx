@@ -206,8 +206,19 @@ function normalizeWatchMedia(raw: unknown): PublicWatchMedia | null {
   const sourceUrl = asString(raw.sourceUrl || raw.videoUrl || raw.externalUrl);
   const externalUrl = asString(raw.externalUrl || raw.canonicalUrl || sourceUrl);
   const embedUrl = asString(raw.embedUrl);
-  if (!id || !title || !sourcePlatform || (!sourceUrl && !externalUrl && !embedUrl)) return null;
   const entryType = asString(raw.entryType || raw.type) || "video";
+  const liveStatus = asString(raw.liveStatus || raw.streamStatus || raw.availability || raw.status);
+  const cloudflareStreamUid = asString(raw.cloudflareStreamUid || raw.streamUid || raw.playerUid);
+  const hlsUrl = asString(raw.hlsUrl || raw.streamUrl);
+  const customEmbedUrl = asString(raw.customEmbedUrl || raw.playerUrl);
+  const isLiveStateOnly =
+    entryType === "livestream" && ["offline", "upcoming", "no-live-source"].includes(liveStatus.toLowerCase());
+  if (
+    !id ||
+    !title ||
+    !sourcePlatform ||
+    (!sourceUrl && !externalUrl && !embedUrl && !cloudflareStreamUid && !hlsUrl && !customEmbedUrl && !isLiveStateOnly)
+  ) return null;
   const visible = raw.visible !== false;
   const galleryOnly = Boolean(raw.galleryOnly || (sourcePlatform === "rumble" && entryType === "short"));
   return {
@@ -218,13 +229,18 @@ function normalizeWatchMedia(raw: unknown): PublicWatchMedia | null {
     title,
     description: asString(raw.description),
     excerpt: asString(raw.excerpt || raw.description),
-    thumbnailUrl: safeHttpsUrl(raw.thumbnailUrl || raw.thumbnailPath),
+    thumbnailUrl: safePublicMediaUrl(raw.thumbnailUrl || raw.thumbnailPath || raw.thumbnail || raw.imageUrl || raw.posterUrl || raw.poster || raw.image),
     sourceUrl: safeHttpsUrl(sourceUrl),
     embedUrl: safeEmbedUrl(embedUrl),
     externalUrl: safeHttpsUrl(externalUrl),
     canonicalUrl: safeHttpsUrl(raw.canonicalUrl || externalUrl || sourceUrl),
+    cloudflareStreamUid,
+    streamUid: asString(raw.streamUid),
+    hlsUrl: safeHttpsUrl(hlsUrl),
+    customEmbedUrl: safeHttpsUrl(customEmbedUrl),
     platformVideoId: asString(raw.platformVideoId),
     platformChannelId: asString(raw.platformChannelId),
+    liveStatus,
     publishedAt: asString(raw.publishedAt) || null,
     enteredAt: asString(raw.enteredAt),
     sortDate: asString(raw.sortDate || raw.publishedAt || raw.enteredAt || raw.createdAt || raw.updatedAt),
@@ -350,6 +366,16 @@ export function normalizePublicAssetPath(value?: string) {
   if (stripped.startsWith("media/portfolio/") || stripped.startsWith("docs/")) {
     return `/${stripped}`;
   }
+  return "";
+}
+
+function safePublicMediaUrl(value: unknown) {
+  const text = asString(value).replace(/\\/g, "/");
+  if (!text || text.startsWith("../")) return "";
+  if (/^https:\/\//i.test(text)) return text;
+  if (/^http:\/\//i.test(text)) return "";
+  const stripped = text.replace(/^\.?\//, "").replace(/^\/+/, "");
+  if (stripped.startsWith("media/") || stripped.startsWith("assets/")) return `/${stripped}`;
   return "";
 }
 
@@ -583,6 +609,7 @@ function safeEmbedUrl(value: unknown) {
     const url = new URL(text);
     if (url.hostname === "rumble.com" && url.pathname.startsWith("/embed/")) return url.toString();
     if (url.hostname.endsWith("youtube.com") && url.pathname.startsWith("/embed/")) return url.toString();
+    if (url.hostname === "iframe.videodelivery.net") return url.toString();
     return "";
   } catch {
     return "";

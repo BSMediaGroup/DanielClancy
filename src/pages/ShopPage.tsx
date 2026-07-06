@@ -125,10 +125,10 @@ export function ShopPage() {
             ) : (
               <div className="shop-empty-card">
                 <span>Printful status</span>
-                <strong>{loading ? "Loading product feed" : "No public products available"}</strong>
+                <strong>{loading ? "Loading products" : "No public products available"}</strong>
                 <p>
                   {loading
-                    ? "The storefront is requesting the server-side Printful feed."
+                    ? "The storefront is checking the current product list."
                     : feed.message ||
                       "Products will appear here after Printful is configured and public products are returned or published."}
                 </p>
@@ -171,7 +171,7 @@ export function ShopPage() {
               <h3>{loading ? "Loading products." : feed.configured ? "No public products are available for this category." : "Printful is not configured locally."}</h3>
               <p>
                 {loading
-                  ? "The server-side feed is still resolving."
+                  ? "The storefront is still checking products."
                   : feed.message ||
                     "Configure the server-side Printful store token in Cloudflare Pages Functions and publish product overrides from Admin when needed."}
               </p>

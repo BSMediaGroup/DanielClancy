@@ -50,7 +50,7 @@ export function ProductDetailPage() {
         <section className="shop-detail-hero shop-detail-hero--empty">
           <div className="container shop-detail-empty">
             <p className="kicker">Product detail</p>
-            <h1>{loading ? "Checking the Printful product feed." : "Product not found."}</h1>
+            <h1>{loading ? "Checking the Printful product." : "Product not found."}</h1>
             <p>
               {loading
                 ? "The server-side storefront endpoint is resolving this product route."
@@ -237,7 +237,7 @@ function ResolvedProductDetail({ product }: { product: MerchProduct }) {
                 ))}
               </div>
             ) : (
-              <p>No variant details are available from the product feed yet.</p>
+              <p>No variant details are available for this product yet.</p>
             )}
           </article>
 
