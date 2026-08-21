@@ -15,7 +15,7 @@ This repo holds the public-facing Daniel Clancy website only. It now uses a deli
 - a professional shell for CV, portfolio, and contact review
 - a Personal Studio shell for content, support, and storefront/merch commerce pages
 
-The professional shell uses a restrained drawing-sheet/dossier visual system with Source Sans 3 headings, weighted Blinker body copy, the existing SUSE Mono interface labels, low-contrast grid cues, and first-class dark/light themes. Personal Studio, watch, and shop surfaces retain their established visual treatment.
+The professional shell uses a restrained drawing-sheet/dossier visual system with Source Sans 3 headings, weighted Blinker body copy, the existing SUSE Mono interface labels, a height-locked symbol/two-line wordmark, low-contrast animated drafting cues, animated platform proficiency meters, and first-class dark/light themes. Personal Studio, watch, and shop surfaces retain their established visual treatment.
 
 The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collection-tables/WorkSet.csv` export instead of the previous hand-maintained project array.
 

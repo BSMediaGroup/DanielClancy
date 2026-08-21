@@ -3,7 +3,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 ## Professional Portfolio And CV Dossier Polish Milestone
 
 ### Technical notes
-- Reworked the professional homepage into a restrained technical dossier with a live two-line Daniel Clancy wordmark, compact hero, real project evidence, data-derived discipline/project counts, recent chronology, software roles without fabricated percentages, and clearer CV/portfolio/contact paths.
+- Reworked the professional homepage into a restrained technical dossier with a live two-line Daniel Clancy wordmark, compact hero, real project evidence, data-derived discipline/project counts, recent chronology, the established animated platform proficiency ratings, and clearer CV/portfolio/contact paths.
 - Upgraded the web CV presentation while retaining the complete existing position data, dates, employers, locations, descriptions, contact details, software groups, and both existing dark/light PDF links; no PDF file was changed.
 - Repaired portfolio media resolution so incomplete or stale generated export paths inherit verified public thumbnails and ordered galleries from the committed WorkSet-backed catalogue instead of replacing them with empty or broken media fields.
 - Centralized project route normalization and resolution for slug, ID, code, title, stored path aliases, canonical `/portfolio/:slug`, and compatibility `/work/:slug` and `/workset/:slug` routes.
@@ -12,6 +12,11 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Added project-gallery route-change reset, focus entry/return, scroll locking, keyboard navigation, and focus containment for the lightbox.
 - Added first-class professional dark/light tokens, saved theme preference, restrained section separators, visible focus states, responsive dossier layouts, and reduced-motion handling without changing Personal Studio/watch/shop styling.
 - Replaced Recharge headings on professional surfaces with the supplied variable Source Sans 3 face and replaced professional body copy with the supplied weighted Blinker faces; SUSE Mono and other existing font uses remain unchanged.
+- Completed a second visual refinement pass with a subtle animated architectural drawing field, drifting technical grid, measured route line and slow hero-image movement; reduced-motion preference collapses these effects to a single near-instant frame.
+- Locked the compact professional header symbol and two-line `DANIEL / CLANCY` wordmark to one shared responsive height so neither side of the brand lockup can scale independently.
+- Restored the existing hover-replay behavior for all six platform meters and retained their established proficiency values, platform marks, and production-role descriptions.
+- Refined the selected-project hierarchy, discipline matrix, chronology, capability panel, responsive stacking, and dark/light contrast while preserving the shared route/data architecture.
+- Refreshed the generated public fallback from the current read-only Admin export; the authoritative payload remains 16 projects, 9 companies, 6 platforms, 9 positions, and 172 assets, with only generated revision metadata changing.
 - Updated focused public-data tests for shared route resolution, authoritative catalogue count, public media existence, taxonomy/software normalization, and professional font boundaries.
 
 ### Human-readable notes
@@ -20,6 +25,8 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - The portfolio now reliably exposes the complete 16-project public catalogue and incomplete records receive truthful local media fallbacks where available.
 - Project pages resolve consistently through canonical and legacy links, preserve archive filters, and show a deliberate Not Found page for invalid records.
 - Dark/light presentation, mobile layouts, keyboard focus, gallery use, and overall visual consistency are improved across the professional site.
+- The homepage once again includes the animated software proficiency presentation and now has subtle technical motion behind the hero rather than a static, empty backdrop.
+- Header branding now keeps the Daniel Clancy wordmark exactly the same height as the adjacent symbol on desktop, tablet, and phone layouts.
 
 ### Known limitations
 - Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.

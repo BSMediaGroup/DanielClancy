@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { CapabilityMeter } from "../components/CapabilityMeter";
 import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
@@ -18,13 +19,13 @@ import {
   usePublicSiteData,
 } from "../lib/publicSiteData";
 
-const softwareTools = [
-  { name: "Autodesk AutoCAD", note: "Drawing packages, markups, and technical revisions", category: "Core drafting" },
-  { name: "Autodesk Revit", note: "Production documentation and coordination", category: "Core BIM" },
-  { name: "Adobe Creative Cloud", note: "Presentation polish, layouts, and visual support", category: "Presentation" },
-  { name: "Trimble SketchUp", note: "Concept support and quick modelling", category: "3D support" },
-  { name: "Microsoft Office", note: "Reports, schedules, and review packs", category: "Coordination" },
-  { name: "QGIS", note: "Spatial context and mapping support", category: "Spatial" },
+const softwareCapabilities = [
+  { name: "Autodesk AutoCAD", score: 95, note: "Drawing packages, markups, and technical revisions" },
+  { name: "Autodesk Revit", score: 92, note: "Production documentation and coordination" },
+  { name: "Microsoft Office", score: 88, note: "Reports, schedules, and review packs" },
+  { name: "Adobe Creative Cloud", score: 84, note: "Presentation polish, layouts, and visual support" },
+  { name: "Trimble SketchUp", score: 79, note: "Concept support and quick modelling" },
+  { name: "QGIS", score: 68, note: "Spatial context and mapping support" },
 ];
 
 export function HomePage() {
@@ -55,9 +56,37 @@ export function HomePage() {
           aria-hidden="true"
           style={{ backgroundImage: `url(${shellAssets.professionalHeroBanner})` }}
         />
+        <div className="hero-technical-field" aria-hidden="true">
+          <svg className="hero-technical-field__drawing" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice">
+            <g className="hero-technical-field__structure">
+              <path d="M90 558H1110V138H744V86H405V138H90Z" />
+              <path d="M156 497H1042V207H801V163H463V207H156Z" />
+              <path d="M156 324H1042M371 207V497M801 207V497" />
+              <path d="M234 258H318V326H234ZM516 258H671V326H516ZM862 258H972V326H862Z" />
+              <path d="M234 382H318V446H234ZM516 382H671V446H516ZM862 382H972V446H862Z" />
+            </g>
+            <g className="hero-technical-field__dimensions">
+              <path d="M90 596H1110M90 585V608M1110 585V608" />
+              <path d="M52 558V138M41 558H64M41 138H64" />
+              <path d="M405 56H744M405 45V67M744 45V67" />
+            </g>
+            <path className="hero-technical-field__route" d="M-40 536C170 438 326 670 533 550S863 438 1240 570" />
+            <g className="hero-technical-field__nodes">
+              <circle cx="156" cy="324" r="5" />
+              <circle cx="371" cy="324" r="5" />
+              <circle cx="801" cy="324" r="5" />
+              <circle cx="1042" cy="324" r="5" />
+            </g>
+          </svg>
+        </div>
         <div className="container professional-hero">
           <div className="professional-hero__copy">
-            <p className="kicker">Professional profile · Sydney, Australia</p>
+            <div className="professional-hero__intro">
+              <span className="professional-hero__portrait-shell">
+                <img alt="Portrait of Daniel Clancy" src={shellAssets.profileAvatar} />
+              </span>
+              <p className="kicker">Professional profile · Sydney, Australia</p>
+            </div>
             <h1 aria-label="Daniel Clancy">
               <span>Daniel</span>
               <span className="professional-hero__outline">Clancy</span>
@@ -164,7 +193,7 @@ export function HomePage() {
 
       <Section
         eyebrow="Selected portfolio evidence"
-        title="Work presented as evidence, not decoration."
+        title="Project evidence with the drawing work left in view."
         intro="Representative projects foreground scope, studio context, dates, disciplines, and the documentation available in the complete archive."
         className="section--professional-grid"
       >
@@ -205,7 +234,7 @@ export function HomePage() {
 
       <Section
         eyebrow="Sectors and disciplines"
-        title="A documented practice across multiple project types."
+        title="One practice language across multiple project types."
         intro="The published catalogue shows where each discipline appears, without flattening distinct project records into generic capability claims."
         className="section--muted discipline-section"
       >
@@ -261,28 +290,44 @@ export function HomePage() {
 
       <Section
         eyebrow="Skills and platforms"
-        title="Production tools, clearly categorised."
-        intro="Software is described by the role it plays in drafting, modelling, presentation, coordination, and spatial work—without arbitrary percentage scores."
-        className="section--muted"
+        title="Established production depth, shown clearly."
+        intro="Established platform proficiency is shown alongside the role each tool plays in drafting, modelling, presentation, coordination, and spatial work."
+        className="section--muted capability-section"
       >
-        <div className="tool-grid">
-          {softwareTools.map((item) => {
-            const platform = resolvePlatformByIdNameSlug(platforms, item.name);
-            const logo = getPlatformIconPath(platform, item.name) || getSoftwareLogo(item.name);
+        <div className="capability-showcase">
+          <div className="capability-list capability-list--home">
+            {softwareCapabilities.map((item) => {
+              const platform = resolvePlatformByIdNameSlug(platforms, item.name);
+              const logo = getPlatformIconPath(platform, item.name) || getSoftwareLogo(item.name);
+              return (
+                <CapabilityMeter
+                  key={item.name}
+                  logo={logo}
+                  name={item.name}
+                  note={item.note}
+                  score={item.score}
+                />
+              );
+            })}
+          </div>
 
-            return (
-              <article key={item.name} className="tool-card">
-                <span className="tool-card__mark">
-                  {logo ? <img alt="" src={logo} /> : item.name.slice(0, 3).toUpperCase()}
+          <aside className="capability-context">
+            <div>
+              <p className="kicker">Working range</p>
+              <h3>Drafting precision supported by modelling, presentation and spatial tools.</h3>
+              <p>
+                Platform familiarity is presented with the same technical restraint as the project
+                archive: clear hierarchy, real software marks, and no substitute for the work itself.
+              </p>
+            </div>
+            <div className="employer-mark-row" aria-label="Selected employers and studios">
+              {featuredEmployers.map((item) => (
+                <span key={item} className="employer-mark-row__item">
+                  <CompanyLogoMark company={item} variant="monochrome" />
                 </span>
-                <div>
-                  <h3>{item.name}</h3>
-                  <p>{item.note}</p>
-                </div>
-                <span className="tool-card__category">{item.category}</span>
-              </article>
-            );
-          })}
+              ))}
+            </div>
+          </aside>
         </div>
 
         <div className="professional-cv-cta">
@@ -298,14 +343,6 @@ export function HomePage() {
               Contact Daniel
             </Link>
           </div>
-        </div>
-
-        <div className="employer-mark-row" aria-label="Selected employers and studios">
-          {featuredEmployers.map((item) => (
-            <span key={item} className="employer-mark-row__item">
-              <CompanyLogoMark company={item} variant="monochrome" />
-            </span>
-          ))}
         </div>
       </Section>
     </>
