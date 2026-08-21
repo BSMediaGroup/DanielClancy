@@ -15,7 +15,7 @@ This repo holds the public-facing Daniel Clancy website only. It now uses a deli
 - a professional shell for CV, portfolio, and contact review
 - a Personal Studio shell for content, support, and storefront/merch commerce pages
 
-The visual system keeps the existing DanielClancy font pairing while tightening hierarchy, spacing, route separation, and public copy quality.
+The professional shell uses a restrained drawing-sheet/dossier visual system with Source Sans 3 headings, weighted Blinker body copy, the existing SUSE Mono interface labels, low-contrast grid cues, and first-class dark/light themes. Personal Studio, watch, and shop surfaces retain their established visual treatment.
 
 The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collection-tables/WorkSet.csv` export instead of the previous hand-maintained project array.
 
@@ -30,6 +30,8 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 | `/` | Professional landing page with selected work, software capability, and chronology preview | Yes |
 | `/cv` | PDF access and readable employment timeline | Yes |
 | `/work` | Portfolio archive alias for share/bookmark compatibility | Yes |
+| `/work/:slug` | Legacy project-detail alias resolved through the shared canonical lookup | Yes |
+| `/workset/:slug` | Legacy WorkSet project-detail alias resolved through the shared canonical lookup | Yes |
 | `/portfolio` | WorkSet-driven archive gallery and filtering surface | Yes |
 | `/portfolio/:slug` | Dedicated project detail route with gallery, lightbox, and prev/next navigation | Yes |
 | `/contact` | Professional contact page with live-ready form delivery | Yes |
@@ -59,7 +61,7 @@ The CV, portfolio, project detail, company, platform/software, image, gallery, t
 - Personal content/support routes such as `/home`, `/watch`, and `/donate` use `noindex, nofollow, noarchive`; storefront routes under the Personal Studio shell remain indexable where their page metadata allows it.
 - Personal and storefront routes still render Open Graph and Twitter preview metadata for link sharing.
 - `public/robots.txt` and `public/_headers` enforce the noindex split for `/home`, `/watch`, and `/donate`.
-- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/work`, `/cv`, `/shop`, `/cart`, `/shop/success`, `/shop/cancel`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
+- `public/_redirects` keeps Cloudflare Pages on SPA fallback mode with direct `/store` and `/merch` redirects to `/shop`, then `/* /index.html 200` so direct loads and refreshes for `/`, `/portfolio`, `/portfolio/:slug`, `/work`, `/work/:slug`, `/workset/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cv`, `/shop`, `/cart`, `/shop/success`, `/shop/cancel`, `/contact`, `/privacy`, and `/terms` serve the Vite app before React resolves the route.
 
 ## Legal and policy pages
 
@@ -266,8 +268,9 @@ Signed-in customer checkout remains optional. Guest checkout still uses the anon
 
 ## Fonts and assets
 
-- Display: `assets/fonts/Recharge-Bold.otf`
-- Body: `assets/fonts/SuiGeneris-Regular.otf`
+- Professional headings and compact wordmark: `assets/fonts/heading/SourceSans3-VariableFont_wght.ttf`, used across its available variable weight range
+- Professional body: weighted `assets/fonts/body/Blinker-*.ttf` faces from Thin through Black
+- Existing Recharge and Sui Generis faces remain available to the non-professional Personal Studio/watch/shop surfaces
 - Monospace UI: `assets/fonts/mono/SUSEMono-Variable.ttf`
 - Public CV: `public/docs/Daniel_Clancy_CV_2026.pdf`
 - Canonical portfolio source: `cmsdata/wix/collection-tables/WorkSet.csv`
@@ -292,11 +295,11 @@ The public site fetches only the sanitized public endpoint. It does not call `/a
 
 The public client uses `cache: "no-store"` for runtime fetches and preserves internal source metadata: `source`, `revision`, `publishedAt`, `generatedAt`, `usingFallback`, `loading`, and a safe error summary. Development builds log one compact diagnostic when the live endpoint is missing, loaded, or unavailable; production builds do not add noisy console output.
 
-The normalized model preserves legacy project fields while accepting admin public fields such as `thumbnailPath`, `heroImage`, ordered `galleryPaths`, `documentPath`, `companyId`/`companyName`, `clientName`/`clientLabel`, `platformIds`, and `platformLabels`. Portfolio cards use `thumbnailPath` first, project detail uses `heroImage` or the first ordered gallery image, gallery ordering follows configured `galleryPaths`, company/studio displays as a text chip, and platform/software icons resolve to full-color SVG logo assets where available.
+The normalized model preserves legacy project fields while accepting admin public fields such as `thumbnailPath`, `heroImage`, ordered `galleryPaths`, `documentPath`, `companyId`/`companyName`, `clientName`/`clientLabel`, `platformIds`, and `platformLabels`. For records already present in the committed WorkSet catalogue, the public client prefers verified bundled thumbnail/gallery paths over stale or empty exported media paths, while new unmatched records may still use sanitized export media. Discipline/category fields are split into the actual filter taxonomy, descriptive tags remain scope labels, and software aliases are deduplicated to the established platform names. Portfolio filter state is stored in the URL query so direct loads, project round-trips, reloads, and browser history preserve the current archive view.
 
 The normalized model also accepts `collections.watchMedia` for `/watch`. That collection is public-safe only: manual Rumble videos/shorts include title, description/excerpt, thumbnail, source/embed URLs, `sortDate`, `publishedAt`, `enteredAt`, `createdAt`, `updatedAt`, visibility, hero/gallery flags, aspect, tags, and platform ids where available. Admin-only override/audit fields are stripped before the public site receives the snapshot, and rejected scaffold/demo/sample/placeholder watch rows are filtered before rendering. Media CMS saves in Admin auto-publish the public site-data snapshot when live Admin KV is available, so a public refresh can see manual media changes without a hidden manual publish step.
 
-Project detail routes resolve against the fallback archive immediately by normalized slug, ID, legacy code, title-derived key, and existing URL/path tail aliases. When Admin published data arrives, it merges into the fallback archive without dropping fallback-only projects; unknown project routes show a loading-safe state while live hydration is pending and only show Not Found after the live fetch has resolved or failed. Asset paths used by cards, heroes, galleries, and document links are kept root-relative for `/media/portfolio/...` and `/docs/...`, while absolute CDN/R2 URLs remain valid on nested direct routes.
+Project detail routes resolve against the fallback archive immediately by normalized slug, ID, legacy code, title-derived key, and existing URL/path tail aliases through one shared lookup. Canonical `/portfolio/:slug` URLs and compatibility `/work/:slug` and `/workset/:slug` routes use the same resolver. When Admin published data arrives, it merges into the fallback archive without dropping fallback-only projects; unknown project routes show a loading-safe state while live hydration is pending and only show Not Found after the live fetch has resolved or failed. Asset paths used by cards, heroes, galleries, and document links are kept root-relative for `/media/portfolio/...` and `/docs/...`, while absolute CDN/R2 URLs remain valid on nested direct routes.
 
 ### Public fallback rebuild
 

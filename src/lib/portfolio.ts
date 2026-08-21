@@ -38,14 +38,19 @@ export function getPortfolioProjectBySlug(slug?: string) {
   return getPortfolioProjectBySlugFrom(portfolioArchive, slug);
 }
 
-export function getPortfolioProjectBySlugFrom(projects: PortfolioItem[], slug?: string) {
+export function getPortfolioProjectBySlugFrom<T extends PortfolioItem>(projects: T[], slug?: string): T | null {
   const key = normalizePortfolioRouteKey(slug || "");
   if (!key) return null;
   return projects.find((project) => getPortfolioLookupKeys(project).includes(key)) ?? null;
 }
 
 export function getPortfolioProjectIndex(project: PortfolioItem, projects = portfolioArchive) {
-  return projects.findIndex((item) => item.id === project.id);
+  const projectKeys = getPortfolioLookupKeys(project as PortfolioItem & Record<string, unknown>);
+  return projects.findIndex((item) =>
+    getPortfolioLookupKeys(item as PortfolioItem & Record<string, unknown>).some((key) =>
+      projectKeys.includes(key),
+    ),
+  );
 }
 
 export function getAdjacentPortfolioProjects(project: PortfolioItem, projects = portfolioArchive) {
@@ -110,5 +115,11 @@ export function normalizePortfolioRouteKey(value: string) {
 
 function lastPathSegment(value: string) {
   const withoutQuery = value.trim().split("#")[0].split("?")[0];
-  return decodeURIComponent((withoutQuery.split("/").filter(Boolean).pop() || withoutQuery).trim());
+  const segment = (withoutQuery.split("/").filter(Boolean).pop() || withoutQuery).trim();
+
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
 }

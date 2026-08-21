@@ -17,7 +17,7 @@ const documentFileNameAliases: Record<string, string> = {
 const imageAssetIndex = createAssetIndex(assetModules);
 
 const previewFallbackBySlug: Record<string, string> = {
-  "cue-roadhouse": "/media/portfolio/cue-roadhouse.jpg",
+  "cue-roadhouse": "/media/portfolio/cue-roadhouse-p1.webp",
   "curtin-creative-quarter-misc-details": "/media/portfolio/curtin-creative-quarter.png",
   "lake-joondalup-baptist-college-new-arts-building-structural-plans":
     "/media/portfolio/lake-joondalup-baptist-college.jpg",
@@ -27,7 +27,55 @@ const previewFallbackBySlug: Record<string, string> = {
   "upss-beacon-hill-nsw": "/media/portfolio/upss-beacon-hill.jpg",
   "upss-homebush-nsw": "/media/portfolio/upss-homebush.jpg",
   "upss-wyoming-nsw": "/media/portfolio/upss-wyoming.jpg",
-  "wungong-urban-water-master-plan": "/media/portfolio/wungong-master-plan.jpg",
+  "wungong-urban-water-master-plan": "/media/portfolio/wungong-masterplan-p1.webp",
+};
+
+const publicGalleryFallbackBySlug: Record<string, string[]> = {
+  "proposed-retail-development-for-dawesville-iga": [
+    "/media/portfolio/dawesville-p1.webp",
+    "/media/portfolio/dawesville-p2.webp",
+    "/media/portfolio/dawesville-p3.webp",
+  ],
+  "cue-roadhouse": [
+    "/media/portfolio/cue-roadhouse-p1.webp",
+    "/media/portfolio/cue-roadhouse-p2.webp",
+  ],
+  "proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112": [
+    "/media/portfolio/jull-st.jpg",
+  ],
+  "lot-500-eighth-road-land-resumption": ["/media/portfolio/eighth-rd.jpg"],
+  "cockburn-coast": [
+    "/media/portfolio/cockburn-coast-details-000.webp",
+    "/media/portfolio/cockburn-coast-details-930.webp",
+    "/media/portfolio/cockburn-coast-details-931.webp",
+    "/media/portfolio/cockburn-coast-details-932.webp",
+    "/media/portfolio/cockburn-coast-details-933.webp",
+  ],
+  "spratt-residence-proposed-addition": [
+    "/media/portfolio/spratt-residence-p1.webp",
+    "/media/portfolio/spratt-residence-p2.webp",
+    "/media/portfolio/spratt-residence-p3.webp",
+  ],
+  "wungong-urban-water-master-plan": ["/media/portfolio/wungong-masterplan-p1.webp"],
+  "henry-street-residence-structural-documentation": [
+    "/media/portfolio/henry-st-p1.webp",
+    "/media/portfolio/henry-st-p2.webp",
+    "/media/portfolio/henry-st-p3.webp",
+    "/media/portfolio/henry-st-p4.webp",
+    "/media/portfolio/henry-st-p5.webp",
+    "/media/portfolio/henry-st-p6.webp",
+  ],
+  "lake-joondalup-baptist-college-new-arts-building-structural-plans": [
+    "/media/portfolio/lake-joondalup-baptist-college.webp",
+  ],
+  "cottesloe-beach-house-landscape-design": Array.from(
+    { length: 10 },
+    (_, index) => `/media/portfolio/cottesloe-beach-house-p${index + 1}.webp`,
+  ),
+  "geraldton-fire-station-structural-documentation": Array.from(
+    { length: 4 },
+    (_, index) => `/media/portfolio/fesa-fire0${index + 1}.webp`,
+  ),
 };
 
 const preferredFeaturedTitles = [
@@ -226,6 +274,25 @@ function createMediaItems({
 
     return items;
   }, []);
+
+  const publicGalleryFallback = publicGalleryFallbackBySlug[slug] || [];
+
+  if (publicGalleryFallback.length) {
+    return {
+      items: publicGalleryFallback.map((src, index) => ({
+        id: `${slug}-public-${index}`,
+        index,
+        fileName: getFileName(src),
+        src,
+        alt: title,
+        title: projectLabelFromIndex(title, index),
+        description: `Documentation view ${index + 1} for ${title}.`,
+        aspectRatio: 16 / 9,
+      })),
+      missingFileNames: Array.from(missingFileNames),
+      usingPreviewFallback: true,
+    };
+  }
 
   if (galleryItems.length) {
     return {

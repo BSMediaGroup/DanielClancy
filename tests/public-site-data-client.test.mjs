@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 const repoRoot = new URL("../", import.meta.url);
@@ -67,15 +67,46 @@ test("project detail route resolves fallback projects by slug, id, code, and leg
   const source = await readFile(new URL("../src/lib/publicSiteData.tsx", import.meta.url), "utf8");
   const detailSource = await readFile(new URL("../src/pages/PortfolioDetailPage.tsx", import.meta.url), "utf8");
   const portfolioSource = await readFile(new URL("../src/lib/portfolio.ts", import.meta.url), "utf8");
+  const appSource = await readFile(new URL("../src/app/App.tsx", import.meta.url), "utf8");
   assert.match(source, /getPublicProjectLookupKeys/);
-  assert.match(source, /project\.slug/);
-  assert.match(source, /project\.id/);
-  assert.match(source, /project\.code/);
-  assert.match(source, /lastPathSegment\(asString\(project\.livePage\)\)/);
+  assert.match(source, /return getPortfolioLookupKeys/);
+  assert.match(source, /return getPortfolioProjectBySlugFrom/);
   assert.match(portfolioSource, /getPortfolioLookupKeys/);
   assert.match(portfolioSource, /String\(project\.code \|\| ""\)/);
+  assert.match(portfolioSource, /lastPathSegment\(String\(project\.livePage \|\| ""\)\)/);
+  assert.match(appSource, /path="\/portfolio\/:slug"/);
+  assert.match(appSource, /path="\/work\/:slug"/);
+  assert.match(appSource, /path="\/workset\/:slug"/);
   assert.match(detailSource, /loading \? \(/);
+  assert.match(detailSource, /archivePath = `\/portfolio\$\{location\.search\}`/);
   assert.doesNotMatch(detailSource, /Navigate replace to="\/portfolio"/);
+});
+
+test("committed portfolio fallback enriches incomplete exports with real public media", async () => {
+  const source = await readFile(new URL("../src/content/workSetPortfolio.ts", import.meta.url), "utf8");
+  const fallbackSource = await readFile(new URL("../src/data/public-site-fallback.ts", import.meta.url), "utf8");
+  const payload = JSON.parse(await readFile(new URL("../src/data/public-site-fallback.generated.json", import.meta.url), "utf8"));
+  const explicitMediaPaths = Array.from(source.matchAll(/["'](\/media\/portfolio\/[^"']+)["']/g), (match) => match[1]);
+
+  assert.equal(payload.collections.projects.length, 16);
+  assert.ok(payload.collections.projects.every((project) => project.visibility === "public"));
+  assert.match(source, /publicGalleryFallbackBySlug/);
+  assert.match(fallbackSource, /builtIn\?\.galleryPaths\?\.length/);
+  assert.match(fallbackSource, /normalizeSoftwareLabels/);
+  assert.ok(explicitMediaPaths.length > 10);
+
+  for (const publicPath of new Set(explicitMediaPaths)) {
+    await access(new URL(`../public${publicPath}`, import.meta.url));
+  }
+});
+
+test("professional surfaces use the approved heading and body font families without replacing monospace", async () => {
+  const source = await readFile(new URL("../src/styles/global.css", import.meta.url), "utf8");
+  assert.match(source, /SourceSans3-VariableFont_wght\.ttf/);
+  assert.match(source, /Blinker-Regular\.ttf/);
+  assert.match(source, /Blinker-Black\.ttf/);
+  assert.match(source, /\.site-shell--professional :is\(h1, h2, h3, \.brand__title\)/);
+  assert.match(source, /font-family: "SUSE Mono", monospace/);
 });
 
 test("asset URL helper keeps media and docs root-relative while preserving absolute URLs", async () => {

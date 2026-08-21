@@ -37,6 +37,8 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="/cv" element={<CvPage />} />
           <Route path="/work" element={<PortfolioPage />} />
+          <Route path="/work/:slug" element={<PortfolioDetailPage />} />
+          <Route path="/workset/:slug" element={<PortfolioDetailPage />} />
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
           <Route path="/contact" element={<ContactPage />} />

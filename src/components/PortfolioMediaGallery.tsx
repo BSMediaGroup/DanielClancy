@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { MediaFrame } from "./MediaFrame";
 import type { PortfolioMediaItem } from "../content/siteContent";
 
@@ -25,6 +25,9 @@ export function PortfolioMediaGallery({
 }: PortfolioMediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const lightboxCloseRef = useRef<HTMLButtonElement>(null);
+  const dialogTitleId = useId();
 
   const resolvedMedia = galleryPaths.length
     ? galleryPaths.map((path, index) => ({
@@ -52,6 +55,7 @@ export function PortfolioMediaGallery({
         }
       : null;
   const displayMedia = primaryMedia ? [primaryMedia, ...resolvedMedia] : resolvedMedia;
+  const mediaIdentity = displayMedia.map((item) => item.src).join("|");
   const activeMedia = displayMedia[activeIndex] ?? displayMedia[0];
   const hasMultipleMedia = displayMedia.length > 1;
   const projectDocumentUrl = documentUrl || documentationUrl;
@@ -63,6 +67,29 @@ export function PortfolioMediaGallery({
 
     return Math.max(activeMedia.aspectRatio || 16 / 9, 1.45);
   }, [activeMedia]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+    setLightboxOpen(false);
+  }, [mediaIdentity, projectTitle]);
+
+  useEffect(() => {
+    if (!lightboxOpen) {
+      return;
+    }
+
+    const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    lightboxCloseRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      if (returnFocus?.isConnected) {
+        returnFocus.focus();
+      }
+    };
+  }, [lightboxOpen]);
 
   useEffect(() => {
     if (!lightboxOpen) {
@@ -80,6 +107,21 @@ export function PortfolioMediaGallery({
 
       if (event.key === "ArrowLeft" && hasMultipleMedia) {
         setActiveIndex((current) => (current - 1 + displayMedia.length) % displayMedia.length);
+      }
+
+      if (event.key === "Tab") {
+        const focusable = Array.from(
+          lightboxRef.current?.querySelectorAll<HTMLElement>("button:not([disabled]), a[href]") || [],
+        );
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
       }
     }
 
@@ -227,8 +269,15 @@ export function PortfolioMediaGallery({
       </div>
 
       {lightboxOpen ? (
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label={`${projectTitle} gallery`}>
+        <div
+          ref={lightboxRef}
+          className="lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={dialogTitleId}
+        >
           <button
+            ref={lightboxCloseRef}
             aria-label="Close gallery"
             className="lightbox__close"
             type="button"
@@ -270,7 +319,7 @@ export function PortfolioMediaGallery({
             </div>
 
             <div className="lightbox__meta">
-              <strong>{activeMedia.title || projectTitle}</strong>
+              <strong id={dialogTitleId}>{activeMedia.title || projectTitle}</strong>
               <p>{activeMedia.description || `Documentation view for ${projectTitle}.`}</p>
             </div>
           </div>

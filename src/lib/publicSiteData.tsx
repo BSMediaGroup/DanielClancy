@@ -10,6 +10,11 @@ import {
   type PublicWatchMedia,
 } from "../data/public-site-fallback";
 import { isScaffoldWatchMediaEntry } from "./watchFeed";
+import {
+  getPortfolioLookupKeys,
+  getPortfolioProjectBySlugFrom,
+  normalizePortfolioRouteKey,
+} from "./portfolio";
 
 type PublicSiteDataContextValue = {
   data: PublicSiteDataModel;
@@ -341,26 +346,15 @@ export function getProjectDocumentUrl(project: PublicProject) {
 }
 
 export function getPublicProjectLookupKeys(project: Pick<PublicProject, "slug" | "id" | "title" | "code"> & Record<string, unknown>) {
-  const keys = [
-    project.slug,
-    project.id,
-    project.code,
-    project.title,
-    lastPathSegment(asString(project.livePage)),
-    lastPathSegment(asString(project.url)),
-    lastPathSegment(asString(project.path)),
-  ];
-  return Array.from(new Set(keys.map((key) => normalizePublicRouteKey(asString(key))).filter(Boolean)));
+  return getPortfolioLookupKeys(project as PublicProject & Record<string, unknown>);
 }
 
 export function getPublicProjectByRouteKey(projects: PublicProject[], value?: string) {
-  const key = normalizePublicRouteKey(value || "");
-  if (!key) return null;
-  return projects.find((project) => getPublicProjectLookupKeys(project).includes(key)) || null;
+  return getPortfolioProjectBySlugFrom(projects, value);
 }
 
 export function normalizePublicRouteKey(value: string) {
-  return slugify(lastPathSegment(value));
+  return normalizePortfolioRouteKey(value);
 }
 
 export function normalizePublicAssetPath(value?: string) {
@@ -397,14 +391,23 @@ function normalizeProject(
   const title = asString(raw.title) || fallback?.title || "";
   if (!slug || !title) return null;
 
-  const platformLabels = arrayOfStrings(raw.platformLabels || raw.software);
+  const platformLabels = [
+    ...arrayOfStrings(raw.platformLabels),
+    ...arrayOfStrings(raw.software),
+  ];
   const platformIds = arrayOfStrings(raw.platformIds);
   const resolvedPlatforms = uniqueStrings([
-    ...platformLabels,
+    ...platformLabels.map((label) => resolvePlatformByIdNameSlug(platforms, label)?.name || label),
     ...platformIds.map((id) => resolvePlatformByIdNameSlug(platforms, id)?.name || ""),
   ]);
-  const companyLabels = arrayOfStrings(raw.companyLabels || raw.studio);
-  const companyIds = arrayOfStrings(raw.companyIds || raw.companyId);
+  const companyLabels = [
+    ...arrayOfStrings(raw.companyLabels),
+    ...arrayOfStrings(raw.studio),
+  ];
+  const companyIds = uniqueStrings([
+    ...arrayOfStrings(raw.companyIds),
+    ...arrayOfStrings(raw.companyId),
+  ]);
   const companyName =
     asString(raw.companyName) ||
     companyLabels[0] ||
@@ -413,9 +416,11 @@ function normalizeProject(
     fallback?.studio[0] ||
     "";
   const cleanGallery = arrayOfStrings(raw.galleryPaths || raw.gallery).map(normalizePublicAssetPath).filter(Boolean);
+  const fallbackGallery = (fallback?.galleryPaths || []).map(normalizePublicAssetPath).filter(Boolean);
+  const galleryPaths = fallbackGallery.length ? fallbackGallery : cleanGallery;
   const fallbackMedia = fallback?.media || [];
-  const mediaSource = cleanGallery.length
-    ? cleanGallery.map((path, index) => ({
+  const mediaSource = galleryPaths.length
+    ? galleryPaths.map((path, index) => ({
         id: `${slug}-gallery-${index}`,
         index,
         fileName: fileNameFromPath(path),
@@ -426,11 +431,31 @@ function normalizeProject(
         aspectRatio: 16 / 9,
       }))
     : fallbackMedia;
-  const heroImage = firstPath(asString(raw.heroImage || raw.hero), cleanGallery[0], fallback?.heroImage, fallback?.image);
-  const thumbnailPath = firstPath(asString(raw.thumbnailPath || raw.thumbnail), heroImage, cleanGallery[0], fallback?.thumbnailPath, fallback?.image);
+  const heroImage = firstPath(fallback?.heroImage, fallback?.image, galleryPaths[0], asString(raw.heroImage || raw.hero));
+  const thumbnailPath = firstPath(fallback?.thumbnailPath, heroImage, galleryPaths[0], asString(raw.thumbnailPath || raw.thumbnail));
   const documentPath = asString(raw.documentPath || raw.document);
   const cleanDocumentPath = normalizePublicAssetPath(documentPath);
   const documentationUrl = cleanDocumentPath.startsWith("/docs/") ? cleanDocumentPath : firstPath(asString(raw.documentationUrl), fallback?.documentationUrl);
+  const rawTags = arrayOfStrings(raw.tags);
+  const configuredDisciplines = arrayOfStrings(raw.disciplines);
+  const taxonomyDisciplines = splitTaxonomy(asString(raw.discipline || raw.category));
+  const disciplines = uniqueStrings(
+    configuredDisciplines.length
+      ? configuredDisciplines
+      : taxonomyDisciplines.length
+        ? taxonomyDisciplines
+        : fallback?.disciplines?.length
+          ? fallback.disciplines
+          : rawTags,
+  );
+  const configuredSubtypes = arrayOfStrings(raw.subtypes);
+  const subtypes = uniqueStrings(
+    configuredSubtypes.length
+      ? configuredSubtypes
+      : rawTags.length
+        ? rawTags.filter((tag) => !disciplines.some((discipline) => slugify(discipline) === slugify(tag)))
+        : fallback?.subtypes || [],
+  );
 
   return {
     ...(fallback || ({} as PublicProject)),
@@ -450,10 +475,8 @@ function normalizeProject(
     companyName,
     companyIds,
     companyLabels: companyName ? [companyName] : companyLabels,
-    disciplines: arrayOfStrings(raw.disciplines || raw.tags).length
-      ? arrayOfStrings(raw.disciplines || raw.tags)
-      : fallback?.disciplines || [],
-    subtypes: arrayOfStrings(raw.tags || raw.subtypes).length ? arrayOfStrings(raw.tags || raw.subtypes) : fallback?.subtypes || [],
+    disciplines,
+    subtypes,
     software: resolvedPlatforms.length ? resolvedPlatforms : fallback?.software || [],
     platformIds,
     platformLabels: resolvedPlatforms,
@@ -462,7 +485,7 @@ function normalizeProject(
     image: thumbnailPath,
     thumbnailPath,
     heroImage,
-    galleryPaths: cleanGallery.length ? cleanGallery : fallback?.galleryPaths || [],
+    galleryPaths,
     media: mediaSource,
     featured: Boolean(raw.featured ?? fallback?.featured),
     sourceFolder: fallback?.sourceFolder || "admin_public_site_data",
@@ -626,13 +649,6 @@ function fileNameFromPath(value: string) {
   return decodeURIComponent((value.split("/").pop() || "").split("?")[0].split("#")[0]);
 }
 
-function lastPathSegment(value: string) {
-  const text = asString(value);
-  if (!text) return "";
-  const withoutQuery = text.split("#")[0].split("?")[0];
-  return decodeURIComponent((withoutQuery.split("/").filter(Boolean).pop() || withoutQuery).trim());
-}
-
 function logPublicDataDiagnostics(details: {
   source: PublicSiteDataModel["source"];
   revision?: string;
@@ -655,7 +671,20 @@ function arrayOfStrings(value: unknown) {
 }
 
 function uniqueStrings(values: string[]) {
-  return Array.from(new Set(values.map(asString).filter(Boolean)));
+  const seen = new Set<string>();
+  return values.map(asString).filter((value) => {
+    const key = value.toLocaleLowerCase();
+    if (!value || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function splitTaxonomy(value: string) {
+  return value
+    .split(/\s*(?:,|\/|\||;)\s*/)
+    .map(asString)
+    .filter(Boolean);
 }
 
 function asString(value: unknown) {

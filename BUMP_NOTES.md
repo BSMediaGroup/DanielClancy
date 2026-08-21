@@ -1,5 +1,29 @@
 CURRENT VER= v1.0 / PENDING VER= v1.0.1
 
+## Professional Portfolio And CV Dossier Polish Milestone
+
+### Technical notes
+- Reworked the professional homepage into a restrained technical dossier with a live two-line Daniel Clancy wordmark, compact hero, real project evidence, data-derived discipline/project counts, recent chronology, software roles without fabricated percentages, and clearer CV/portfolio/contact paths.
+- Upgraded the web CV presentation while retaining the complete existing position data, dates, employers, locations, descriptions, contact details, software groups, and both existing dark/light PDF links; no PDF file was changed.
+- Repaired portfolio media resolution so incomplete or stale generated export paths inherit verified public thumbnails and ordered galleries from the committed WorkSet-backed catalogue instead of replacing them with empty or broken media fields.
+- Centralized project route normalization and resolution for slug, ID, code, title, stored path aliases, canonical `/portfolio/:slug`, and compatibility `/work/:slug` and `/workset/:slug` routes.
+- Preserved archive filter state in the URL query across direct loads, reloads, project navigation, and browser history; invalid project keys retain an explicit loading-safe Not Found state.
+- Separated discipline/category taxonomy from descriptive project tags and normalized duplicate software aliases to established platform names without dropping incomplete project records.
+- Added project-gallery route-change reset, focus entry/return, scroll locking, keyboard navigation, and focus containment for the lightbox.
+- Added first-class professional dark/light tokens, saved theme preference, restrained section separators, visible focus states, responsive dossier layouts, and reduced-motion handling without changing Personal Studio/watch/shop styling.
+- Replaced Recharge headings on professional surfaces with the supplied variable Source Sans 3 face and replaced professional body copy with the supplied weighted Blinker faces; SUSE Mono and other existing font uses remain unchanged.
+- Updated focused public-data tests for shared route resolution, authoritative catalogue count, public media existence, taxonomy/software normalization, and professional font boundaries.
+
+### Human-readable notes
+- The professional homepage now reads more clearly for employers, recruiters, consultancies, and project reviewers.
+- The web CV has a more polished drawing-sheet presentation while preserving its existing factual content and downloadable CV files.
+- The portfolio now reliably exposes the complete 16-project public catalogue and incomplete records receive truthful local media fallbacks where available.
+- Project pages resolve consistently through canonical and legacy links, preserve archive filters, and show a deliberate Not Found page for invalid records.
+- Dark/light presentation, mobile layouts, keyboard focus, gallery use, and overall visual consistency are improved across the professional site.
+
+### Known limitations
+- Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.
+
 ## Dedicated Public Live Page Milestone
 
 ### Technical notes

@@ -12,6 +12,23 @@ const navItems = [
   { to: "/contact", label: "Contact" },
 ];
 
+type ProfessionalTheme = "dark" | "light";
+
+const themeStorageKey = "dc-professional-theme";
+
+function getInitialTheme(): ProfessionalTheme {
+  if (typeof window === "undefined") {
+    return "dark";
+  }
+
+  const storedTheme = window.localStorage.getItem(themeStorageKey);
+  if (storedTheme === "dark" || storedTheme === "light") {
+    return storedTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
 export function ProfessionalShell() {
   const location = useLocation();
   const headerRef = useRef<HTMLElement>(null);
@@ -20,6 +37,16 @@ export function ProfessionalShell() {
   const [homeHeaderProgress, setHomeHeaderProgress] = useState(isHomeRoute ? 0 : 1);
   const [homeHeaderOffset, setHomeHeaderOffset] = useState(isHomeRoute ? 76 : 0);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [theme, setTheme] = useState<ProfessionalTheme>(getInitialTheme);
+
+  useEffect(() => {
+    window.localStorage.setItem(themeStorageKey, theme);
+    document.documentElement.style.colorScheme = theme;
+
+    return () => {
+      document.documentElement.style.removeProperty("color-scheme");
+    };
+  }, [theme]);
 
   useEffect(() => {
     setIsMobileNavOpen(false);
@@ -92,6 +119,7 @@ export function ProfessionalShell() {
   return (
     <div
       className={`site-shell site-shell--professional${isHomeRoute ? " site-shell--home" : ""}`}
+      data-professional-theme={theme}
       style={homeShellStyle}
     >
       <header
@@ -99,7 +127,7 @@ export function ProfessionalShell() {
         className={`site-header${isHomeRoute ? " site-header--home" : ""}`}
       >
         <div className="container site-header__inner">
-          <SiteBrand homeTo="/" subtitle="Design Consultant" theme="professional" />
+          <SiteBrand homeTo="/" theme="professional" />
 
           <div className="site-header__actions">
             <nav aria-label="Professional navigation" className="site-nav site-nav--desktop">
@@ -116,6 +144,25 @@ export function ProfessionalShell() {
                 </NavLink>
               ))}
             </nav>
+
+            <button
+              aria-label={`Use ${theme === "dark" ? "light" : "dark"} theme`}
+              className="theme-toggle"
+              title={`Use ${theme === "dark" ? "light" : "dark"} theme`}
+              type="button"
+              onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+            >
+              {theme === "dark" ? (
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="3.5" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42" />
+                </svg>
+              ) : (
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M20.4 15.3A8.5 8.5 0 0 1 8.7 3.6 8.5 8.5 0 1 0 20.4 15.3Z" />
+                </svg>
+              )}
+            </button>
 
             <HeaderMenuButton
               controls={mobileNavId}

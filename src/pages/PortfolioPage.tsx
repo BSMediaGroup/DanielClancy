@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
@@ -19,48 +18,62 @@ import {
   usePublicSiteData,
 } from "../lib/publicSiteData";
 
+const filterDefaults = {
+  scope: "all",
+  family: "All families",
+  discipline: "All disciplines",
+  software: "All software",
+} as const;
+
+type FilterName = keyof typeof filterDefaults;
+
 export function PortfolioPage() {
   const { projects: portfolioArchive, companies, platforms } = usePublicSiteData();
-  const [scope, setScope] = useState<"all" | "featured">("all");
-  const [family, setFamily] = useState("All families");
-  const [discipline, setDiscipline] = useState("All disciplines");
-  const [software, setSoftware] = useState("All software");
+  const [searchParams, setSearchParams] = useSearchParams();
   const allDisciplines = Array.from(
-    new Set(
-      portfolioArchive.flatMap((project) =>
-        project.disciplines.filter((item) => item !== "General"),
-      ),
-    ),
+    new Set(portfolioArchive.flatMap((project) => project.disciplines.filter((item) => item !== "General"))),
   ).sort((left, right) => left.localeCompare(right));
-  const allSoftware = Array.from(new Set(portfolioArchive.flatMap((project) => project.software))).sort(
-    (left, right) => left.localeCompare(right),
+  const allSoftware = Array.from(new Set(portfolioArchive.flatMap((project) => project.software))).sort((left, right) =>
+    left.localeCompare(right),
   );
   const allFamilies = getSortedPortfolioFamilies(portfolioArchive);
+  const scope = searchParams.get("scope") === "featured" ? "featured" : "all";
+  const requestedFamily = searchParams.get("family");
+  const requestedDiscipline = searchParams.get("discipline");
+  const requestedSoftware = searchParams.get("software");
+  const family = requestedFamily && allFamilies.includes(requestedFamily) ? requestedFamily : filterDefaults.family;
+  const discipline = requestedDiscipline && allDisciplines.includes(requestedDiscipline)
+    ? requestedDiscipline
+    : filterDefaults.discipline;
+  const software = requestedSoftware && allSoftware.includes(requestedSoftware)
+    ? requestedSoftware
+    : filterDefaults.software;
+
+  const setFilter = (name: FilterName, value: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (value === filterDefaults[name]) {
+      nextParams.delete(name);
+    } else {
+      nextParams.set(name, value);
+    }
+    setSearchParams(nextParams);
+  };
+
+  const resetFilters = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    Object.keys(filterDefaults).forEach((key) => nextParams.delete(key));
+    setSearchParams(nextParams);
+  };
 
   const visibleProjects = portfolioArchive.filter((project) => {
-    if (scope === "featured" && !project.featured) {
-      return false;
-    }
-
-    if (family !== "All families" && getPortfolioFamily(project) !== family) {
-      return false;
-    }
-
-    if (discipline !== "All disciplines" && !project.disciplines.includes(discipline)) {
-      return false;
-    }
-
-    if (software !== "All software" && !project.software.includes(software)) {
-      return false;
-    }
-
+    if (scope === "featured" && !project.featured) return false;
+    if (family !== filterDefaults.family && getPortfolioFamily(project) !== family) return false;
+    if (discipline !== filterDefaults.discipline && !project.disciplines.includes(discipline)) return false;
+    if (software !== filterDefaults.software && !project.software.includes(software)) return false;
     return true;
   });
-
-  const leadProjects = (scope === "featured" ? visibleProjects : visibleProjects.filter((item) => item.featured)).slice(
-    0,
-    3,
-  );
+  const leadProjects = visibleProjects.filter((item) => item.featured).slice(0, 3);
+  const querySuffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
   return (
     <>
@@ -71,228 +84,175 @@ export function PortfolioPage() {
         image={shellAssets.professionalShare}
       />
 
-      <section className="hero hero--subpage">
-        <div className="container hero-split hero-split--portfolio">
-          <div className="hero-copy">
-            <p className="kicker">Portfolio archive</p>
-            <h1>Canonical project records with cleaner browsing and stronger detail pages.</h1>
+      <section className="hero hero--subpage portfolio-hero">
+        <div className="container portfolio-hero__grid">
+          <div className="portfolio-hero__copy">
+            <p className="kicker">Portfolio / Project archive</p>
+            <h1>Selected project records and technical documentation.</h1>
             <p className="hero-copy__lead">
-              The gallery now follows the canonical WorkSet archive, while each project detail page
-              prioritises the drawing set, image sequence, and supporting context.
+              Architecture, structures, public realm and infrastructure work presented as a clear,
+              navigable professional record.
             </p>
-            <div className="archive-summary">
-              <article>
-                <span>Archive entries</span>
-                <strong>{portfolioArchive.length}</strong>
-              </article>
-              <article>
-                <span>Project families</span>
-                <strong>{allFamilies.length}</strong>
-              </article>
-              <article>
-                <span>Detail routes</span>
-                <strong>{portfolioArchive.length}</strong>
-              </article>
+            <div className="archive-summary" aria-label="Archive summary">
+              <article><span>Published records</span><strong>{portfolioArchive.length}</strong></article>
+              <article><span>Project families</span><strong>{allFamilies.length}</strong></article>
+              <article><span>In view</span><strong>{visibleProjects.length}</strong></article>
             </div>
           </div>
 
-          <aside className="surface archive-controls">
-            <p className="kicker">Refine the archive</p>
-            <div className="filter-stack">
-              <div className="filter-group">
-                <span className="filter-group__label">Scope</span>
-                <div className="filter-chip-row">
-                  <button
-                    className={`filter-chip${scope === "all" ? " filter-chip--active" : ""}`}
-                    type="button"
-                    onClick={() => setScope("all")}
-                  >
-                    Full archive
-                  </button>
-                  <button
-                    className={`filter-chip${scope === "featured" ? " filter-chip--active" : ""}`}
-                    type="button"
-                    onClick={() => setScope("featured")}
-                  >
-                    Featured only
-                  </button>
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <span className="filter-group__label">Project family</span>
-                <div className="filter-chip-row">
-                  <button
-                    className={`filter-chip${family === "All families" ? " filter-chip--active" : ""}`}
-                    type="button"
-                    onClick={() => setFamily("All families")}
-                  >
-                    All families
-                  </button>
-                  {allFamilies.map((item) => (
-                    <button
-                      key={item}
-                      className={`filter-chip${family === item ? " filter-chip--active" : ""}`}
-                      type="button"
-                      onClick={() => setFamily(item)}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <span className="filter-group__label">Discipline</span>
-                <div className="filter-chip-row">
-                  <button
-                    className={`filter-chip${discipline === "All disciplines" ? " filter-chip--active" : ""}`}
-                    type="button"
-                    onClick={() => setDiscipline("All disciplines")}
-                  >
-                    All disciplines
-                  </button>
-                  {allDisciplines.map((item) => (
-                    <button
-                      key={item}
-                      className={`filter-chip${discipline === item ? " filter-chip--active" : ""}`}
-                      type="button"
-                      onClick={() => setDiscipline(item)}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <span className="filter-group__label">Software</span>
-                <div className="filter-chip-row">
-                  <button
-                    className={`filter-chip${software === "All software" ? " filter-chip--active" : ""}`}
-                    type="button"
-                    onClick={() => setSoftware("All software")}
-                  >
-                    All software
-                  </button>
-                  {allSoftware.map((item) => (
-                    <button
-                      key={item}
-                      className={`filter-chip${software === item ? " filter-chip--active" : ""}`}
-                      type="button"
-                      onClick={() => setSoftware(item)}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <aside className="archive-controls" aria-label="Portfolio filters">
+            <div className="archive-controls__head">
+              <p className="kicker">Refine the archive</p>
+              <button className="text-button" type="button" onClick={resetFilters}>Reset</button>
             </div>
-
-            <div className="archive-controls__footer">
-              <strong>{visibleProjects.length}</strong>
-              <span>projects in view</span>
-            </div>
+            <FilterGroup
+              label="Scope"
+              activeValue={scope}
+              options={[{ label: "Full archive", value: "all" }, { label: "Featured only", value: "featured" }]}
+              onChange={(value) => setFilter("scope", value)}
+            />
+            <FilterGroup
+              label="Project family"
+              activeValue={family}
+              options={[filterDefaults.family, ...allFamilies].map((value) => ({ label: value, value }))}
+              onChange={(value) => setFilter("family", value)}
+            />
+            <FilterGroup
+              label="Discipline"
+              activeValue={discipline}
+              options={[filterDefaults.discipline, ...allDisciplines].map((value) => ({ label: value, value }))}
+              onChange={(value) => setFilter("discipline", value)}
+            />
+            <FilterGroup
+              label="Software"
+              activeValue={software}
+              options={[filterDefaults.software, ...allSoftware].map((value) => ({ label: value, value }))}
+              onChange={(value) => setFilter("software", value)}
+            />
           </aside>
         </div>
       </section>
 
-      <Section
-        eyebrow="Featured projects"
-        title="Lead entries surfaced with a faster reading pattern."
-        intro="Featured work stays selective, while the archive grid remains fully browseable and every card now opens its own project route."
-      >
-        <div className="project-grid project-grid--featured">
-          {leadProjects.map((project) => {
-            return (
-              <Link
+      {leadProjects.length ? (
+        <Section
+          eyebrow="Selected work"
+          title="A concise first reading of the archive."
+          intro="Featured records foreground project imagery, scope and delivery context before the complete catalogue."
+        >
+          <div className="project-grid project-grid--featured">
+            {leadProjects.map((project, index) => (
+              <ProjectCard
                 key={project.id}
-                className="project-card project-card--feature project-card--clickable"
-                to={`/portfolio/${getPortfolioSlug(project)}`}
-              >
-                <MediaFrame alt={project.title} aspectRatio={1.58} src={getProjectThumbnailUrl(project)} />
-                <div className="project-card__body">
-                  <div className="project-card__topline">
-                    <p>{project.client}</p>
-                    <span>{project.year}</span>
-                  </div>
-                  <h3>{project.title}</h3>
-                  <p>{project.summary}</p>
-                  <div className="project-card__meta">
-                    <span>{getPortfolioFamily(project)}</span>
-                    <span>{getDocumentationType(project)}</span>
-                  </div>
-                  <div className="logo-row logo-row--small">
-                    <span className="logo-pill logo-pill--text">
-                      <small>{getProjectCompanyLabel(project, companies)}</small>
-                    </span>
-                    {project.software.slice(0, 2).map((item) => {
-                      const platform = resolvePlatformByIdNameSlug(platforms, item);
-                      const logo = getPlatformIconPath(platform, item);
-                      return logo ? (
-                        <span key={`${project.id}-${item}`} className="logo-pill" title={platform?.name || item}>
-                          <img alt={platform?.name || item} src={logo} />
-                          <small>{item}</small>
-                        </span>
-                      ) : null;
-                    })}
-                  </div>
-                  <span className="text-link">Open project detail</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </Section>
+                companies={companies}
+                index={index}
+                platforms={platforms}
+                project={project}
+                querySuffix={querySuffix}
+                variant="feature"
+              />
+            ))}
+          </div>
+        </Section>
+      ) : null}
 
       <Section
-        eyebrow="Archive gallery"
-        title="Cleaner taxonomy, lighter cards, and clearer evidence cues."
+        eyebrow="Complete catalogue"
+        title={`${visibleProjects.length} project${visibleProjects.length === 1 ? "" : "s"} in view.`}
         intro={portfolioDisclaimer}
         className="section--muted"
       >
-        <div className="project-grid">
-          {visibleProjects.map((project) => {
-            return (
-              <Link
+        {visibleProjects.length ? (
+          <div className="project-grid project-grid--archive">
+            {visibleProjects.map((project, index) => (
+              <ProjectCard
                 key={project.id}
-                className="project-card project-card--clickable"
-                to={`/portfolio/${getPortfolioSlug(project)}`}
-              >
-                <MediaFrame alt={project.title} aspectRatio={1.6} src={getProjectThumbnailUrl(project)} />
-                <div className="project-card__body">
-                  <div className="project-card__topline">
-                    <p>{project.client}</p>
-                    <span>{project.year}</span>
-                  </div>
-                  <h3>{project.title}</h3>
-                  <p>{project.summary}</p>
-                  <div className="project-card__meta">
-                    <span>{getPortfolioFamily(project)}</span>
-                    <span>{project.location ?? project.sector ?? "Project record"}</span>
-                  </div>
-                  <div className="logo-row logo-row--small">
-                    <span className="logo-pill logo-pill--text">
-                      <small>{getProjectCompanyLabel(project, companies)}</small>
-                    </span>
-                    {project.software.slice(0, 2).map((item) => {
-                      const platform = resolvePlatformByIdNameSlug(platforms, item);
-                      const logo = getPlatformIconPath(platform, item);
-                      return logo ? (
-                        <span key={`${project.id}-${item}`} className="logo-pill" title={platform?.name || item}>
-                          <img alt={platform?.name || item} src={logo} />
-                          <small>{item}</small>
-                        </span>
-                      ) : null;
-                    })}
-                  </div>
-                  <span className="text-link">View detail page</span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+                companies={companies}
+                index={index}
+                platforms={platforms}
+                project={project}
+                querySuffix={querySuffix}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="archive-empty surface">
+            <p className="kicker">No matching records</p>
+            <h3>Try a broader combination of filters.</h3>
+            <button className="button button--secondary" type="button" onClick={resetFilters}>Reset filters</button>
+          </div>
+        )}
       </Section>
     </>
+  );
+}
+
+type FilterGroupProps = {
+  label: string;
+  activeValue: string;
+  options: Array<{ label: string; value: string }>;
+  onChange: (value: string) => void;
+};
+
+function FilterGroup({ label, activeValue, options, onChange }: FilterGroupProps) {
+  return (
+    <div className="filter-group" role="group" aria-label={label}>
+      <span className="filter-group__label">{label}</span>
+      <div className="filter-chip-row">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            aria-pressed={activeValue === option.value}
+            className={`filter-chip${activeValue === option.value ? " filter-chip--active" : ""}`}
+            type="button"
+            onClick={() => onChange(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type ProjectCardProps = {
+  companies: ReturnType<typeof usePublicSiteData>["companies"];
+  index: number;
+  platforms: ReturnType<typeof usePublicSiteData>["platforms"];
+  project: ReturnType<typeof usePublicSiteData>["projects"][number];
+  querySuffix: string;
+  variant?: "feature";
+};
+
+function ProjectCard({ companies, index, platforms, project, querySuffix, variant }: ProjectCardProps) {
+  return (
+    <Link
+      className={`project-card project-card--clickable${variant ? ` project-card--${variant}` : ""}`}
+      to={`/portfolio/${getPortfolioSlug(project)}${querySuffix}`}
+    >
+      <div className="project-card__media">
+        <MediaFrame alt={project.title} aspectRatio={variant ? 1.52 : 1.62} src={getProjectThumbnailUrl(project)} />
+        <span className="project-card__index">P-{String(index + 1).padStart(2, "0")}</span>
+      </div>
+      <div className="project-card__body">
+        <div className="project-card__topline"><p>{project.client}</p><span>{project.year}</span></div>
+        <h3>{project.title}</h3>
+        <p>{project.summary}</p>
+        <div className="project-card__meta">
+          <span>{getPortfolioFamily(project)}</span>
+          <span>{project.location || getDocumentationType(project)}</span>
+        </div>
+        <div className="project-card__footer">
+          <span>{getProjectCompanyLabel(project, companies)}</span>
+          <div className="project-card__platforms">
+            {project.software.slice(0, 3).map((item) => {
+              const platform = resolvePlatformByIdNameSlug(platforms, item);
+              const logo = getPlatformIconPath(platform, item);
+              return logo ? <img key={`${project.id}-${item}`} alt={platform?.name || item} src={logo} title={item} /> : null;
+            })}
+          </div>
+        </div>
+        <span className="text-link">View project</span>
+      </div>
+    </Link>
   );
 }

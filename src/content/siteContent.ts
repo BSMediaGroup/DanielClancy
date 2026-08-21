@@ -249,7 +249,7 @@ export const featuredProjects = workSetFeaturedProjects;
 export const homeSpotlightProjects = workSetHomeSpotlightProjects;
 
 export const portfolioDisclaimer =
-  "Displayed materials represent selected work examples only. The public archive now follows the canonical WorkSet record, while sensitive or protected material remains withheld.";
+  "Displayed materials represent selected work examples only. Sensitive or protected material remains withheld from the public archive.";
 
 export const contactUseCases = [
   "Professional introductions and hiring enquiries",

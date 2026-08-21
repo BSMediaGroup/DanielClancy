@@ -3,7 +3,7 @@ import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
-import { siteMeta } from "../content/siteContent";
+import { siteMeta, softwareGroups } from "../content/siteContent";
 import {
   getPlatformIconPath,
   resolveCompanyByIdNameSlug,
@@ -13,7 +13,7 @@ import {
 
 export function CvPage() {
   const { companies, platforms, positions } = usePublicSiteData();
-  const platformList = platforms.map((platform) => platform.name);
+
   return (
     <>
       <Seo
@@ -23,11 +23,11 @@ export function CvPage() {
         image={shellAssets.professionalShare}
       />
 
-      <section className="hero hero--subpage">
-        <div className="container hero-split hero-split--document">
-          <div className="hero-copy">
-            <p className="kicker">Curriculum vitae</p>
-            <h1>A clear chronology, direct PDF access, and credible software context.</h1>
+      <section className="hero hero--subpage cv-hero">
+        <div className="container cv-hero__grid">
+          <div className="cv-hero__copy">
+            <p className="kicker">Curriculum vitae / 2026</p>
+            <h1>Drafting, design and technical documentation.</h1>
             <p className="hero-copy__lead">{siteMeta.heroSummary}</p>
             <div className="hero-actions">
               <a
@@ -36,106 +36,127 @@ export function CvPage() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Open PDF
+                Open dark PDF
               </a>
-              <a className="button button--secondary" href="/docs/Daniel_Clancy_CV_2026.pdf" download>
-                Download PDF
+              <a
+                className="button button--secondary"
+                href="/docs/Daniel_Clancy_CV_2026_Light.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open light PDF
               </a>
             </div>
           </div>
 
-          <aside className="surface">
-            <p className="kicker">CV highlights</p>
-            <div className="info-list">
-              <div>
-                <span>Role</span>
-                <strong>{siteMeta.role}</strong>
-              </div>
-              <div>
-                <span>Base</span>
-                <strong>{siteMeta.contact.location}</strong>
-              </div>
-              <div>
-                <span>Contact</span>
-                <strong>{siteMeta.contact.email}</strong>
-              </div>
-              <div>
-                <span>Evidence</span>
-                <strong>Portfolio detail routes</strong>
-              </div>
+          <aside className="cv-contact-sheet" aria-label="Professional contact details">
+            <div className="cv-contact-sheet__head">
+              <span>DC / CV</span>
+              <span>Professional record</span>
             </div>
+            <dl className="cv-contact-sheet__details">
+              <div><dt>Role</dt><dd>{siteMeta.role}</dd></div>
+              <div><dt>Location</dt><dd>{siteMeta.contact.location}</dd></div>
+              <div>
+                <dt>Email</dt>
+                <dd><a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a></dd>
+              </div>
+              <div>
+                <dt>Telephone</dt>
+                <dd><a href="tel:+61458747524">{siteMeta.contact.phone}</a></dd>
+              </div>
+              <div><dt>Postal</dt><dd>{siteMeta.contact.postal}</dd></div>
+            </dl>
           </aside>
         </div>
       </section>
 
       <Section
-        eyebrow="Software"
-        title="Production tools used across documentation, presentation, and review."
-        intro="The layout stays documentation-first, with company marks and software marks kept subtle rather than oversized."
-        className="section--muted"
+        eyebrow="Capabilities"
+        title="Production platforms"
+        intro="A concise view of the established drafting, BIM, presentation, coordination and spatial toolset."
+        className="section--muted cv-capabilities"
       >
-        <div className="logo-card-grid">
-          {platformList.map((item) => {
-            const platform = resolvePlatformByIdNameSlug(platforms, item);
-            const logo = getPlatformIconPath(platform, item) || getSoftwareLogo(item);
-
-            return (
-              <article key={item} className="surface surface--compact">
-                <div className="icon-heading" title={platform?.name || item}>
-                  {logo ? <img alt={platform?.name || item} src={logo} /> : null}
-                  <h3>{item}</h3>
-                </div>
-              </article>
-            );
-          })}
+        <div className="cv-software-groups">
+          {softwareGroups.map((group, groupIndex) => (
+            <article key={group.label} className="cv-software-group">
+              <div className="cv-software-group__head">
+                <span>{String(groupIndex + 1).padStart(2, "0")}</span>
+                <h3>{group.label}</h3>
+              </div>
+              <div className="cv-software-group__tools">
+                {group.items.map((item) => {
+                  const platform = resolvePlatformByIdNameSlug(platforms, item);
+                  const logo = getPlatformIconPath(platform, item) || getSoftwareLogo(item);
+                  return (
+                    <div key={item} className="cv-tool" title={platform?.name || item}>
+                      {logo ? <img alt="" src={logo} /> : null}
+                      <span>{item}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
         </div>
       </Section>
 
       <Section
         eyebrow="Employment chronology"
-        title="Experience timeline"
-        intro="Roles are ordered as a readable digital record, with the company mark present where a reliable local asset exists."
+        title="Professional experience"
+        intro="An ordered record of roles, employers, locations and existing role descriptions."
       >
-        <div className="timeline-list timeline-list--document">
-          {positions.map((item) => {
+        <div className="cv-timeline" role="list">
+          {positions.map((item, index) => {
             const company = resolveCompanyByIdNameSlug(companies, item.companyId || item.companyName);
             const period = item.period || formatPositionPeriod(item.startDate, item.endDate, item.current);
+            const companyUrl = item.url || company?.website;
             return (
-              <article key={`${item.companyName}-${period}`} className="timeline-card timeline-card--document">
-                <div className="timeline-card__meta">
-                  <span>{period}</span>
-                  <small>{item.location}</small>
+              <article key={`${item.companyName}-${period}`} className="cv-role" role="listitem">
+                <div className="cv-role__index" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
                 </div>
-
-                <div className="timeline-card__body">
-                  <div className="timeline-card__heading">
-                    <div>
-                      <h3>{item.companyName}</h3>
-                      <p>{item.title}</p>
-                    </div>
-                  </div>
-                  <p>{item.summary}</p>
-                  {item.url || company?.website ? (
-                    <a className="text-link" href={item.url || company?.website} target="_blank" rel="noreferrer">
-                      {(item.url || company?.website || "").replace("https://", "").replace(/\/$/, "")}
+                <div className="cv-role__period">
+                  <strong>{period}</strong>
+                  {item.location ? <span>{item.location}</span> : null}
+                </div>
+                <div className="cv-role__body">
+                  <p className="kicker">{item.companyName}</p>
+                  <h3>{item.title}</h3>
+                  {item.summary ? <p>{item.summary}</p> : null}
+                  {item.responsibilities?.length ? (
+                    <ul className="bullet-list">
+                      {item.responsibilities.map((responsibility) => <li key={responsibility}>{responsibility}</li>)}
+                    </ul>
+                  ) : null}
+                  {item.highlights?.length ? (
+                    <ul className="bullet-list">
+                      {item.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+                    </ul>
+                  ) : null}
+                  {companyUrl ? (
+                    <a className="text-link" href={companyUrl} target="_blank" rel="noreferrer">
+                      {companyUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                     </a>
                   ) : null}
-                  <div className="timeline-card__logo">
-                    <CompanyLogoMark company={item.companyName} variant="monochrome" />
-                  </div>
+                </div>
+                <div className="cv-role__mark">
+                  <CompanyLogoMark company={item.companyName} variant="monochrome" />
                 </div>
               </article>
             );
           })}
         </div>
 
-        <div className="section-actions">
-          <Link className="button button--secondary" to="/portfolio">
-            Browse project archive
-          </Link>
-          <Link className="button button--ghost" to="/contact">
-            Contact Daniel
-          </Link>
+        <div className="cv-closing">
+          <div>
+            <p className="kicker">Project evidence</p>
+            <h2>Review the work behind the chronology.</h2>
+          </div>
+          <div className="section-actions">
+            <Link className="button button--secondary" to="/portfolio">Browse project archive</Link>
+            <Link className="button button--ghost" to="/contact">Contact Daniel</Link>
+          </div>
         </div>
       </Section>
     </>
@@ -153,8 +174,5 @@ function formatMonthYear(value?: string) {
   if (!value) return "";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "";
-  return new Intl.DateTimeFormat("en-AU", {
-    month: "long",
-    year: "numeric",
-  }).format(parsed);
+  return new Intl.DateTimeFormat("en-AU", { month: "long", year: "numeric" }).format(parsed);
 }

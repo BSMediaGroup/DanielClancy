@@ -264,7 +264,9 @@ function normalizeGeneratedFallback(value: PublicSiteDataModel): PublicSiteDataM
 }
 
 function normalizeGeneratedProject(project: PublicProject): PublicProject {
-  const builtIn = portfolioArchive.find((item) => item.slug === project.slug || item.id === project.id);
+  const builtIn = builtInFallback.collections.projects.find(
+    (item) => item.slug === project.slug || item.id === project.id,
+  );
   const studio = arrayOfStrings(project.studio).length
     ? arrayOfStrings(project.studio)
     : arrayOfStrings(project.companyLabels).length
@@ -272,24 +274,47 @@ function normalizeGeneratedProject(project: PublicProject): PublicProject {
       : project.companyName
         ? [project.companyName]
         : builtIn?.studio || [];
-  const software = arrayOfStrings(project.software).length
-    ? arrayOfStrings(project.software)
+  const software = builtIn?.software?.length
+    ? normalizeSoftwareLabels(builtIn.software)
+    : arrayOfStrings(project.software).length
+      ? normalizeSoftwareLabels(arrayOfStrings(project.software))
     : arrayOfStrings(project.platformLabels).length
-      ? arrayOfStrings(project.platformLabels)
-      : builtIn?.software || [];
-  const disciplines = arrayOfStrings(project.disciplines).length
-    ? arrayOfStrings(project.disciplines)
-    : arrayOfStrings(project.tags).length
-      ? arrayOfStrings(project.tags)
-      : project.discipline || project.category
-        ? [String(project.discipline || project.category)]
-        : builtIn?.disciplines || ["General"];
+      ? normalizeSoftwareLabels(arrayOfStrings(project.platformLabels))
+      : [];
+  const exportedDisciplines = splitTaxonomy(project.discipline || project.category);
+  const disciplines = builtIn?.disciplines?.length
+    ? builtIn.disciplines
+    : arrayOfStrings(project.disciplines).length
+      ? arrayOfStrings(project.disciplines)
+      : exportedDisciplines.length
+        ? exportedDisciplines
+        : arrayOfStrings(project.tags).length
+          ? arrayOfStrings(project.tags)
+          : ["General"];
   const subtypes = arrayOfStrings(project.subtypes).length
     ? arrayOfStrings(project.subtypes)
     : arrayOfStrings(project.tags).filter((item) => !disciplines.includes(item));
-  const galleryPaths = arrayOfStrings(project.galleryPaths).map(cleanPublicPath).filter(Boolean);
-  const thumbnailPath = firstPublicPath(project.thumbnailPath, project.heroImage, galleryPaths[0], builtIn?.image);
-  const heroImage = firstPublicPath(project.heroImage, galleryPaths[0], builtIn?.image, thumbnailPath);
+  const configuredGalleryPaths = arrayOfStrings(project.galleryPaths).map(cleanPublicPath).filter(Boolean);
+  const galleryPaths = builtIn?.galleryPaths?.length
+    ? builtIn.galleryPaths
+    : builtIn?.media?.length
+      ? builtIn.media.map((item) => item.src)
+      : configuredGalleryPaths;
+  const thumbnailPath = firstPublicPath(
+    builtIn?.thumbnailPath,
+    builtIn?.image,
+    project.thumbnailPath,
+    project.heroImage,
+    configuredGalleryPaths[0],
+  );
+  const heroImage = firstPublicPath(
+    builtIn?.heroImage,
+    builtIn?.image,
+    galleryPaths[0],
+    project.heroImage,
+    configuredGalleryPaths[0],
+    thumbnailPath,
+  );
   const media = galleryPaths.length
     ? galleryPaths.map((path, index) => ({
         id: `${project.slug}-gallery-${index}`,
@@ -354,6 +379,33 @@ function isScaffoldFallbackWatchMedia(item: PublicWatchMedia) {
 
 function slugifyPlatform(value: string) {
   return slugify(value.replace(/^Autodesk /, ""));
+}
+
+function splitTaxonomy(value?: string) {
+  return String(value || "")
+    .split(/\s*(?:,|\/|\||;)\s*/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizeSoftwareLabels(values: string[]) {
+  const canonicalLabels: Record<string, string> = {
+    autocad: "Autodesk AutoCAD",
+    revit: "Autodesk Revit",
+    sketchup: "Trimble SketchUp",
+    "adobe-creative-cloud": "Adobe Creative Cloud",
+    "microsoft-office": "Microsoft Office",
+    qgis: "QGIS",
+  };
+  const seen = new Set<string>();
+  return values
+    .map((value) => canonicalLabels[slugifyPlatform(value)] || value.trim())
+    .filter((value) => {
+      const key = slugifyPlatform(value);
+      if (!value || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 function firstPublicPath(...values: Array<string | undefined>) {
