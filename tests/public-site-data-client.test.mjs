@@ -121,8 +121,10 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   const appSource = await readFile(new URL("../src/app/App.tsx", import.meta.url), "utf8");
   const brandSource = await readFile(new URL("../src/components/SiteBrand.tsx", import.meta.url), "utf8");
   const contactSource = await readFile(new URL("../src/pages/ContactPage.tsx", import.meta.url), "utf8");
+  const detailSource = await readFile(new URL("../src/pages/PortfolioDetailPage.tsx", import.meta.url), "utf8");
   const gallerySource = await readFile(new URL("../src/components/PortfolioMediaGallery.tsx", import.meta.url), "utf8");
   const homeSource = await readFile(new URL("../src/pages/HomePage.tsx", import.meta.url), "utf8");
+  const mediaFrameSource = await readFile(new URL("../src/components/MediaFrame.tsx", import.meta.url), "utf8");
   const siteContentSource = await readFile(new URL("../src/content/siteContent.ts", import.meta.url), "utf8");
   const styleSource = await readFile(new URL("../src/styles/global.css", import.meta.url), "utf8");
 
@@ -132,6 +134,8 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(homeSource, /window\.setInterval/);
   assert.match(homeSource, /previousFeatureIndex/);
   assert.match(homeSource, /image\.fetchPriority = "low"/);
+  assert.match(mediaFrameSource, /fetchpriority: fetchPriority/);
+  assert.doesNotMatch(mediaFrameSource, /fetchPriority=\{fetchPriority\}/);
   assert.match(homeSource, /DisciplineIcon/);
   assert.match(homeSource, /See full CV/);
   assert.doesNotMatch(homeSource, /experience-layout__aside/);
@@ -141,10 +145,18 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.doesNotMatch(brandSource, /clancy-wordmark|<svg|<path/);
   assert.match(styleSource, /\.site-shell--professional \.section-heading\s*\{\s*grid-template-columns: minmax\(0, 1fr\);/s);
   assert.match(styleSource, /\.site-shell--professional \.detail-meta-grid div[\s\S]*background: var\(--panel-strong\);/);
+  assert.match(detailSource, /className="container detail-heading"/);
+  assert.match(styleSource, /\.site-shell--professional \.detail-meta-grid\s*\{[\s\S]*border: 0;[\s\S]*background: transparent;/);
+  assert.match(styleSource, /\.site-shell--professional \.detail-meta-grid div:last-child:nth-child\(odd\)/);
+  assert.match(styleSource, /\.site-shell--professional \.section__band\s*\{[\s\S]*position: absolute;[\s\S]*width: var\(--container\);/);
+  assert.match(styleSource, /\.site-shell--professional \.hero--subpage::after\s*\{\s*display: none;/s);
+  assert.match(styleSource, /@keyframes professional-grid-depth/);
+  assert.match(styleSource, /@keyframes professional-scan-pass/);
   assert.match(appSource, /function RouteScrollManager/);
   assert.match(appSource, /behavior: "instant" as ScrollBehavior/);
   assert.match(gallerySource, /Math\.SQRT2/);
   assert.match(gallerySource, /View full screen/);
+  assert.equal((gallerySource.match(/>\s*View full screen\s*</g) || []).length, 1);
   assert.match(gallerySource, /createPortal/);
   assert.equal((contactSource.match(/<Section\b/g) || []).length, 1);
   assert.doesNotMatch(contactSource, /static-host|server-side|Pages Function|delivery endpoint/i);

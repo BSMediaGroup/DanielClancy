@@ -86,6 +86,15 @@ export function PortfolioDetailPage() {
           <span aria-hidden="true">/</span>
           <span>{getPortfolioFamily(project)}</span>
         </div>
+
+        <div className="container detail-heading">
+          <div className="detail-heading__title">
+            <p className="kicker">{getPortfolioFamily(project)} / {project.year}</p>
+            <h1>{project.title}</h1>
+          </div>
+          <p className="detail-heading__summary">{project.summary}</p>
+        </div>
+
         <div className="container detail-hero">
           <div className="detail-hero__media">
             <PortfolioMediaGallery
@@ -100,11 +109,7 @@ export function PortfolioDetailPage() {
             />
           </div>
 
-          <div className="detail-hero__body">
-            <p className="kicker">{getPortfolioFamily(project)} / {project.year}</p>
-            <h1>{project.title}</h1>
-            <p className="detail-hero__summary">{project.summary}</p>
-
+          <aside className="detail-hero__body" aria-label="Project details">
             <div className="detail-meta-grid">
               <div><span>Client</span><strong>{project.client}</strong></div>
               <div><span>Date</span><strong>{project.dateLabel}</strong></div>
@@ -132,7 +137,7 @@ export function PortfolioDetailPage() {
               <Link className="button button--secondary" to={archivePath}>Back to portfolio</Link>
               <Link className="button button--ghost" to="/contact">Discuss this work</Link>
             </div>
-          </div>
+          </aside>
         </div>
       </section>
 

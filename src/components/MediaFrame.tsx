@@ -38,7 +38,7 @@ export function MediaFrame({
           <img
             alt={alt}
             decoding="async"
-            fetchPriority={fetchPriority}
+            {...{ fetchpriority: fetchPriority }}
             loading={loading}
             src={src}
             onError={() => setFailed(true)}

@@ -38,6 +38,13 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Added asynchronous image decoding, fetch-priority hints, and a truthful media-error fallback to the shared media frame; project cards now contain full drawing sheets rather than aggressively cover-cropping them.
 - Added verified thumbnail mappings for Spratt Residence and Henry Street and created right-sized local thumbnails for Jull Street, Eighth Road, and Lake Joondalup so the archive no longer falls back to those large source documents.
 - Added focused regression coverage for the optimized thumbnail paths, bounded featured slideshow, solid detail metadata surfaces, and existing professional presentation requirements.
+- Replaced the rejected final professional-layout layer with one coherent end-of-cascade treatment across Home, CV, Portfolio, project detail, and Contact, correcting duplicate spacing models rather than adding another competing page-specific patch.
+- Rebuilt project-detail hierarchy so long titles sit in a measured full-width heading band, the ISO-A gallery and compact details rail align beneath it, odd metadata rows span cleanly, and every fact card remains solid and contained.
+- Corrected the shared section rule from a normal-flow full-width stripe to a container-width absolute separator with deliberate breathing room, removed duplicate hero/stat boundaries and the unnecessary project-action divider, and normalized panel padding throughout the professional shell.
+- Removed conflicting CV software-grid and portfolio-summary outer borders, reset archive cards to a predictable grid, aligned CV timeline markers to their rail, restored two-column desktop contact fields, and removed the redundant second full-screen gallery control while retaining the prominent overlay control and lightbox.
+- Expanded the homepage hero motion into a clearly visible layered technical field with animated depth grid, scanning datum, traced structure/dimension/route lines, pulsing nodes, ambient light and drawing drift, all disabled under reduced motion.
+- Added direct regression checks for the rebuilt project-heading structure, clean odd metadata rows, contained section dividers, single gallery full-screen action, and the upgraded hero-motion layers.
+- Changed the shared image-priority DOM emission to the standards-compliant lowercase `fetchpriority` attribute so React 18 no longer logs a production-console warning while retaining the same browser loading hints.
 
 ### Human-readable notes
 - The professional homepage now reads more clearly for employers, recruiters, consultancies, and project reviewers.
@@ -59,6 +66,9 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - The statistics rail has its missing top line back, and project-detail facts now sit on clean solid panels without the page grid showing through them.
 - The homepage background has a richer but still restrained architectural animation, with motion disabled cleanly for visitors who prefer reduced motion.
 - Portfolio and homepage project previews start faster because they use dedicated thumbnails and no longer load every featured sheet at once.
+- Long project names no longer overwhelm or spill out of the project page; titles, summaries, drawings, facts, software badges, controls, and pagination now sit in a cleaner, more balanced dossier layout.
+- Rules and borders now separate major page bands without pressing against headings, cards, buttons, badges, or software groups, and the archive, CV, Contact, and mobile layouts follow the same spacing rhythm.
+- The homepage hero now has noticeably richer architectural motion while remaining restrained, readable, and respectful of reduced-motion preferences.
 
 ### Known limitations
 - Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.

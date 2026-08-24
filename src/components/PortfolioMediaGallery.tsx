@@ -170,11 +170,6 @@ export function PortfolioMediaGallery({
                   Open project document
                 </a>
               ) : null}
-              {activeMedia ? (
-                <button className="button button--ghost" type="button" onClick={() => setLightboxOpen(true)}>
-                  View full screen
-                </button>
-              ) : null}
             </div>
           </div>
 
