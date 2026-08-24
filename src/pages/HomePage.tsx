@@ -290,13 +290,6 @@ export function HomePage() {
         className="section--professional-grid experience-section"
       >
         <div className="experience-layout">
-          <div className="experience-layout__aside">
-            <p>
-              Four recent positions are shown here. The CV includes the complete employment history and
-              existing role descriptions.
-            </p>
-          </div>
-
           <div className="experience-list">
             {recentExperience.map((item, index) => (
               <article key={`${item.companyName}-${item.period || item.startDate}`} className="experience-row">

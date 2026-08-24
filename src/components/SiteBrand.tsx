@@ -15,8 +15,11 @@ export function ClancyWordmark({ className = "" }: ClancyWordmarkProps) {
   return (
     <span className={`clancy-wordmark ${className}`.trim()} aria-hidden="true">
       <span className="clancy-wordmark__letters">CL</span>
-      <svg className="clancy-wordmark__a" viewBox="0 0 100 100" focusable="false">
-        <path d="M5 96 50 4 95 96M25 62H75" />
+      <svg className="clancy-wordmark__a" viewBox="-8 0 596 651" focusable="false">
+        <path
+          d="M157 0 192.57453 145 380.87577 145 416 0H588L388 651H192L-8 0ZM236 322C244 353.33333 252.33333 387.33333 261 424 269.66667 460.66667 277.33333 495.66667 284 529H288C296 495.66667 304.16667 460.66667 312.5 424 320.83333 387.33333 329.33333 353.33333 338 322L350.35404 271H223.48758Z"
+          transform="translate(0 651) scale(1 -1)"
+        />
       </svg>
       <span className="clancy-wordmark__letters">NCY</span>
     </span>

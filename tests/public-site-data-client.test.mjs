@@ -124,9 +124,13 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(homeSource, /window\.setInterval/);
   assert.match(homeSource, /DisciplineIcon/);
   assert.match(homeSource, /See full CV/);
+  assert.doesNotMatch(homeSource, /experience-layout__aside/);
   assert.doesNotMatch(homeSource, /Evidence first|drawing record|published projects/i);
   assert.match(brandSource, /className="clancy-wordmark__a"/);
   assert.equal((brandSource.match(/<path\b/g) || []).length, 1);
+  assert.match(brandSource, /viewBox="-8 0 596 651"/);
+  assert.match(brandSource, /M157 0 192\.57453 145/);
+  assert.doesNotMatch(brandSource, /M5 96 50 4 95 96/);
   assert.match(appSource, /function RouteScrollManager/);
   assert.match(appSource, /behavior: "instant" as ScrollBehavior/);
   assert.match(gallerySource, /Math\.SQRT2/);

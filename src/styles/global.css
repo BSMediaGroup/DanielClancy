@@ -9732,21 +9732,21 @@ select:focus {
 }
 
 .clancy-wordmark__a {
-  width: 0.68em;
-  height: 0.79em;
-  margin-inline: 0.015em;
+  width: 0.596em;
+  height: 0.651em;
+  flex: 0 0 auto;
+  margin-inline: -0.008em -0.009em;
   overflow: visible;
   color: color-mix(in srgb, var(--text) 78%, transparent);
-  transform: translateY(0.035em);
 }
 
 .clancy-wordmark__a path {
   fill: none;
   stroke: currentColor;
-  stroke-width: 3.1;
-  stroke-linecap: square;
+  stroke-width: 1.2;
   stroke-linejoin: miter;
   vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
 }
 
 .site-shell--professional .brand__name-line--outline {
@@ -9761,12 +9761,12 @@ select:focus {
   -webkit-text-stroke-width: 0.82px;
 }
 
-.site-shell--professional .brand__name-line--outline .clancy-wordmark__a {
-  height: 0.82em;
+.site-shell--professional .brand__name-line--outline .clancy-wordmark__a path {
+  stroke-width: 0.82;
 }
 
-.site-shell--professional .brand__name-line--outline .clancy-wordmark__a path {
-  stroke-width: 2.1;
+.site-shell--professional .brand__title--stacked {
+  font-weight: 820;
 }
 
 .professional-hero__outline {
@@ -9920,6 +9920,11 @@ select:focus {
   display: flex;
   justify-content: flex-start;
   padding-top: 1.75rem;
+}
+
+.experience-layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
 }
 
 .site-shell--professional .portfolio-gallery__stage {
