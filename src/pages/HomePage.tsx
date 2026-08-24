@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CapabilityMeter } from "../components/CapabilityMeter";
 import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
+import { ClancyWordmark } from "../components/SiteBrand";
 import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
 import { featuredEmployers, homeMetrics, siteMeta } from "../content/siteContent";
 import {
@@ -30,9 +32,10 @@ const softwareCapabilities = [
 
 export function HomePage() {
   const { projects, positions, platforms } = usePublicSiteData();
-  const spotlightProjects = projects.filter((project) => project.featured).slice(0, 3);
-  const selectedProjects = spotlightProjects.length ? spotlightProjects : projects.slice(0, 3);
-  const leadProject = selectedProjects[0];
+  const spotlightProjects = projects.filter((project) => project.featured);
+  const selectedProjects = spotlightProjects.length ? spotlightProjects.slice(0, 3) : projects.slice(0, 3);
+  const featuredSlides = spotlightProjects.length ? spotlightProjects : projects.slice(0, 1);
+  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const recentExperience = positions.slice(0, 4);
   const disciplineRecords = disciplineOrder
     .map((name) => ({
@@ -41,11 +44,27 @@ export function HomePage() {
     }))
     .filter((item) => item.count > 0);
 
+  useEffect(() => {
+    setActiveFeatureIndex((current) => Math.min(current, Math.max(featuredSlides.length - 1, 0)));
+  }, [featuredSlides.length]);
+
+  useEffect(() => {
+    if (featuredSlides.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveFeatureIndex((current) => (current + 1) % featuredSlides.length);
+    }, 6500);
+
+    return () => window.clearInterval(timer);
+  }, [featuredSlides.length]);
+
   return (
     <>
       <Seo
         title="Daniel Clancy"
-        description="Drafting, documentation, and project evidence for Daniel Clancy."
+        description="Professional drafting, documentation, and selected project work by Daniel Clancy."
         path="/"
         image={shellAssets.professionalShare}
       />
@@ -82,14 +101,11 @@ export function HomePage() {
         <div className="container professional-hero">
           <div className="professional-hero__copy">
             <div className="professional-hero__intro">
-              <span className="professional-hero__portrait-shell">
-                <img alt="Portrait of Daniel Clancy" src={shellAssets.profileAvatar} />
-              </span>
               <p className="kicker">Professional profile · Sydney, Australia</p>
             </div>
             <h1 aria-label="Daniel Clancy">
               <span>Daniel</span>
-              <span className="professional-hero__outline">Clancy</span>
+              <ClancyWordmark className="professional-hero__outline" />
             </h1>
             <p className="professional-hero__role">{siteMeta.role}</p>
             <p className="professional-hero__summary">{siteMeta.heroSummary}</p>
@@ -129,43 +145,60 @@ export function HomePage() {
             </dl>
           </div>
 
-          {leadProject ? (
-            <Link
-              className="professional-evidence-board"
-              to={`/portfolio/${getPortfolioSlug(leadProject)}`}
-              aria-label={`Open project record for ${leadProject.title}`}
-            >
-              <div className="professional-evidence-board__head">
-                <span>Project evidence / drawing record</span>
-                <span>Sheet 01 · Public</span>
-              </div>
-              <div className="professional-evidence-board__media">
-                <MediaFrame
-                  alt={leadProject.title}
-                  fit="contain"
-                  loading="eager"
-                  src={getProjectThumbnailUrl(leadProject)}
-                />
-                <div className="professional-evidence-board__callout">
-                  <strong>Evidence first</strong>
-                  <span>Scope, software, studio context, and project documentation.</span>
+          {featuredSlides.length ? (
+            <div className="professional-feature-slideshow" aria-label="Featured projects">
+              {featuredSlides.map((project, index) => (
+                <Link
+                  key={project.id}
+                  aria-hidden={index !== activeFeatureIndex}
+                  aria-label={`View featured project: ${project.title}`}
+                  className={`professional-evidence-board${index === activeFeatureIndex ? " professional-evidence-board--active" : ""}`}
+                  tabIndex={index === activeFeatureIndex ? 0 : -1}
+                  to={`/portfolio/${getPortfolioSlug(project)}`}
+                >
+                  <div className="professional-evidence-board__head">
+                    <span>Featured project</span>
+                    <span>{String(index + 1).padStart(2, "0")} / {String(featuredSlides.length).padStart(2, "0")}</span>
+                  </div>
+                  <div className="professional-evidence-board__media">
+                    <MediaFrame
+                      alt={project.title}
+                      fit="contain"
+                      loading={index === 0 ? "eager" : "lazy"}
+                      src={getProjectThumbnailUrl(project)}
+                    />
+                  </div>
+                  <div className="professional-evidence-board__foot">
+                    <div>
+                      <span>Project</span>
+                      <strong>{project.title}</strong>
+                    </div>
+                    <div>
+                      <span>Practice</span>
+                      <strong>{getPortfolioFamily(project)}</strong>
+                    </div>
+                    <div>
+                      <span>Year</span>
+                      <strong>{project.year}</strong>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+              {featuredSlides.length > 1 ? (
+                <div className="professional-feature-slideshow__controls" aria-label="Choose featured project">
+                  {featuredSlides.map((project, index) => (
+                    <button
+                      key={project.id}
+                      aria-label={`Show ${project.title}`}
+                      aria-pressed={index === activeFeatureIndex}
+                      className={index === activeFeatureIndex ? "is-active" : ""}
+                      type="button"
+                      onClick={() => setActiveFeatureIndex(index)}
+                    />
+                  ))}
                 </div>
-              </div>
-              <div className="professional-evidence-board__foot">
-                <div>
-                  <span>Current feature</span>
-                  <strong>{leadProject.title}</strong>
-                </div>
-                <div>
-                  <span>Studio</span>
-                  <strong>{getPortfolioFamily(leadProject)}</strong>
-                </div>
-                <div>
-                  <span>Year</span>
-                  <strong>{leadProject.year}</strong>
-                </div>
-              </div>
-            </Link>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </section>
@@ -186,15 +219,15 @@ export function HomePage() {
           </article>
           <article>
             <strong>{String(projects.length).padStart(2, "0")}</strong>
-            <span>Published projects</span>
+            <span>Portfolio projects</span>
           </article>
         </div>
       </section>
 
       <Section
-        eyebrow="Selected portfolio evidence"
-        title="Project evidence with the drawing work left in view."
-        intro="Representative projects foreground scope, studio context, dates, disciplines, and the documentation available in the complete archive."
+        eyebrow="Selected projects"
+        title="Selected work across architecture, civil and landscape."
+        intro="Project imagery is presented with practice, date, discipline and available drawing context."
         className="section--professional-grid"
       >
         <div className="project-grid project-grid--featured home-feature-grid">
@@ -219,7 +252,7 @@ export function HomePage() {
                   <span>{project.client}</span>
                   <span>{getDocumentationType(project)}</span>
                 </div>
-                <span className="text-link">Open project record</span>
+                <span className="text-link">View project</span>
               </div>
             </Link>
           ))}
@@ -234,16 +267,17 @@ export function HomePage() {
 
       <Section
         eyebrow="Sectors and disciplines"
-        title="One practice language across multiple project types."
-        intro="The published catalogue shows where each discipline appears, without flattening distinct project records into generic capability claims."
+        title="Disciplines applied across the portfolio."
+        intro="Each discipline reflects work represented in the selected projects."
         className="section--muted discipline-section"
       >
         <div className="discipline-matrix">
           {disciplineRecords.map((item, index) => (
             <article key={item.name}>
               <span className="discipline-matrix__index">{String(index + 1).padStart(2, "0")}</span>
+              <DisciplineIcon name={item.name} />
               <strong>{item.name}</strong>
-              <span>{item.count} published project{item.count === 1 ? "" : "s"}</span>
+              <span>{item.count} project{item.count === 1 ? "" : "s"}</span>
             </article>
           ))}
         </div>
@@ -258,12 +292,9 @@ export function HomePage() {
         <div className="experience-layout">
           <div className="experience-layout__aside">
             <p>
-              The homepage keeps recent roles concise while the CV retains every available employment
-              entry and its current factual copy.
+              Four recent positions are shown here. The CV includes the complete employment history and
+              existing role descriptions.
             </p>
-            <Link className="button button--secondary" to="/cv">
-              Review full CV
-            </Link>
           </div>
 
           <div className="experience-list">
@@ -284,6 +315,11 @@ export function HomePage() {
                 </div>
               </article>
             ))}
+            <div className="experience-list__footer">
+              <Link className="button button--secondary" to="/cv">
+                See full CV
+              </Link>
+            </div>
           </div>
         </div>
       </Section>
@@ -316,8 +352,8 @@ export function HomePage() {
               <p className="kicker">Working range</p>
               <h3>Drafting precision supported by modelling, presentation and spatial tools.</h3>
               <p>
-                Platform familiarity is presented with the same technical restraint as the project
-                archive: clear hierarchy, real software marks, and no substitute for the work itself.
+                Platform familiarity supports the drafting, modelling, presentation and spatial work
+                represented throughout the portfolio.
               </p>
             </div>
             <div className="employer-mark-row" aria-label="Selected employers and studios">
@@ -333,7 +369,7 @@ export function HomePage() {
         <div className="professional-cv-cta">
           <div>
             <p className="kicker">Curriculum vitae</p>
-            <h3>One chronology, available on the web and as two PDF presentations.</h3>
+            <h3>Complete career history on the web and in two PDF presentations.</h3>
           </div>
           <div className="hero-actions">
             <Link className="button button--primary" to="/cv">
@@ -347,6 +383,61 @@ export function HomePage() {
       </Section>
     </>
   );
+}
+
+function DisciplineIcon({ name }: { name: string }) {
+  const commonProps = {
+    className: "discipline-matrix__icon",
+    viewBox: "0 0 64 64",
+    "aria-hidden": true,
+    focusable: false,
+  } as const;
+
+  switch (name) {
+    case "Architectural":
+      return (
+        <svg {...commonProps}>
+          <path d="M8 54V25L32 8l24 17v29M20 54V32h24v22M32 8v46" />
+        </svg>
+      );
+    case "Civil":
+      return (
+        <svg {...commonProps}>
+          <path d="M7 43h50M11 43l7-17h28l7 17M18 26l7-12h14l7 12M15 51h34" />
+        </svg>
+      );
+    case "Landscape":
+      return (
+        <svg {...commonProps}>
+          <path d="M32 55V29M32 35c-12 0-19-7-19-18 12 0 19 7 19 18ZM32 43c12 0 19-7 19-18-12 0-19 7-19 18ZM10 55h44" />
+        </svg>
+      );
+    case "Structural":
+      return (
+        <svg {...commonProps}>
+          <path d="M10 10h44M14 10v44M50 10v44M10 54h44M14 26h36M14 42h36M14 10l36 44M50 10 14 54" />
+        </svg>
+      );
+    case "Transport":
+      return (
+        <svg {...commonProps}>
+          <path d="M13 55c10-9 13-18 13-27S22 13 18 9M51 55c-10-9-13-18-13-27s4-15 8-19M32 8v8M32 24v8M32 40v8M32 56v1" />
+        </svg>
+      );
+    case "Urban Planning":
+      return (
+        <svg {...commonProps}>
+          <path d="M8 55h48M13 55V27h13v28M26 55V10h15v45M41 55V20h10v35M17 33h5M17 41h5M31 18h5M31 27h5M31 36h5M45 28h3M45 36h3" />
+        </svg>
+      );
+    default:
+      return (
+        <svg {...commonProps}>
+          <circle cx="32" cy="32" r="21" />
+          <path d="M11 32h42M32 11v42" />
+        </svg>
+      );
+  }
 }
 
 function formatPositionPeriod(startDate?: string, endDate?: string, current?: boolean) {

@@ -110,19 +110,18 @@ export function ContactPage() {
         image={shellAssets.professionalShare}
       />
 
-      <section className="hero hero--subpage">
-        <div className="container hero-split hero-split--contact">
+      <section className="hero hero--subpage contact-hero">
+        <div className="container contact-hero__grid">
           <div className="hero-copy">
             <p className="kicker">Contact</p>
-            <h1>Direct contact for professional enquiries, project follow-up, and collaboration.</h1>
+            <h1>Professional enquiries and role conversations.</h1>
             <p className="hero-copy__lead">
-              Use the form for introductions, project discussions, or role conversations. Messages are
-              delivered server-side for Cloudflare Pages deployment, and the page now includes a Sydney
-              location map for fast spatial context.
+              For employment opportunities, project discussions, or drafting and design collaboration,
+              use the form below or contact Daniel directly.
             </p>
           </div>
 
-          <aside className="surface">
+          <aside className="surface contact-primary-details">
             <p className="kicker">Primary details</p>
             <div className="contact-stack">
               <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
@@ -135,47 +134,12 @@ export function ContactPage() {
       </section>
 
       <Section
-        eyebrow="Location"
-        title="Sydney-based with a map surface that matches the site."
-        intro="The map stays static-host friendly while using a dark presentation, a custom studio marker, and a restrained hover tooltip."
-        className="section--muted"
+        eyebrow="Get in touch"
+        title="Start a conversation."
+        intro="Share the role, project or context for your enquiry and Daniel will respond directly."
+        className="contact-section"
       >
-        <div className="two-column-grid two-column-grid--contact">
-          <article className="surface surface--map">
-            <ContactMap />
-          </article>
-
-          <article className="surface">
-            <p className="kicker">Base</p>
-            <h3>Sydney CBD context</h3>
-            <p>
-              Daniel Clancy is based in Sydney, New South Wales, with the professional contact surface
-              anchored to the CBD for quick geographic reference.
-            </p>
-            <div className="info-list">
-              <div>
-                <span>City</span>
-                <strong>Sydney</strong>
-              </div>
-              <div>
-                <span>Region</span>
-                <strong>New South Wales</strong>
-              </div>
-              <div>
-                <span>Postal</span>
-                <strong>{siteMeta.contact.postal}</strong>
-              </div>
-            </div>
-          </article>
-        </div>
-      </Section>
-
-      <Section
-        eyebrow="Send a message"
-        title="A polished contact form with server-side delivery handling."
-        intro="The form validates required fields, uses a honeypot and timing check, and sends through a Pages Function without exposing delivery credentials."
-      >
-        <div className="two-column-grid two-column-grid--contact">
+        <div className="contact-workspace">
           <form className="surface form-shell" onSubmit={handleSubmit} aria-busy={status === "submitting"}>
             <div className="form-grid">
               <label>
@@ -276,24 +240,24 @@ export function ContactPage() {
             </div>
           </form>
 
-          <div className="surface-stack">
-            <article className="surface">
-              <p className="kicker">Best fit</p>
+          <aside className="contact-sidebar">
+            <article className="surface contact-map-card">
+              <div className="contact-map-card__head">
+                <p className="kicker">Based in Sydney</p>
+                <h3>Sydney, New South Wales</h3>
+              </div>
+              <ContactMap />
+            </article>
+
+            <article className="surface contact-focus-card">
+              <p className="kicker">Relevant enquiries</p>
               <ul className="bullet-list">
                 {contactUseCases.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
             </article>
-
-            <article className="surface">
-              <p className="kicker">Delivery</p>
-              <p>
-                Messages are addressed to <strong>mail@danielclancy.net</strong> through the configured
-                server-side delivery endpoint. Reply handling stays server-side.
-              </p>
-            </article>
-          </div>
+          </aside>
         </div>
       </Section>
     </>

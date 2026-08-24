@@ -79,7 +79,7 @@ export function PortfolioPage() {
     <>
       <Seo
         title="Portfolio"
-        description="Project archive and dedicated detail pages for Daniel Clancy."
+        description="Selected professional projects and technical documentation by Daniel Clancy."
         path="/portfolio"
         image={shellAssets.professionalShare}
       />
@@ -87,28 +87,28 @@ export function PortfolioPage() {
       <section className="hero hero--subpage portfolio-hero">
         <div className="container portfolio-hero__grid">
           <div className="portfolio-hero__copy">
-            <p className="kicker">Portfolio / Project archive</p>
-            <h1>Selected project records and technical documentation.</h1>
+            <p className="kicker">Portfolio</p>
+            <h1>Selected professional work.</h1>
             <p className="hero-copy__lead">
-              Architecture, structures, public realm and infrastructure work presented as a clear,
-              navigable professional record.
+              Architecture, structures, public realm and infrastructure work presented with project
+              context, dates and available drawings.
             </p>
-            <div className="archive-summary" aria-label="Archive summary">
-              <article><span>Published records</span><strong>{portfolioArchive.length}</strong></article>
-              <article><span>Project families</span><strong>{allFamilies.length}</strong></article>
-              <article><span>In view</span><strong>{visibleProjects.length}</strong></article>
+            <div className="archive-summary" aria-label="Portfolio summary">
+              <article><span>Projects</span><strong>{portfolioArchive.length}</strong></article>
+              <article><span>Project groups</span><strong>{allFamilies.length}</strong></article>
+              <article><span>Showing</span><strong>{visibleProjects.length}</strong></article>
             </div>
           </div>
 
           <aside className="archive-controls" aria-label="Portfolio filters">
             <div className="archive-controls__head">
-              <p className="kicker">Refine the archive</p>
+              <p className="kicker">Filter projects</p>
               <button className="text-button" type="button" onClick={resetFilters}>Reset</button>
             </div>
             <FilterGroup
               label="Scope"
               activeValue={scope}
-              options={[{ label: "Full archive", value: "all" }, { label: "Featured only", value: "featured" }]}
+              options={[{ label: "All projects", value: "all" }, { label: "Featured projects", value: "featured" }]}
               onChange={(value) => setFilter("scope", value)}
             />
             <FilterGroup
@@ -136,8 +136,8 @@ export function PortfolioPage() {
       {leadProjects.length ? (
         <Section
           eyebrow="Selected work"
-          title="A concise first reading of the archive."
-          intro="Featured records foreground project imagery, scope and delivery context before the complete catalogue."
+          title="Featured projects."
+          intro="A selection of work showing project imagery, scope and practice context."
         >
           <div className="project-grid project-grid--featured">
             {leadProjects.map((project, index) => (
@@ -156,7 +156,7 @@ export function PortfolioPage() {
       ) : null}
 
       <Section
-        eyebrow="Complete catalogue"
+        eyebrow="All projects"
         title={`${visibleProjects.length} project${visibleProjects.length === 1 ? "" : "s"} in view.`}
         intro={portfolioDisclaimer}
         className="section--muted"
@@ -176,7 +176,7 @@ export function PortfolioPage() {
           </div>
         ) : (
           <div className="archive-empty surface">
-            <p className="kicker">No matching records</p>
+            <p className="kicker">No projects match</p>
             <h3>Try a broader combination of filters.</h3>
             <button className="button button--secondary" type="button" onClick={resetFilters}>Reset filters</button>
           </div>

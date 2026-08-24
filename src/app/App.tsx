@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { useLayoutEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { PersonalShell } from "../components/PersonalShell";
 import { PageVisitBeacon } from "../components/PageVisitBeacon";
 import { ProfessionalShell } from "../components/ProfessionalShell";
@@ -31,6 +32,7 @@ import { WatchPage } from "../pages/WatchPage";
 export default function App() {
   return (
     <PublicSiteDataProvider>
+      <RouteScrollManager />
       <PageVisitBeacon />
       <Routes>
         <Route element={<ProfessionalShell />}>
@@ -74,4 +76,31 @@ export default function App() {
       </Routes>
     </PublicSiteDataProvider>
   );
+}
+
+function RouteScrollManager() {
+  const { pathname, hash } = useLocation();
+
+  useLayoutEffect(() => {
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    const frame = window.requestAnimationFrame(() => {
+      if (hash) {
+        const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+        if (target) {
+          target.scrollIntoView({ behavior: "instant" as ScrollBehavior });
+          return;
+        }
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.history.scrollRestoration = previousRestoration;
+    };
+  }, [hash, pathname]);
+
+  return null;
 }

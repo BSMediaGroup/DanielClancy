@@ -1,4 +1,5 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MediaFrame } from "./MediaFrame";
 import type { PortfolioMediaItem } from "../content/siteContent";
 
@@ -20,8 +21,6 @@ export function PortfolioMediaGallery({
   galleryPaths = [],
   documentUrl,
   documentationUrl,
-  documentationAvailable = Boolean(documentationUrl),
-  documentationStatusNote,
 }: PortfolioMediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -37,8 +36,8 @@ export function PortfolioMediaGallery({
         src: path,
         alt: projectTitle,
         title: `${projectTitle} ${index + 1}`,
-        description: `Documentation view ${index + 1} for ${projectTitle}.`,
-        aspectRatio: 16 / 9,
+        description: "",
+        aspectRatio: Math.SQRT2,
       }))
     : media;
   const primaryMedia =
@@ -50,8 +49,8 @@ export function PortfolioMediaGallery({
           src: primaryImage,
           alt: projectTitle,
           title: projectTitle,
-          description: `Primary project image for ${projectTitle}.`,
-          aspectRatio: 16 / 9,
+          description: "",
+          aspectRatio: Math.SQRT2,
         }
       : null;
   const displayMedia = primaryMedia ? [primaryMedia, ...resolvedMedia] : resolvedMedia;
@@ -60,13 +59,7 @@ export function PortfolioMediaGallery({
   const hasMultipleMedia = displayMedia.length > 1;
   const projectDocumentUrl = documentUrl || documentationUrl;
 
-  const viewportAspectRatio = useMemo(() => {
-    if (!activeMedia) {
-      return 16 / 9;
-    }
-
-    return Math.max(activeMedia.aspectRatio || 16 / 9, 1.45);
-  }, [activeMedia]);
+  const viewportAspectRatio = Math.SQRT2;
 
   useEffect(() => {
     setActiveIndex(0);
@@ -134,7 +127,7 @@ export function PortfolioMediaGallery({
       <div className="portfolio-gallery">
         <div className="portfolio-gallery__stage surface">
           <div className="portfolio-gallery__toolbar">
-            <p className="kicker">Project media</p>
+            <p className="kicker">Project images</p>
             <div className="portfolio-gallery__actions">
               {projectDocumentUrl ? (
                 <a
@@ -145,16 +138,6 @@ export function PortfolioMediaGallery({
                 >
                   Open project document
                 </a>
-              ) : documentationStatusNote ? (
-                <button
-                  aria-disabled="true"
-                  className="button button--secondary button--disabled"
-                  disabled
-                  title={documentationStatusNote}
-                  type="button"
-                >
-                  Document folder unavailable
-                </button>
               ) : null}
             </div>
           </div>
@@ -162,10 +145,7 @@ export function PortfolioMediaGallery({
           <div className="portfolio-gallery__caption">
             <div>
               <strong>{projectTitle}</strong>
-              <p>No matching local Wix-exported image was found for this public record.</p>
-              {documentationStatusNote ? (
-                <p className="portfolio-gallery__status-note">{documentationStatusNote}</p>
-              ) : null}
+              <p>No project image is available for this project.</p>
             </div>
           </div>
         </div>
@@ -178,7 +158,7 @@ export function PortfolioMediaGallery({
       <div className="portfolio-gallery">
         <div className="portfolio-gallery__stage surface">
           <div className="portfolio-gallery__toolbar">
-            <p className="kicker">Project media</p>
+            <p className="kicker">Project images</p>
             <div className="portfolio-gallery__actions">
               {projectDocumentUrl ? (
                 <a
@@ -189,20 +169,10 @@ export function PortfolioMediaGallery({
                 >
                   Open project document
                 </a>
-              ) : documentationStatusNote ? (
-                <button
-                  aria-disabled="true"
-                  className="button button--secondary button--disabled"
-                  disabled
-                  title={documentationStatusNote}
-                  type="button"
-                >
-                  Document folder unavailable
-                </button>
               ) : null}
               {activeMedia ? (
                 <button className="button button--ghost" type="button" onClick={() => setLightboxOpen(true)}>
-                  Expand
+                  View full screen
                 </button>
               ) : null}
             </div>
@@ -216,6 +186,18 @@ export function PortfolioMediaGallery({
               loading="eager"
               src={activeMedia.src}
             />
+
+            <button
+              aria-label={`View ${activeMedia.title || projectTitle} full screen`}
+              className="portfolio-gallery__fullscreen"
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />
+              </svg>
+              <span>View full screen</span>
+            </button>
 
             {hasMultipleMedia ? (
               <>
@@ -242,10 +224,7 @@ export function PortfolioMediaGallery({
           <div className="portfolio-gallery__caption">
             <div>
               <strong>{activeMedia.title || projectTitle}</strong>
-              <p>{activeMedia.description || `Documentation view for ${projectTitle}.`}</p>
-              {documentationStatusNote ? (
-                <p className="portfolio-gallery__status-note">{documentationStatusNote}</p>
-              ) : null}
+              {activeMedia.description ? <p>{activeMedia.description}</p> : null}
             </div>
             <span>
               {activeIndex + 1} / {displayMedia.length}
@@ -268,17 +247,22 @@ export function PortfolioMediaGallery({
         </div>
       </div>
 
-      {lightboxOpen ? (
+      {lightboxOpen && typeof document !== "undefined" ? createPortal(
         <div
           ref={lightboxRef}
           className="lightbox"
           role="dialog"
           aria-modal="true"
           aria-labelledby={dialogTitleId}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setLightboxOpen(false);
+            }
+          }}
         >
           <button
             ref={lightboxCloseRef}
-            aria-label="Close gallery"
+            aria-label="Close full-screen image viewer"
             className="lightbox__close"
             type="button"
             onClick={() => setLightboxOpen(false)}
@@ -320,10 +304,11 @@ export function PortfolioMediaGallery({
 
             <div className="lightbox__meta">
               <strong id={dialogTitleId}>{activeMedia.title || projectTitle}</strong>
-              <p>{activeMedia.description || `Documentation view for ${projectTitle}.`}</p>
+              {activeMedia.description ? <p>{activeMedia.description}</p> : null}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </>
   );

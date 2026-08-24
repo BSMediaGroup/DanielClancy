@@ -202,10 +202,10 @@ export function ProfessionalShell() {
         <div className="container footer-grid">
           <div>
             <p className="kicker">Daniel Clancy</p>
-            <h2>Design documentation, project evidence, and direct contact.</h2>
+            <h2>Design documentation, selected projects, and direct contact.</h2>
             <p className="footer-copy">
               Independent drafting and design presentation spanning architecture, urban work,
-              structural coordination, and project record keeping.
+              structural coordination, and technical documentation.
             </p>
           </div>
 

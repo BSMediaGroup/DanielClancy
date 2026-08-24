@@ -107,6 +107,33 @@ test("professional surfaces use the approved heading and body font families with
   assert.match(source, /Blinker-Black\.ttf/);
   assert.match(source, /\.site-shell--professional :is\(h1, h2, h3, \.brand__title\)/);
   assert.match(source, /font-family: "SUSE Mono", monospace/);
+  assert.doesNotMatch(source, /Recharge/);
+});
+
+test("professional presentation keeps featured work, navigation, and employer-facing corrections", async () => {
+  const appSource = await readFile(new URL("../src/app/App.tsx", import.meta.url), "utf8");
+  const brandSource = await readFile(new URL("../src/components/SiteBrand.tsx", import.meta.url), "utf8");
+  const contactSource = await readFile(new URL("../src/pages/ContactPage.tsx", import.meta.url), "utf8");
+  const gallerySource = await readFile(new URL("../src/components/PortfolioMediaGallery.tsx", import.meta.url), "utf8");
+  const homeSource = await readFile(new URL("../src/pages/HomePage.tsx", import.meta.url), "utf8");
+  const siteContentSource = await readFile(new URL("../src/content/siteContent.ts", import.meta.url), "utf8");
+
+  assert.match(siteContentSource, /With 18\+ years/);
+  assert.doesNotMatch(siteContentSource, /17 years/);
+  assert.match(homeSource, /projects\.filter\(\(project\) => project\.featured\)/);
+  assert.match(homeSource, /window\.setInterval/);
+  assert.match(homeSource, /DisciplineIcon/);
+  assert.match(homeSource, /See full CV/);
+  assert.doesNotMatch(homeSource, /Evidence first|drawing record|published projects/i);
+  assert.match(brandSource, /className="clancy-wordmark__a"/);
+  assert.equal((brandSource.match(/<path\b/g) || []).length, 1);
+  assert.match(appSource, /function RouteScrollManager/);
+  assert.match(appSource, /behavior: "instant" as ScrollBehavior/);
+  assert.match(gallerySource, /Math\.SQRT2/);
+  assert.match(gallerySource, /View full screen/);
+  assert.match(gallerySource, /createPortal/);
+  assert.equal((contactSource.match(/<Section\b/g) || []).length, 1);
+  assert.doesNotMatch(contactSource, /static-host|server-side|Pages Function|delivery endpoint/i);
 });
 
 test("asset URL helper keeps media and docs root-relative while preserving absolute URLs", async () => {

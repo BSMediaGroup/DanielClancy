@@ -18,6 +18,16 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Refined the selected-project hierarchy, discipline matrix, chronology, capability panel, responsive stacking, and dark/light contrast while preserving the shared route/data architecture.
 - Refreshed the generated public fallback from the current read-only Admin export; the authoritative payload remains 16 projects, 9 companies, 6 platforms, 9 positions, and 172 assets, with only generated revision metadata changing.
 - Updated focused public-data tests for shared route resolution, authoritative catalogue count, public media existence, taxonomy/software normalization, and professional font boundaries.
+- Corrected every public career-length summary and homepage metric to `18+` years without changing employment dates, roles, employers, or existing CV descriptions.
+- Removed the remaining Recharge font declaration and uses; site titles now use the supplied variable Source Sans 3 face, professional body content uses the supplied weighted Blinker faces, and existing monospace/other font roles remain intact.
+- Rebuilt the outlined `A` in the shared `CLANCY` wordmark as one clean SVG path used by both the header and homepage hero while keeping the complete two-line header wordmark locked to exactly the same height as the adjacent symbol.
+- Changed the homepage feature into a reduced-motion-aware crossfade slideshow driven by every public project carrying the existing Admin-authoritative `featured` flag; the existing Admin project and bulk featured controls required no mutation.
+- Standardized the homepage feature and project-detail gallery viewport to ISO-A landscape proportions (`sqrt(2):1`) without cover-cropping project drawings.
+- Added an explicit full-screen project-image control, viewport-filling lightbox treatment, backdrop/Escape closing, focus return, arrow navigation, and existing pagination support.
+- Added route-level top-of-page restoration for page navigation while preserving real fragment targets and query-string-only portfolio filter updates.
+- Consolidated Contact from three major bands to a hero plus one enquiry workspace containing the form, direct details, Sydney map, and relevant enquiry list; implementation-facing delivery copy was removed.
+- Added a distinct inline SVG drawing icon to each homepage discipline and moved the `See full CV` action to the bottom of the intentionally truncated recent-work list.
+- Replaced public-facing interface/implementation language across Home, CV, Portfolio, project detail, Contact, and the shared professional footer with concise employer-facing project and career copy.
 
 ### Human-readable notes
 - The professional homepage now reads more clearly for employers, recruiters, consultancies, and project reviewers.
@@ -27,6 +37,11 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Dark/light presentation, mobile layouts, keyboard focus, gallery use, and overall visual consistency are improved across the professional site.
 - The homepage once again includes the animated software proficiency presentation and now has subtle technical motion behind the hero rather than a static, empty backdrop.
 - Header branding now keeps the Daniel Clancy wordmark exactly the same height as the adjacent symbol on desktop, tablet, and phone layouts.
+- Career-length references now state `18+` years consistently.
+- Featured homepage work now crossfades through the projects selected in Admin, with an ISO-A drawing-sheet proportion and a clear route into each project.
+- Project images use ISO-A landscape presentation and include an obvious full-screen viewer.
+- Page links open at the top, the Contact page is consolidated, disciplines have individual technical icons, and the recent homepage work-history preview clearly links to the full CV at its end.
+- Employer-facing pages no longer describe themselves with internal platform, archive, evidence-system, or deployment language.
 
 ### Known limitations
 - Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.

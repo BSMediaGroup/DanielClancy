@@ -7,6 +7,22 @@ type SiteBrandProps = {
   theme?: "professional" | "personal";
 };
 
+type ClancyWordmarkProps = {
+  className?: string;
+};
+
+export function ClancyWordmark({ className = "" }: ClancyWordmarkProps) {
+  return (
+    <span className={`clancy-wordmark ${className}`.trim()} aria-hidden="true">
+      <span className="clancy-wordmark__letters">CL</span>
+      <svg className="clancy-wordmark__a" viewBox="0 0 100 100" focusable="false">
+        <path d="M5 96 50 4 95 96M25 62H75" />
+      </svg>
+      <span className="clancy-wordmark__letters">NCY</span>
+    </span>
+  );
+}
+
 export function SiteBrand({ homeTo, subtitle, theme = "professional" }: SiteBrandProps) {
   return (
     <NavLink className={`brand brand--${theme}`} to={homeTo}>
@@ -17,7 +33,7 @@ export function SiteBrand({ homeTo, subtitle, theme = "professional" }: SiteBran
         {theme === "professional" ? (
           <span className="brand__title brand__title--stacked" aria-label="Daniel Clancy">
             <span className="brand__name-line">Daniel</span>
-            <span className="brand__name-line brand__name-line--outline">Clancy</span>
+            <ClancyWordmark className="brand__name-line brand__name-line--outline" />
           </span>
         ) : (
           <span className="brand__title">Daniel Clancy</span>

@@ -52,7 +52,7 @@ export function CvPage() {
           <aside className="cv-contact-sheet" aria-label="Professional contact details">
             <div className="cv-contact-sheet__head">
               <span>DC / CV</span>
-              <span>Professional record</span>
+              <span>Curriculum vitae</span>
             </div>
             <dl className="cv-contact-sheet__details">
               <div><dt>Role</dt><dd>{siteMeta.role}</dd></div>
@@ -104,7 +104,7 @@ export function CvPage() {
       <Section
         eyebrow="Employment chronology"
         title="Professional experience"
-        intro="An ordered record of roles, employers, locations and existing role descriptions."
+        intro="Roles, employers, locations and existing role descriptions."
       >
         <div className="cv-timeline" role="list">
           {positions.map((item, index) => {
@@ -150,11 +150,11 @@ export function CvPage() {
 
         <div className="cv-closing">
           <div>
-            <p className="kicker">Project evidence</p>
-            <h2>Review the work behind the chronology.</h2>
+            <p className="kicker">Selected projects</p>
+            <h2>View projects from across the career history.</h2>
           </div>
           <div className="section-actions">
-            <Link className="button button--secondary" to="/portfolio">Browse project archive</Link>
+            <Link className="button button--secondary" to="/portfolio">View portfolio</Link>
             <Link className="button button--ghost" to="/contact">Contact Daniel</Link>
           </div>
         </div>

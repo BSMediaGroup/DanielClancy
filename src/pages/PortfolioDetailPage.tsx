@@ -24,7 +24,7 @@ import {
 export function PortfolioDetailPage() {
   const { slug } = useParams();
   const location = useLocation();
-  const { projects: portfolioArchive, companies, platforms, loading, metadata } = usePublicSiteData();
+  const { projects: portfolioArchive, companies, platforms, loading } = usePublicSiteData();
   const project = getPortfolioProjectBySlugFrom(portfolioArchive, slug);
   const archivePath = `/portfolio${location.search}`;
 
@@ -33,21 +33,18 @@ export function PortfolioDetailPage() {
       <>
         <Seo
           title={loading ? "Loading project" : "Project not found"}
-          description="Project archive lookup for Daniel Clancy."
+          description="Daniel Clancy portfolio project."
           path={`/portfolio/${slug || ""}`}
         />
         <section className="hero hero--subpage detail-not-found">
           <div className="container hero-copy">
-            <p className="kicker">Project detail / 404</p>
+            <p className="kicker">Project</p>
             {loading ? (
-              <><h1>Checking the project archive.</h1><p className="hero-copy__lead">This project link is being resolved.</p></>
+              <><h1>Loading project…</h1><p className="hero-copy__lead">Please wait while the project is opened.</p></>
             ) : (
               <>
-                <h1>Project record not found.</h1>
-                <p className="hero-copy__lead">
-                  No published project matches this address.
-                  {metadata.error ? ` Public data status: ${metadata.error}.` : ""}
-                </p>
+                <h1>Project not found.</h1>
+                <p className="hero-copy__lead">Check the address or return to the portfolio.</p>
               </>
             )}
             <div className="hero-actions">
@@ -85,7 +82,7 @@ export function PortfolioDetailPage() {
 
       <section className="hero hero--subpage hero--detail">
         <div className="container detail-breadcrumb">
-          <Link className="text-link" to={archivePath}>Portfolio archive</Link>
+          <Link className="text-link" to={archivePath}>Portfolio</Link>
           <span aria-hidden="true">/</span>
           <span>{getPortfolioFamily(project)}</span>
         </div>
@@ -104,14 +101,14 @@ export function PortfolioDetailPage() {
           </div>
 
           <div className="detail-hero__body">
-            <p className="kicker">Project record / {project.year}</p>
+            <p className="kicker">{getPortfolioFamily(project)} / {project.year}</p>
             <h1>{project.title}</h1>
             <p className="detail-hero__summary">{project.summary}</p>
 
             <div className="detail-meta-grid">
               <div><span>Client</span><strong>{project.client}</strong></div>
               <div><span>Date</span><strong>{project.dateLabel}</strong></div>
-              <div><span>Studio</span><strong>{getPortfolioFamily(project)}</strong></div>
+              <div><span>Practice</span><strong>{getPortfolioFamily(project)}</strong></div>
               <div><span>Project type</span><strong>{getDocumentationType(project)}</strong></div>
               {project.location ? <div><span>Location</span><strong>{project.location}</strong></div> : null}
               {project.sector ? <div><span>Sector</span><strong>{project.sector}</strong></div> : null}
@@ -132,7 +129,7 @@ export function PortfolioDetailPage() {
             </div>
 
             <div className="hero-actions">
-              <Link className="button button--secondary" to={archivePath}>Back to archive</Link>
+              <Link className="button button--secondary" to={archivePath}>Back to portfolio</Link>
               <Link className="button button--ghost" to="/contact">Discuss this work</Link>
             </div>
           </div>
@@ -140,8 +137,8 @@ export function PortfolioDetailPage() {
       </section>
 
       <Section
-        eyebrow="Project scope"
-        title="Documentation context"
+        eyebrow="Project information"
+        title="Scope and documentation"
         intro={project.description}
       >
         <div className="detail-context-grid">
@@ -156,7 +153,7 @@ export function PortfolioDetailPage() {
             <div className="tag-grid">
               {project.subtypes.length ? project.subtypes.map((item) => (
                 <span key={`${project.id}-scope-${item}`} className="tag">{item}</span>
-              )) : <span className="surface-note">No additional scope labels recorded.</span>}
+              )) : <span className="surface-note">No additional scope details are available.</span>}
             </div>
           </article>
           <article className="surface detail-context-card detail-context-card--summary">
@@ -166,34 +163,30 @@ export function PortfolioDetailPage() {
               <a className="text-link" href={getProjectDocumentUrl(project)} target="_blank" rel="noreferrer">
                 Open project document
               </a>
-            ) : project.documentationStatusNote ? (
-              <span className="text-link text-link--disabled" title={project.documentationStatusNote}>
-                Project document unavailable
-              </span>
             ) : null}
           </article>
         </div>
       </Section>
 
       {previousProject || nextProject ? (
-        <Section eyebrow="Project navigation" title="Continue through the archive" className="section--muted">
+        <Section eyebrow="Project navigation" title="Explore more projects" className="section--muted">
           <div className="feature-duo detail-sequence">
             {previousProject ? (
               <Link className="surface surface--compact nav-card" to={`/portfolio/${getPortfolioSlug(previousProject)}${querySuffix}`}>
                 <p className="kicker">Previous project</p><h3>{previousProject.title}</h3><p>{previousProject.summary}</p>
               </Link>
-            ) : <div className="surface surface--compact nav-card nav-card--empty"><p className="kicker">Previous project</p><h3>Start of archive</h3></div>}
+            ) : <div className="surface surface--compact nav-card nav-card--empty"><p className="kicker">Previous project</p><h3>Start of portfolio</h3></div>}
             {nextProject ? (
               <Link className="surface surface--compact nav-card" to={`/portfolio/${getPortfolioSlug(nextProject)}${querySuffix}`}>
                 <p className="kicker">Next project</p><h3>{nextProject.title}</h3><p>{nextProject.summary}</p>
               </Link>
-            ) : <div className="surface surface--compact nav-card nav-card--empty"><p className="kicker">Next project</p><h3>End of archive</h3></div>}
+            ) : <div className="surface surface--compact nav-card nav-card--empty"><p className="kicker">Next project</p><h3>End of portfolio</h3></div>}
           </div>
         </Section>
       ) : null}
 
       {relatedProjects.length ? (
-        <Section eyebrow="Related archive" title="More from the same project family">
+        <Section eyebrow="Related projects" title="More from the same project group">
           <div className="project-grid project-grid--related">
             {relatedProjects.map((item) => (
               <Link key={item.id} className="project-card project-card--clickable" to={`/portfolio/${getPortfolioSlug(item)}${querySuffix}`}>

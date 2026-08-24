@@ -96,7 +96,7 @@ export const siteMeta = {
     postal: "PO Box 422, Potts Point NSW 1335",
   },
   heroSummary:
-    "With 17 years of drafting and design experience since 2008, Daniel Clancy has contributed to structural, architectural, urban, landscape, and infrastructure work for firms including GHD, Urbis, PLACE Laboratory, Richmond+Ross, and Meriton Group.",
+    "With 18+ years of drafting and design experience, Daniel Clancy has contributed to structural, architectural, urban, landscape, and infrastructure work for firms including GHD, Urbis, PLACE Laboratory, Richmond+Ross, and Meriton Group.",
   heroSupport:
     "The public site now reads as a cleaner, wider, documentation-forward review surface built around Daniel Clancy's established visual language.",
 };
@@ -104,8 +104,8 @@ export const siteMeta = {
 export const homeMetrics: HighlightStat[] = [
   {
     label: "Experience depth",
-    value: "17 years",
-    note: "Drafting and design documentation work since 2008.",
+    value: "18+",
+    note: "Years of drafting and design documentation experience.",
   },
   {
     label: "Canonical archive",
@@ -249,7 +249,7 @@ export const featuredProjects = workSetFeaturedProjects;
 export const homeSpotlightProjects = workSetHomeSpotlightProjects;
 
 export const portfolioDisclaimer =
-  "Displayed materials represent selected work examples only. Sensitive or protected material remains withheld from the public archive.";
+  "This portfolio presents selected work only. Sensitive or protected material is not shown.";
 
 export const contactUseCases = [
   "Professional introductions and hiring enquiries",
