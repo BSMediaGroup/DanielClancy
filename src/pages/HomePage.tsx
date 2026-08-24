@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CapabilityMeter } from "../components/CapabilityMeter";
 import { CompanyLogoMark } from "../components/CompanyLogoMark";
@@ -35,6 +35,9 @@ export function HomePage() {
   const selectedProjects = spotlightProjects.length ? spotlightProjects.slice(0, 3) : projects.slice(0, 3);
   const featuredSlides = spotlightProjects.length ? spotlightProjects : projects.slice(0, 1);
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
+  const [previousFeatureIndex, setPreviousFeatureIndex] = useState<number | null>(null);
+  const activeFeatureIndexRef = useRef(0);
+  const featureTransitionTimerRef = useRef<number | null>(null);
   const recentExperience = positions.slice(0, 4);
   const disciplineRecords = disciplineOrder
     .map((name) => ({
@@ -42,10 +45,39 @@ export function HomePage() {
       count: projects.filter((project) => project.disciplines.includes(name)).length,
     }))
     .filter((item) => item.count > 0);
+  const nextFeatureThumbnail = featuredSlides.length > 1
+    ? getProjectThumbnailUrl(featuredSlides[(activeFeatureIndex + 1) % featuredSlides.length])
+    : "";
+
+  const showFeature = useCallback((nextIndex: number) => {
+    const currentIndex = activeFeatureIndexRef.current;
+    if (nextIndex === currentIndex) return;
+
+    if (featureTransitionTimerRef.current !== null) {
+      window.clearTimeout(featureTransitionTimerRef.current);
+    }
+
+    setPreviousFeatureIndex(currentIndex);
+    activeFeatureIndexRef.current = nextIndex;
+    setActiveFeatureIndex(nextIndex);
+    featureTransitionTimerRef.current = window.setTimeout(() => {
+      setPreviousFeatureIndex(null);
+      featureTransitionTimerRef.current = null;
+    }, 950);
+  }, []);
 
   useEffect(() => {
-    setActiveFeatureIndex((current) => Math.min(current, Math.max(featuredSlides.length - 1, 0)));
+    const nextIndex = Math.min(activeFeatureIndexRef.current, Math.max(featuredSlides.length - 1, 0));
+    activeFeatureIndexRef.current = nextIndex;
+    setActiveFeatureIndex(nextIndex);
+    setPreviousFeatureIndex(null);
   }, [featuredSlides.length]);
+
+  useEffect(() => () => {
+    if (featureTransitionTimerRef.current !== null) {
+      window.clearTimeout(featureTransitionTimerRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (featuredSlides.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -53,11 +85,19 @@ export function HomePage() {
     }
 
     const timer = window.setInterval(() => {
-      setActiveFeatureIndex((current) => (current + 1) % featuredSlides.length);
+      showFeature((activeFeatureIndexRef.current + 1) % featuredSlides.length);
     }, 6500);
 
     return () => window.clearInterval(timer);
-  }, [featuredSlides.length]);
+  }, [featuredSlides.length, showFeature]);
+
+  useEffect(() => {
+    if (!nextFeatureThumbnail) return;
+    const image = new Image();
+    image.decoding = "async";
+    image.fetchPriority = "low";
+    image.src = nextFeatureThumbnail;
+  }, [nextFeatureThumbnail]);
 
   return (
     <>
@@ -146,43 +186,49 @@ export function HomePage() {
 
           {featuredSlides.length ? (
             <div className="professional-feature-slideshow" aria-label="Featured projects">
-              {featuredSlides.map((project, index) => (
-                <Link
-                  key={project.id}
-                  aria-hidden={index !== activeFeatureIndex}
-                  aria-label={`View featured project: ${project.title}`}
-                  className={`professional-evidence-board${index === activeFeatureIndex ? " professional-evidence-board--active" : ""}`}
-                  tabIndex={index === activeFeatureIndex ? 0 : -1}
-                  to={`/portfolio/${getPortfolioSlug(project)}`}
-                >
-                  <div className="professional-evidence-board__head">
-                    <span>Featured project</span>
-                    <span>{String(index + 1).padStart(2, "0")} / {String(featuredSlides.length).padStart(2, "0")}</span>
-                  </div>
-                  <div className="professional-evidence-board__media">
-                    <MediaFrame
-                      alt={project.title}
-                      fit="contain"
-                      loading={index === 0 ? "eager" : "lazy"}
-                      src={getProjectThumbnailUrl(project)}
-                    />
-                  </div>
-                  <div className="professional-evidence-board__foot">
-                    <div>
-                      <span>Project</span>
-                      <strong>{project.title}</strong>
+              {featuredSlides.map((project, index) => {
+                if (index !== activeFeatureIndex && index !== previousFeatureIndex) return null;
+                const isActive = index === activeFeatureIndex;
+                const isPrevious = index === previousFeatureIndex;
+                return (
+                  <Link
+                    key={project.id}
+                    aria-hidden={!isActive}
+                    aria-label={`View featured project: ${project.title}`}
+                    className={`professional-evidence-board${isActive ? " professional-evidence-board--active" : ""}${isPrevious ? " professional-evidence-board--previous" : ""}`}
+                    tabIndex={isActive ? 0 : -1}
+                    to={`/portfolio/${getPortfolioSlug(project)}`}
+                  >
+                    <div className="professional-evidence-board__head">
+                      <span>Featured project</span>
+                      <span>{String(index + 1).padStart(2, "0")} / {String(featuredSlides.length).padStart(2, "0")}</span>
                     </div>
-                    <div>
-                      <span>Practice</span>
-                      <strong>{getPortfolioFamily(project)}</strong>
+                    <div className="professional-evidence-board__media">
+                      <MediaFrame
+                        alt={project.title}
+                        fetchPriority={isActive ? "high" : "auto"}
+                        fit="contain"
+                        loading="eager"
+                        src={getProjectThumbnailUrl(project)}
+                      />
                     </div>
-                    <div>
-                      <span>Year</span>
-                      <strong>{project.year}</strong>
+                    <div className="professional-evidence-board__foot">
+                      <div>
+                        <span>Project</span>
+                        <strong>{project.title}</strong>
+                      </div>
+                      <div>
+                        <span>Practice</span>
+                        <strong>{getPortfolioFamily(project)}</strong>
+                      </div>
+                      <div>
+                        <span>Year</span>
+                        <strong>{project.year}</strong>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
               {featuredSlides.length > 1 ? (
                 <div className="professional-feature-slideshow__controls" aria-label="Choose featured project">
                   {featuredSlides.map((project, index) => (
@@ -192,7 +238,7 @@ export function HomePage() {
                       aria-pressed={index === activeFeatureIndex}
                       className={index === activeFeatureIndex ? "is-active" : ""}
                       type="button"
-                      onClick={() => setActiveFeatureIndex(index)}
+                      onClick={() => showFeature(index)}
                     />
                   ))}
                 </div>
@@ -237,7 +283,7 @@ export function HomePage() {
               to={`/portfolio/${getPortfolioSlug(project)}`}
             >
               <div className="project-card__media-shell">
-                <MediaFrame alt={project.title} src={getProjectThumbnailUrl(project)} />
+                <MediaFrame alt={project.title} fit="contain" src={getProjectThumbnailUrl(project)} />
                 <span className="project-card__index">{String(index + 1).padStart(2, "0")}</span>
               </div>
               <div className="project-card__body">

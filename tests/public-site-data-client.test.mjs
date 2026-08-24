@@ -87,6 +87,10 @@ test("committed portfolio fallback enriches incomplete exports with real public 
   const fallbackSource = await readFile(new URL("../src/data/public-site-fallback.ts", import.meta.url), "utf8");
   const payload = JSON.parse(await readFile(new URL("../src/data/public-site-fallback.generated.json", import.meta.url), "utf8"));
   const explicitMediaPaths = Array.from(source.matchAll(/["'](\/media\/portfolio\/[^"']+)["']/g), (match) => match[1]);
+  const explicitThumbnailPaths = Array.from(
+    fallbackSource.matchAll(/["'](\/media\/portfolio\/thumbs\/[^"']+)["']/g),
+    (match) => match[1],
+  );
 
   assert.equal(payload.collections.projects.length, 16);
   assert.ok(payload.collections.projects.every((project) => project.visibility === "public"));
@@ -94,8 +98,11 @@ test("committed portfolio fallback enriches incomplete exports with real public 
   assert.match(fallbackSource, /builtIn\?\.galleryPaths\?\.length/);
   assert.match(fallbackSource, /normalizeSoftwareLabels/);
   assert.ok(explicitMediaPaths.length > 10);
+  assert.match(fallbackSource, /spratt-residence-proposed-addition[\s\S]*spratt-thumb\.webp/);
+  assert.match(fallbackSource, /henry-street-residence-structural-documentation[\s\S]*henry-st-thumb\.webp/);
+  assert.match(fallbackSource, /lake-joondalup-baptist-college-new-arts-building-structural-plans[\s\S]*lake-joondalup-thumb\.jpg/);
 
-  for (const publicPath of new Set(explicitMediaPaths)) {
+  for (const publicPath of new Set([...explicitMediaPaths, ...explicitThumbnailPaths])) {
     await access(new URL(`../public${publicPath}`, import.meta.url));
   }
 });
@@ -123,6 +130,8 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.doesNotMatch(siteContentSource, /17 years/);
   assert.match(homeSource, /projects\.filter\(\(project\) => project\.featured\)/);
   assert.match(homeSource, /window\.setInterval/);
+  assert.match(homeSource, /previousFeatureIndex/);
+  assert.match(homeSource, /image\.fetchPriority = "low"/);
   assert.match(homeSource, /DisciplineIcon/);
   assert.match(homeSource, /See full CV/);
   assert.doesNotMatch(homeSource, /experience-layout__aside/);
@@ -131,6 +140,7 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(homeSource, /professional-hero__outline">Clancy<\/span>/);
   assert.doesNotMatch(brandSource, /clancy-wordmark|<svg|<path/);
   assert.match(styleSource, /\.site-shell--professional \.section-heading\s*\{\s*grid-template-columns: minmax\(0, 1fr\);/s);
+  assert.match(styleSource, /\.site-shell--professional \.detail-meta-grid div[\s\S]*background: var\(--panel-strong\);/);
   assert.match(appSource, /function RouteScrollManager/);
   assert.match(appSource, /behavior: "instant" as ScrollBehavior/);
   assert.match(gallerySource, /Math\.SQRT2/);

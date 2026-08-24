@@ -145,14 +145,18 @@ const thumbnailBySlug: Record<string, string> = {
   "redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south":
     "/media/portfolio/thumbs/pheasants-nest-thumb.webp",
   "proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112":
-    "/media/portfolio/thumbs/jull-st.jpg",
+    "/media/portfolio/thumbs/jull-st-thumb.jpg",
   "gardencity-redevelopment": "/media/portfolio/thumbs/gardencity-thumb.webp",
   "geraldton-fire-station-structural-documentation": "/media/portfolio/thumbs/fesa-fire-thumb.webp",
-  "lot-500-eighth-road-land-resumption": "/media/portfolio/thumbs/eighth-rd.jpg",
+  "lot-500-eighth-road-land-resumption": "/media/portfolio/thumbs/eighth-rd-thumb.jpg",
   "curtin-creative-quarter-misc-details": "/media/portfolio/thumbs/curtin-creative-quarter-bus-stand.webp",
   "cue-roadhouse": "/media/portfolio/thumbs/cue-roadhouse-thumb.webp",
   "cottesloe-beach-house-landscape-design": "/media/portfolio/thumbs/cottesloe-beach-house-thumb.webp",
   "cockburn-coast": "/media/portfolio/thumbs/cockburn-coast-details-thumb.webp",
+  "spratt-residence-proposed-addition": "/media/portfolio/thumbs/spratt-thumb.webp",
+  "henry-street-residence-structural-documentation": "/media/portfolio/thumbs/henry-st-thumb.webp",
+  "lake-joondalup-baptist-college-new-arts-building-structural-plans":
+    "/media/portfolio/thumbs/lake-joondalup-thumb.jpg",
 };
 
 const builtInFallback: PublicSiteDataModel = {

@@ -30,6 +30,14 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Removed the redundant Recent Chronology explanatory side column so the homepage employment preview and its bottom `See full CV` action use the full content width.
 - Changed shared professional section headings from the offset two-column arrangement to a single left-justified heading stack so eyebrow, title, and introduction align to the container edge.
 - Replaced public-facing interface/implementation language across Home, CV, Portfolio, project detail, Contact, and the shared professional footer with concise employer-facing project and career copy.
+- Repaired the shared section cascade that was applying both container spacing and a second outer bottom pad, then established one consistent vertical rhythm for headings, content grids, actions, chronology rows, CV calls to action, and subtle section rules.
+- Restored an explicit top rule to the professional statistics rail after the animated hero overlay had overridden its divider pseudo-element.
+- Reworked project-detail information into opaque dossier panels and solid metadata cells so the technical background grid no longer bleeds through project facts, controls, tags, gallery chrome, or supporting cards in either theme.
+- Upgraded the hero motion stack with a slow ambient light sweep, parallax drawing field, traced structure/dimension strokes, retained route/node motion, and complete reduced-motion fallbacks.
+- Reduced homepage slideshow work to the active and outgoing crossfade sheets, preloads only the next thumbnail at low priority, and preserves the complete Admin-featured project sequence.
+- Added asynchronous image decoding, fetch-priority hints, and a truthful media-error fallback to the shared media frame; project cards now contain full drawing sheets rather than aggressively cover-cropping them.
+- Added verified thumbnail mappings for Spratt Residence and Henry Street and created right-sized local thumbnails for Jull Street, Eighth Road, and Lake Joondalup so the archive no longer falls back to those large source documents.
+- Added focused regression coverage for the optimized thumbnail paths, bounded featured slideshow, solid detail metadata surfaces, and existing professional presentation requirements.
 
 ### Human-readable notes
 - The professional homepage now reads more clearly for employers, recruiters, consultancies, and project reviewers.
@@ -47,6 +55,10 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - The homepage work-history preview now uses the full content width instead of reserving space for a redundant explanatory column.
 - Professional section labels, headings, and introductions now align together at the left edge instead of shifting titles into a separate right-hand column.
 - Employer-facing pages no longer describe themselves with internal platform, archive, evidence-system, or deployment language.
+- Section spacing and dividers now follow one deliberate drawing-sheet rhythm instead of leaving oversized gaps or rules pressed against nearby content.
+- The statistics rail has its missing top line back, and project-detail facts now sit on clean solid panels without the page grid showing through them.
+- The homepage background has a richer but still restrained architectural animation, with motion disabled cleanly for visitors who prefer reduced motion.
+- Portfolio and homepage project previews start faster because they use dedicated thumbnails and no longer load every featured sheet at once.
 
 ### Known limitations
 - Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.

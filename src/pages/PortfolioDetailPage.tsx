@@ -190,7 +190,7 @@ export function PortfolioDetailPage() {
           <div className="project-grid project-grid--related">
             {relatedProjects.map((item) => (
               <Link key={item.id} className="project-card project-card--clickable" to={`/portfolio/${getPortfolioSlug(item)}${querySuffix}`}>
-                <MediaFrame alt={item.title} aspectRatio={1.58} src={getProjectThumbnailUrl(item)} />
+                <MediaFrame alt={item.title} aspectRatio={1.58} fetchPriority="low" fit="contain" src={getProjectThumbnailUrl(item)} />
                 <div className="project-card__body">
                   <div className="project-card__topline"><p>{item.client}</p><span>{item.year}</span></div>
                   <h3>{item.title}</h3><p>{item.summary}</p><span className="text-link">View project</span>

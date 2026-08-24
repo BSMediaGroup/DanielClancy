@@ -230,7 +230,13 @@ function ProjectCard({ companies, index, platforms, project, querySuffix, varian
       to={`/portfolio/${getPortfolioSlug(project)}${querySuffix}`}
     >
       <div className="project-card__media">
-        <MediaFrame alt={project.title} aspectRatio={variant ? 1.52 : 1.62} src={getProjectThumbnailUrl(project)} />
+        <MediaFrame
+          alt={project.title}
+          aspectRatio={variant ? 1.52 : 1.62}
+          fetchPriority={variant ? "auto" : "low"}
+          fit="contain"
+          src={getProjectThumbnailUrl(project)}
+        />
         <span className="project-card__index">P-{String(index + 1).padStart(2, "0")}</span>
       </div>
       <div className="project-card__body">
@@ -247,7 +253,16 @@ function ProjectCard({ companies, index, platforms, project, querySuffix, varian
             {project.software.slice(0, 3).map((item) => {
               const platform = resolvePlatformByIdNameSlug(platforms, item);
               const logo = getPlatformIconPath(platform, item);
-              return logo ? <img key={`${project.id}-${item}`} alt={platform?.name || item} src={logo} title={item} /> : null;
+              return logo ? (
+                <img
+                  key={`${project.id}-${item}`}
+                  alt={platform?.name || item}
+                  decoding="async"
+                  loading="lazy"
+                  src={logo}
+                  title={item}
+                />
+              ) : null;
             })}
           </div>
         </div>

@@ -182,6 +182,7 @@ export function PortfolioMediaGallery({
             <MediaFrame
               alt={activeMedia.alt}
               aspectRatio={viewportAspectRatio}
+              fetchPriority="high"
               fit="contain"
               loading="eager"
               src={activeMedia.src}
@@ -275,6 +276,7 @@ export function PortfolioMediaGallery({
               <MediaFrame
                 alt={activeMedia.alt}
                 aspectRatio={viewportAspectRatio}
+                fetchPriority="high"
                 fit="contain"
                 loading="eager"
                 src={activeMedia.src}

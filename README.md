@@ -431,6 +431,7 @@ DanielClancy/
 │  ├─ assets/fonts/
 │  ├─ docs/
 │  ├─ media/portfolio/
+│  │  └─ thumbs/
 │  ├─ _headers
 │  ├─ _redirects
 │  ├─ favicon.ico
