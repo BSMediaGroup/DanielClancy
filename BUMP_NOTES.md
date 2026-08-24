@@ -20,7 +20,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Updated focused public-data tests for shared route resolution, authoritative catalogue count, public media existence, taxonomy/software normalization, and professional font boundaries.
 - Corrected every public career-length summary and homepage metric to `18+` years without changing employment dates, roles, employers, or existing CV descriptions.
 - Removed the remaining Recharge font declaration and uses; site titles now use the supplied variable Source Sans 3 face, professional body content uses the supplied weighted Blinker faces, and existing monospace/other font roles remain intact.
-- Rebuilt the outlined `A` from the actual Source Sans 3 variable-font glyph at the same production weight as the surrounding letters, boolean-unioned its overlapping crossbar and body into one clean compound SVG path, and reused it in both the header and homepage hero while keeping the complete two-line header wordmark locked to exactly the same height as the adjacent symbol.
+- Restored the complete outlined `CLANCY` word to direct Source Sans 3 text rendering in both the header and homepage hero, removing the custom replacement `A` geometry while retaining the shared header lockup height.
 - Changed the homepage feature into a reduced-motion-aware crossfade slideshow driven by every public project carrying the existing Admin-authoritative `featured` flag; the existing Admin project and bulk featured controls required no mutation.
 - Standardized the homepage feature and project-detail gallery viewport to ISO-A landscape proportions (`sqrt(2):1`) without cover-cropping project drawings.
 - Added an explicit full-screen project-image control, viewport-filling lightbox treatment, backdrop/Escape closing, focus return, arrow navigation, and existing pagination support.
@@ -28,6 +28,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Consolidated Contact from three major bands to a hero plus one enquiry workspace containing the form, direct details, Sydney map, and relevant enquiry list; implementation-facing delivery copy was removed.
 - Added a distinct inline SVG drawing icon to each homepage discipline and moved the `See full CV` action to the bottom of the intentionally truncated recent-work list.
 - Removed the redundant Recent Chronology explanatory side column so the homepage employment preview and its bottom `See full CV` action use the full content width.
+- Changed shared professional section headings from the offset two-column arrangement to a single left-justified heading stack so eyebrow, title, and introduction align to the container edge.
 - Replaced public-facing interface/implementation language across Home, CV, Portfolio, project detail, Contact, and the shared professional footer with concise employer-facing project and career copy.
 
 ### Human-readable notes
@@ -38,12 +39,13 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Dark/light presentation, mobile layouts, keyboard focus, gallery use, and overall visual consistency are improved across the professional site.
 - The homepage once again includes the animated software proficiency presentation and now has subtle technical motion behind the hero rather than a static, empty backdrop.
 - Header branding now keeps the Daniel Clancy wordmark exactly the same height as the adjacent symbol on desktop, tablet, and phone layouts.
-- The outlined `A` in `CLANCY` now uses the matching Source Sans 3 letterform with a clean single-shape outline and no overlapping internal construction lines.
+- The header and hero now use the previous complete Source Sans 3 `CLANCY` outline, including its original `A`, with no separately scaled replacement letter.
 - Career-length references now state `18+` years consistently.
 - Featured homepage work now crossfades through the projects selected in Admin, with an ISO-A drawing-sheet proportion and a clear route into each project.
 - Project images use ISO-A landscape presentation and include an obvious full-screen viewer.
 - Page links open at the top, the Contact page is consolidated, disciplines have individual technical icons, and the recent homepage work-history preview clearly links to the full CV at its end.
 - The homepage work-history preview now uses the full content width instead of reserving space for a redundant explanatory column.
+- Professional section labels, headings, and introductions now align together at the left edge instead of shifting titles into a separate right-hand column.
 - Employer-facing pages no longer describe themselves with internal platform, archive, evidence-system, or deployment language.
 
 ### Known limitations

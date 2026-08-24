@@ -117,6 +117,7 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   const gallerySource = await readFile(new URL("../src/components/PortfolioMediaGallery.tsx", import.meta.url), "utf8");
   const homeSource = await readFile(new URL("../src/pages/HomePage.tsx", import.meta.url), "utf8");
   const siteContentSource = await readFile(new URL("../src/content/siteContent.ts", import.meta.url), "utf8");
+  const styleSource = await readFile(new URL("../src/styles/global.css", import.meta.url), "utf8");
 
   assert.match(siteContentSource, /With 18\+ years/);
   assert.doesNotMatch(siteContentSource, /17 years/);
@@ -126,11 +127,10 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(homeSource, /See full CV/);
   assert.doesNotMatch(homeSource, /experience-layout__aside/);
   assert.doesNotMatch(homeSource, /Evidence first|drawing record|published projects/i);
-  assert.match(brandSource, /className="clancy-wordmark__a"/);
-  assert.equal((brandSource.match(/<path\b/g) || []).length, 1);
-  assert.match(brandSource, /viewBox="-8 0 596 651"/);
-  assert.match(brandSource, /M157 0 192\.57453 145/);
-  assert.doesNotMatch(brandSource, /M5 96 50 4 95 96/);
+  assert.match(brandSource, /brand__name-line brand__name-line--outline">Clancy<\/span>/);
+  assert.match(homeSource, /professional-hero__outline">Clancy<\/span>/);
+  assert.doesNotMatch(brandSource, /clancy-wordmark|<svg|<path/);
+  assert.match(styleSource, /\.site-shell--professional \.section-heading\s*\{\s*grid-template-columns: minmax\(0, 1fr\);/s);
   assert.match(appSource, /function RouteScrollManager/);
   assert.match(appSource, /behavior: "instant" as ScrollBehavior/);
   assert.match(gallerySource, /Math\.SQRT2/);

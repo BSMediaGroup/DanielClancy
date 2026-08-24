@@ -5,7 +5,6 @@ import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { MediaFrame } from "../components/MediaFrame";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
-import { ClancyWordmark } from "../components/SiteBrand";
 import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
 import { featuredEmployers, homeMetrics, siteMeta } from "../content/siteContent";
 import {
@@ -105,7 +104,7 @@ export function HomePage() {
             </div>
             <h1 aria-label="Daniel Clancy">
               <span>Daniel</span>
-              <ClancyWordmark className="professional-hero__outline" />
+              <span className="professional-hero__outline">Clancy</span>
             </h1>
             <p className="professional-hero__role">{siteMeta.role}</p>
             <p className="professional-hero__summary">{siteMeta.heroSummary}</p>

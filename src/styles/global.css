@@ -9716,53 +9716,12 @@ select:focus {
   height: var(--professional-brand-lockup-height);
 }
 
-.clancy-wordmark {
-  display: inline-flex;
-  align-items: baseline;
-  min-width: 0;
-  color: transparent;
-  white-space: nowrap;
-  -webkit-text-stroke: 0;
-  text-shadow: none;
-}
-
-.clancy-wordmark__letters {
-  color: transparent;
-  -webkit-text-stroke: 1.2px color-mix(in srgb, var(--text) 78%, transparent);
-}
-
-.clancy-wordmark__a {
-  width: 0.596em;
-  height: 0.651em;
-  flex: 0 0 auto;
-  margin-inline: -0.008em -0.009em;
-  overflow: visible;
-  color: color-mix(in srgb, var(--text) 78%, transparent);
-}
-
-.clancy-wordmark__a path {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.2;
-  stroke-linejoin: miter;
-  vector-effect: non-scaling-stroke;
-  shape-rendering: geometricPrecision;
-}
-
 .site-shell--professional .brand__name-line--outline {
   width: max-content;
   height: 100%;
   min-height: 0;
   color: transparent;
-  -webkit-text-stroke: 0;
-}
-
-.site-shell--professional .brand__name-line--outline .clancy-wordmark__letters {
-  -webkit-text-stroke-width: 0.82px;
-}
-
-.site-shell--professional .brand__name-line--outline .clancy-wordmark__a path {
-  stroke-width: 0.82;
+  -webkit-text-stroke: 0.82px color-mix(in srgb, var(--text) 78%, transparent);
 }
 
 .site-shell--professional .brand__title--stacked {
@@ -9772,7 +9731,7 @@ select:focus {
 .professional-hero__outline {
   width: max-content;
   color: transparent;
-  -webkit-text-stroke: 0;
+  -webkit-text-stroke: 1.2px color-mix(in srgb, var(--text) 78%, transparent);
   text-shadow: none;
 }
 
@@ -9925,6 +9884,16 @@ select:focus {
 .experience-layout {
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
+}
+
+.site-shell--professional .section-heading {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.65rem;
+}
+
+.site-shell--professional .section-heading__eyebrow {
+  grid-row: auto;
+  padding-top: 0;
 }
 
 .site-shell--professional .portfolio-gallery__stage {
