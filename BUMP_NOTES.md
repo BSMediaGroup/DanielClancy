@@ -58,6 +58,9 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Added a clean two-page A4 Word CV containing the complete factual content of the current 2026 PDF CV without logos, imagery, decorative sidebars, or dense card graphics, then added it as a third downloadable option in the existing accessible CV document menu.
 - Added clear inline SVG action cues to the CV menu: an open-URL mark for the PDF that opens in a new tab and matching download-file marks for the print PDF and editable Word document.
 - Replaced the CV document dropdown's fixed dark-only colors with theme-aware panel, text, divider, icon, hover, focus, border, and shadow treatments, including a dedicated high-contrast light presentation.
+- Added a shared, non-interactive architectural motion field to the CV, Portfolio, and Contact heroes, with route-specific chronology, drawing-sheet, and connected-site SVG geometry plus animated grid depth, line tracing, datum scanning, ambient light, nodes, and reduced-motion fallbacks.
+- Replaced the Contact page's Leaflet renderer with lazy-loaded MapLibre GL JS 4.7.1, matching the Admin map renderer while retaining static-host compatibility and CARTO/OpenStreetMap attribution.
+- Added synchronized dark/light CARTO map styles, theme-specific Daniel Clancy pin artwork with exact bottom-centre anchoring, accessible zoom/scale/marker controls, responsive resizing, and themed loading, popup, attribution, and control surfaces.
 
 ### Human-readable notes
 - The professional homepage now reads more clearly for employers, recruiters, consultancies, and project reviewers.
@@ -93,6 +96,8 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - The CV menu now also downloads a neatly formatted, editable Word version with the same profile, nine-role employment history, platforms, disciplines, portfolio link, comments, and contact details as the current PDF CV.
 - The CV menu now visually distinguishes the open-in-new-tab action from both download actions with the appropriate URL and file-download icons.
 - The CV document menu now uses a clean light surface with readable dark labels and restrained interaction states in light mode while retaining its dark presentation in dark mode.
+- The CV, Portfolio, and Contact introductions now have polished moving technical drawings and light effects that match the homepage's architectural character without obscuring their content.
+- The Contact map now zooms and resizes through MapLibre, follows the site's dark or light setting, and places the matching Daniel Clancy pin precisely on Sydney from the point at the pin's bottom edge.
 
 ### Known limitations
 - Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.

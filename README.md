@@ -17,6 +17,8 @@ This repo holds the public-facing Daniel Clancy website only. It now uses a deli
 
 The professional shell uses a restrained drawing-sheet/dossier visual system with Source Sans 3 headings, weighted Blinker body copy, the existing SUSE Mono interface labels, a height-locked symbol/two-line wordmark, low-contrast animated drafting cues, animated platform proficiency meters, and first-class dark/light themes. Personal Studio, watch, and shop surfaces retain their established visual treatment.
 
+The Contact page map uses lazy-loaded MapLibre GL JS with matching dark/light CARTO basemaps, theme-specific Daniel Clancy pin artwork anchored at its bottom-centre location point, accessible navigation controls, and no client-side API key.
+
 The portfolio/archive layer now rebuilds from the canonical `cmsdata/wix/collection-tables/WorkSet.csv` export instead of the previous hand-maintained project array.
 
 The CV, portfolio, project detail, company, platform/software, image, gallery, thumbnail, and document data now hydrate from the sanitized DanielClancy-Admin public site-data export when configured. The committed static fallback remains the current public source-derived model so the site still builds and renders when the admin API is unavailable.
@@ -320,9 +322,12 @@ Public CMS edits show on DanielClancy.net after Admin Save/Sync, Admin Publish s
   - `src/components/CapabilityMeter.tsx`
   - `src/components/CompanyLogoMark.tsx`
   - `src/components/ContactMap.tsx`
+  - `assets/icons/dcpindarkmode.svg`
+  - `assets/icons/dcpinlightmode.svg`
   - `src/components/LegalPageLayout.tsx`
   - `src/components/PersonalHeaderAccount.tsx`
   - `src/components/PortfolioMediaGallery.tsx`
+  - `src/components/ProfessionalSubpageField.tsx`
   - `src/content/brandAssets.ts`
   - `src/content/shopHeroSlides.ts`
   - `src/content/workSetPortfolio.ts`
@@ -448,6 +453,7 @@ DanielClancy/
 │  ├─ components/
 │  │  ├─ LegalPageLayout.tsx
 │  │  ├─ PersonalHeaderAccount.tsx
+│  │  ├─ ProfessionalSubpageField.tsx
 │  │  └─ PageVisitBeacon.tsx
 │  ├─ content/
 │  │  └─ shopHeroSlides.ts

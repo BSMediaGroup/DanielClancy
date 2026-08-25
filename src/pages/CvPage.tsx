@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CompanyLogoMark } from "../components/CompanyLogoMark";
+import { ProfessionalSubpageField } from "../components/ProfessionalSubpageField";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { getSoftwareLogo, shellAssets } from "../content/brandAssets";
@@ -25,6 +26,7 @@ export function CvPage() {
       />
 
       <section className="hero hero--subpage cv-hero">
+        <ProfessionalSubpageField variant="cv" />
         <div className="container cv-hero__grid">
           <div className="cv-hero__copy">
             <p className="kicker">Curriculum vitae / 2026</p>

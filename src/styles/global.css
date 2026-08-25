@@ -8909,64 +8909,223 @@ select:focus {
 }
 
 .contact-map {
+  --contact-map-control-icon: invert(1) brightness(1.45);
+  --contact-map-popup: color-mix(in srgb, var(--panel-strong) 96%, #050709);
+  position: relative;
   min-height: 27rem;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 6px);
+  background: var(--panel-strong);
 }
 
 .contact-map__canvas {
   min-height: 27rem;
-  border-radius: calc(var(--radius) - 6px);
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+  font-family: "Blinker", "Segoe UI", sans-serif;
+  opacity: 1;
+  transition: opacity 280ms ease;
 }
 
-.contact-map__marker-shell {
-  background: transparent;
-  border: 0;
+.contact-map[data-map-status="loading"] .contact-map__canvas {
+  opacity: 0.48;
 }
 
 .contact-map__marker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 999px;
-  border: 1px solid rgba(10, 12, 15, 0.18);
-  background:
-    linear-gradient(180deg, rgba(248, 244, 236, 0.96), rgba(229, 223, 213, 0.94)),
-    rgba(246, 240, 230, 0.94);
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.36),
-    0 0 0 6px rgba(219, 201, 166, 0.08);
+  width: clamp(4rem, 5vw, 4.75rem);
+  height: clamp(4rem, 5vw, 4.75rem);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 48% 48% 52% 52%;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 0.75rem 0.8rem rgba(0, 0, 0, 0.42));
+  transition: filter 180ms ease;
 }
 
 .contact-map__marker img {
-  width: 1.8rem;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-.contact-map__tooltip {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+.contact-map__marker:is(:hover, :focus-visible) {
+  filter:
+    drop-shadow(0 0.9rem 1rem rgba(0, 0, 0, 0.48))
+    drop-shadow(0 0 0.45rem color-mix(in srgb, var(--accent) 34%, transparent));
 }
 
-.contact-map__tooltip .leaflet-tooltip-content {
+.contact-map__marker:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.contact-map__popup .maplibregl-popup-content {
   display: grid;
-  gap: 0.18rem;
-  padding: 0.65rem 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  background: rgba(9, 11, 14, 0.94);
+  gap: 0.22rem;
+  padding: 0.72rem 2.2rem 0.72rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--contact-map-popup);
   color: var(--text);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.34);
 }
 
-.contact-map__tooltip strong {
+.contact-map__popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--contact-map-popup);
+}
+
+.contact-map__popup-content {
+  display: grid;
+  gap: 0.16rem;
+}
+
+.contact-map__popup-content strong {
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
   font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-.contact-map__tooltip span {
+.contact-map__popup-content span {
   color: var(--text-muted);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
+}
+
+.contact-map__popup .maplibregl-popup-close-button {
+  top: 0.2rem;
+  right: 0.2rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 3px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.contact-map__popup .maplibregl-popup-close-button:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+  color: var(--text);
+}
+
+.contact-map__popup .maplibregl-popup-close-button:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.contact-map .maplibregl-ctrl-top-right {
+  top: 0.7rem;
+  right: 0.7rem;
+}
+
+.contact-map .maplibregl-ctrl-group {
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--panel-strong) 94%, transparent);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.contact-map .maplibregl-ctrl-group button {
+  width: 2.15rem;
+  height: 2.15rem;
+  background-color: transparent;
+}
+
+.contact-map .maplibregl-ctrl-group button + button {
+  border-top-color: var(--line);
+}
+
+.contact-map .maplibregl-ctrl-group button:is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.contact-map .maplibregl-ctrl-group button:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.contact-map .maplibregl-ctrl-icon {
+  filter: var(--contact-map-control-icon);
+}
+
+.contact-map .maplibregl-ctrl-attrib.maplibregl-ctrl {
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  border-radius: 3px 0 0;
+  background: color-mix(in srgb, var(--panel-strong) 92%, transparent) !important;
+  color: var(--text-muted);
+  font-family: "SUSE Mono", Consolas, monospace;
+  font-size: 0.58rem;
+}
+
+.contact-map .maplibregl-ctrl-attrib a {
+  color: var(--text-muted);
+}
+
+.contact-map .maplibregl-ctrl-attrib-button {
+  background-color: transparent;
+  filter: var(--contact-map-control-icon);
+}
+
+.contact-map .maplibregl-ctrl-scale {
+  border-color: var(--text-muted);
+  border-top: 0;
+  background: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  color: var(--text);
+  font-family: "SUSE Mono", Consolas, monospace;
+  font-size: 0.58rem;
+}
+
+.contact-map__status {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    linear-gradient(115deg, transparent 30%, color-mix(in srgb, var(--text) 5%, transparent) 48%, transparent 66%),
+    color-mix(in srgb, var(--panel-strong) 76%, transparent);
+  color: var(--text-muted);
+  font-family: "SUSE Mono", Consolas, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.contact-map__status--loading {
+  background-size: 230% 100%, auto;
+  animation: contact-map-loading 1.8s ease-in-out infinite;
+}
+
+.site-shell--professional[data-professional-theme="light"] .contact-map {
+  --contact-map-control-icon: none;
+  --contact-map-popup: color-mix(in srgb, var(--panel-strong) 96%, #fff);
+}
+
+@keyframes contact-map-loading {
+  from {
+    background-position: 100% 0, 0 0;
+  }
+  to {
+    background-position: -100% 0, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-map__canvas {
+    transition: none;
+  }
+
+  .contact-map__status--loading {
+    animation: none;
+  }
 }
 
 .legal-page {
@@ -11159,6 +11318,334 @@ select:focus {
   border-color: var(--line);
 }
 
+/* Route-specific architectural motion for the CV, portfolio and contact heroes. */
+.site-shell--professional .hero--subpage {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 82% 16%, color-mix(in srgb, var(--accent-cool) 13%, transparent), transparent 34%),
+    radial-gradient(ellipse at 12% 88%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 29%),
+    linear-gradient(132deg, var(--bg-raised) 0%, color-mix(in srgb, var(--panel-strong) 78%, var(--bg-raised)) 54%, var(--bg-raised) 100%);
+}
+
+.site-shell--professional .hero--subpage::before {
+  display: none;
+}
+
+.site-shell--professional .hero--subpage > .container {
+  position: relative;
+  z-index: 2;
+}
+
+.professional-subpage-field {
+  --subpage-field-delay: 0s;
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  contain: paint;
+  overflow: hidden;
+  color: var(--accent-cool);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.32) 24%, #000 54%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.32) 24%, #000 54%, #000 100%);
+}
+
+.professional-subpage-field--portfolio {
+  --subpage-field-delay: -5s;
+}
+
+.professional-subpage-field--contact {
+  --subpage-field-delay: -9s;
+}
+
+.professional-subpage-field::before {
+  content: "";
+  position: absolute;
+  inset: -40% -18% -48%;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--accent-cool) 13%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-cool) 13%, transparent) 1px, transparent 1px);
+  background-size: 58px 58px;
+  opacity: 0.68;
+  transform: perspective(880px) rotateX(59deg) translate3d(0, 16%, 0);
+  transform-origin: center bottom;
+  animation: professional-subpage-grid-drift 18s linear infinite;
+}
+
+.professional-subpage-field::after {
+  content: "";
+  position: absolute;
+  top: -28%;
+  bottom: -28%;
+  left: -34%;
+  width: 30%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent-cool) 5%, transparent) 28%,
+    color-mix(in srgb, var(--accent-cool) 17%, transparent) 52%,
+    color-mix(in srgb, var(--text) 7%, transparent) 60%,
+    transparent
+  );
+  filter: blur(9px);
+  opacity: 0;
+  transform: skewX(-11deg);
+  animation: professional-subpage-light-sweep 16s cubic-bezier(0.42, 0, 0.2, 1) infinite;
+  animation-delay: var(--subpage-field-delay);
+}
+
+.professional-subpage-field__drawing {
+  position: absolute;
+  top: -5%;
+  right: -7%;
+  width: min(94vw, 1440px);
+  height: 110%;
+  overflow: visible;
+  opacity: 0.28;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--accent-cool) 14%, transparent));
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: professional-subpage-drawing-drift 17s cubic-bezier(0.45, 0, 0.25, 1) infinite alternate;
+  animation-delay: var(--subpage-field-delay);
+}
+
+.professional-subpage-field--cv .professional-subpage-field__drawing {
+  right: -4%;
+}
+
+.professional-subpage-field--portfolio .professional-subpage-field__drawing {
+  top: -8%;
+  right: -2%;
+  width: min(90vw, 1380px);
+  height: 116%;
+}
+
+.professional-subpage-field--contact .professional-subpage-field__drawing {
+  right: -9%;
+  width: min(88vw, 1340px);
+}
+
+.professional-subpage-field__drawing :is(path, circle) {
+  vector-effect: non-scaling-stroke;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.professional-subpage-field__structure {
+  opacity: 0.72;
+}
+
+.professional-subpage-field__structure path {
+  stroke-width: 1;
+  stroke-dasharray: 230 28;
+  animation: professional-subpage-line-trace 34s linear infinite;
+  animation-delay: var(--subpage-field-delay);
+}
+
+.professional-subpage-field__dimensions {
+  opacity: 0.48;
+}
+
+.professional-subpage-field__dimensions path {
+  stroke-width: 0.8;
+  stroke-dasharray: 7 7;
+  animation: professional-subpage-dimension-trace 20s linear infinite;
+  animation-delay: var(--subpage-field-delay);
+}
+
+.professional-subpage-field__route {
+  stroke: var(--accent) !important;
+  stroke-width: 1.35 !important;
+  stroke-dasharray: 16 11;
+  animation: professional-subpage-route-trace 12s linear infinite;
+  animation-delay: var(--subpage-field-delay);
+}
+
+.professional-subpage-field__nodes circle {
+  fill: var(--panel-strong);
+  stroke-width: 1.45;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: professional-subpage-node-pulse 5.2s ease-in-out infinite;
+}
+
+.professional-subpage-field__nodes circle:nth-child(2) { animation-delay: -1.3s; }
+.professional-subpage-field__nodes circle:nth-child(3) { animation-delay: -2.6s; }
+.professional-subpage-field__nodes circle:nth-child(4) { animation-delay: -3.9s; }
+
+.professional-subpage-field__datum {
+  position: absolute;
+  top: 12%;
+  right: 0;
+  left: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent-cool) 46%, transparent), transparent 88%);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent-cool) 18%, transparent);
+  opacity: 0;
+  animation: professional-subpage-datum-pass 13s ease-in-out infinite;
+  animation-delay: var(--subpage-field-delay);
+}
+
+.professional-subpage-field__beacon {
+  position: absolute;
+  top: 12%;
+  right: 7%;
+  width: clamp(7rem, 11vw, 10.5rem);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--accent-cool) 34%, transparent);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: professional-subpage-beacon-turn 26s linear infinite;
+  animation-delay: var(--subpage-field-delay);
+}
+
+.professional-subpage-field__beacon::before,
+.professional-subpage-field__beacon::after {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border: 1px dashed color-mix(in srgb, var(--accent-cool) 42%, transparent);
+  border-radius: 50%;
+}
+
+.professional-subpage-field__beacon::after {
+  inset: 49% -18%;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent-cool) 32%, transparent);
+  border-radius: 0;
+}
+
+.professional-subpage-field--cv .professional-subpage-field__beacon {
+  top: 63%;
+  right: 4%;
+}
+
+.professional-subpage-field--portfolio .professional-subpage-field__beacon {
+  top: 8%;
+  right: 16%;
+}
+
+.professional-subpage-field--contact .professional-subpage-field__beacon {
+  top: 14%;
+  right: 8%;
+}
+
+.site-shell--professional[data-professional-theme="light"] .professional-subpage-field::before {
+  opacity: 0.46;
+}
+
+.site-shell--professional[data-professional-theme="light"] .professional-subpage-field__drawing {
+  opacity: 0.21;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent-cool) 9%, transparent));
+}
+
+.site-shell--professional[data-professional-theme="light"] .professional-subpage-field__beacon {
+  opacity: 0.22;
+}
+
+@keyframes professional-subpage-grid-drift {
+  from {
+    background-position: 0 0, 0 0;
+    transform: perspective(880px) rotateX(59deg) translate3d(0, 16%, 0);
+  }
+  to {
+    background-position: 58px 58px, 58px 58px;
+    transform: perspective(880px) rotateX(59deg) translate3d(0, 11%, 0);
+  }
+}
+
+@keyframes professional-subpage-light-sweep {
+  0%, 10% { left: -34%; opacity: 0; }
+  24% { opacity: 0.58; }
+  72% { opacity: 0.34; }
+  90%, 100% { left: 110%; opacity: 0; }
+}
+
+@keyframes professional-subpage-drawing-drift {
+  from { transform: translate3d(-1%, 0.8%, 0) scale(0.99); }
+  to { transform: translate3d(1.2%, -1.1%, 0) scale(1.025); }
+}
+
+@keyframes professional-subpage-line-trace {
+  to { stroke-dashoffset: -774; }
+}
+
+@keyframes professional-subpage-dimension-trace {
+  to { stroke-dashoffset: -168; }
+}
+
+@keyframes professional-subpage-route-trace {
+  to { stroke-dashoffset: -216; }
+}
+
+@keyframes professional-subpage-node-pulse {
+  0%, 100% { opacity: 0.34; transform: scale(0.76); }
+  50% { opacity: 1; transform: scale(1.32); }
+}
+
+@keyframes professional-subpage-datum-pass {
+  0%, 12% { top: 9%; opacity: 0; }
+  24% { opacity: 0.48; }
+  72% { opacity: 0.28; }
+  88%, 100% { top: 91%; opacity: 0; }
+}
+
+@keyframes professional-subpage-beacon-turn {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 980px) {
+  .professional-subpage-field {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 18%, #000 100%);
+  }
+
+  .professional-subpage-field__drawing,
+  .professional-subpage-field--portfolio .professional-subpage-field__drawing,
+  .professional-subpage-field--contact .professional-subpage-field__drawing {
+    top: 5%;
+    right: -44%;
+    width: 150vw;
+    height: 96%;
+    opacity: 0.22;
+  }
+
+  .site-shell--professional[data-professional-theme="light"] .professional-subpage-field__drawing {
+    opacity: 0.17;
+  }
+
+  .professional-subpage-field__beacon {
+    top: 14%;
+    right: 5%;
+  }
+}
+
+@media (max-width: 620px) {
+  .professional-subpage-field::before {
+    background-size: 46px 46px;
+  }
+
+  .professional-subpage-field__drawing,
+  .professional-subpage-field--portfolio .professional-subpage-field__drawing,
+  .professional-subpage-field--contact .professional-subpage-field__drawing {
+    top: 8%;
+    right: -82%;
+    width: 210vw;
+    height: 88%;
+  }
+
+  .professional-subpage-field__datum {
+    left: 0;
+  }
+
+  .professional-subpage-field__beacon {
+    top: 9%;
+    right: -2.5rem;
+    width: 7.5rem;
+  }
+}
+
 @keyframes professional-ambient-sweep {
   from {
     opacity: 0.58;
@@ -11453,7 +11940,16 @@ select:focus {
   .site-shell--professional .hero-technical-field__route,
   .site-shell--professional .hero-technical-field__nodes circle,
   .site-shell--professional .hero-technical-field::before,
-  .site-shell--professional .hero-technical-field::after {
+  .site-shell--professional .hero-technical-field::after,
+  .site-shell--professional .professional-subpage-field::before,
+  .site-shell--professional .professional-subpage-field::after,
+  .site-shell--professional .professional-subpage-field__drawing,
+  .site-shell--professional .professional-subpage-field__structure path,
+  .site-shell--professional .professional-subpage-field__dimensions path,
+  .site-shell--professional .professional-subpage-field__route,
+  .site-shell--professional .professional-subpage-field__nodes circle,
+  .site-shell--professional .professional-subpage-field__datum,
+  .site-shell--professional .professional-subpage-field__beacon {
     animation: none !important;
   }
 }

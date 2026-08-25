@@ -136,9 +136,11 @@ test("professional surfaces use the approved heading and body font families with
 test("professional presentation keeps featured work, navigation, and employer-facing corrections", async () => {
   const appSource = await readFile(new URL("../src/app/App.tsx", import.meta.url), "utf8");
   const brandSource = await readFile(new URL("../src/components/SiteBrand.tsx", import.meta.url), "utf8");
+  const subpageFieldSource = await readFile(new URL("../src/components/ProfessionalSubpageField.tsx", import.meta.url), "utf8");
   const contactSource = await readFile(new URL("../src/pages/ContactPage.tsx", import.meta.url), "utf8");
   const cvSource = await readFile(new URL("../src/pages/CvPage.tsx", import.meta.url), "utf8");
   const detailSource = await readFile(new URL("../src/pages/PortfolioDetailPage.tsx", import.meta.url), "utf8");
+  const portfolioSource = await readFile(new URL("../src/pages/PortfolioPage.tsx", import.meta.url), "utf8");
   const gallerySource = await readFile(new URL("../src/components/PortfolioMediaGallery.tsx", import.meta.url), "utf8");
   const homeSource = await readFile(new URL("../src/pages/HomePage.tsx", import.meta.url), "utf8");
   const mediaFrameSource = await readFile(new URL("../src/components/MediaFrame.tsx", import.meta.url), "utf8");
@@ -177,6 +179,14 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(styleSource, /\.site-shell--professional \.hero--subpage\s*\{[\s\S]*?overflow: hidden;/);
   assert.match(styleSource, /@keyframes professional-grid-depth/);
   assert.match(styleSource, /@keyframes professional-scan-pass/);
+  assert.match(cvSource, /<ProfessionalSubpageField variant="cv" \/>/);
+  assert.match(portfolioSource, /<ProfessionalSubpageField variant="portfolio" \/>/);
+  assert.match(contactSource, /<ProfessionalSubpageField variant="contact" \/>/);
+  assert.match(subpageFieldSource, /variant: "cv" \| "portfolio" \| "contact"/);
+  assert.match(subpageFieldSource, /aria-hidden="true"/);
+  assert.match(styleSource, /@keyframes professional-subpage-grid-drift/);
+  assert.match(styleSource, /@keyframes professional-subpage-light-sweep/);
+  assert.match(styleSource, /prefers-reduced-motion: reduce[\s\S]*professional-subpage-field__drawing/);
   assert.match(appSource, /function RouteScrollManager/);
   assert.match(appSource, /behavior: "instant" as ScrollBehavior/);
   assert.match(gallerySource, /Math\.SQRT2/);
@@ -208,6 +218,28 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(styleSource, /--site-scrollbar-size: 0\.36rem/);
   assert.match(styleSource, /:root\[data-site-theme="light"\]/);
   assert.match(styleSource, /\*::\-webkit-scrollbar/);
+});
+
+test("contact map uses theme-aware MapLibre rendering and bottom-centred brand pins", async () => {
+  const mapSource = await readFile(new URL("../src/components/ContactMap.tsx", import.meta.url), "utf8");
+  const shellSource = await readFile(new URL("../src/components/ProfessionalShell.tsx", import.meta.url), "utf8");
+  const styleSource = await readFile(new URL("../src/styles/global.css", import.meta.url), "utf8");
+  const packageSource = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+
+  assert.equal(packageSource.dependencies["maplibre-gl"], "^4.7.1");
+  assert.equal(packageSource.dependencies.leaflet, undefined);
+  assert.equal(packageSource.devDependencies["@types/leaflet"], undefined);
+  assert.match(mapSource, /import\("maplibre-gl"\)/);
+  assert.match(mapSource, /darkModePin.*dcpindarkmode\.svg/);
+  assert.match(mapSource, /lightModePin.*dcpinlightmode\.svg/);
+  assert.match(mapSource, /tileTheme = theme === "dark" \? "dark_all" : "light_all"/);
+  assert.match(mapSource, /anchor: "bottom"/);
+  assert.match(mapSource, /scrollZoom: false/);
+  assert.match(mapSource, /disableRotation\(\)/);
+  assert.match(mapSource, /Interactive map showing Sydney CBD, Australia/);
+  assert.match(shellSource, /Outlet context=\{\{ theme \} satisfies ProfessionalOutletContext\}/);
+  assert.match(styleSource, /\.contact-map \.maplibregl-ctrl-group/);
+  assert.match(styleSource, /data-professional-theme="light"\] \.contact-map/);
 });
 
 test("asset URL helper keeps media and docs root-relative while preserving absolute URLs", async () => {

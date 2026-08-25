@@ -12,7 +12,11 @@ const navItems = [
   { to: "/contact", label: "Contact" },
 ];
 
-type ProfessionalTheme = "dark" | "light";
+export type ProfessionalTheme = "dark" | "light";
+
+export interface ProfessionalOutletContext {
+  theme: ProfessionalTheme;
+}
 
 const themeStorageKey = "dc-professional-theme";
 
@@ -197,7 +201,7 @@ export function ProfessionalShell() {
       </header>
 
       <main>
-        <Outlet />
+        <Outlet context={{ theme } satisfies ProfessionalOutletContext} />
       </main>
 
       <footer className="site-footer site-footer--professional">

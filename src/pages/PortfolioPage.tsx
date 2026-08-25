@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { MediaFrame } from "../components/MediaFrame";
+import { ProfessionalSubpageField } from "../components/ProfessionalSubpageField";
 import { Section } from "../components/Section";
 import { Seo } from "../components/Seo";
 import { shellAssets } from "../content/brandAssets";
@@ -85,6 +86,7 @@ export function PortfolioPage() {
       />
 
       <section className="hero hero--subpage portfolio-hero">
+        <ProfessionalSubpageField variant="portfolio" />
         <div className="container portfolio-hero__grid">
           <div className="portfolio-hero__copy">
             <p className="kicker">Portfolio</p>
