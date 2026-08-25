@@ -57,6 +57,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Allowed the CV document menu to extend beyond the CV hero's clipping boundary and kept that hero above the following capabilities band, without changing the intentional clipping used by other professional subpage heroes.
 - Added a clean two-page A4 Word CV containing the complete factual content of the current 2026 PDF CV without logos, imagery, decorative sidebars, or dense card graphics, then added it as a third downloadable option in the existing accessible CV document menu.
 - Added clear inline SVG action cues to the CV menu: an open-URL mark for the PDF that opens in a new tab and matching download-file marks for the print PDF and editable Word document.
+- Replaced the CV document dropdown's fixed dark-only colors with theme-aware panel, text, divider, icon, hover, focus, border, and shadow treatments, including a dedicated high-contrast light presentation.
 
 ### Human-readable notes
 - The professional homepage now reads more clearly for employers, recruiters, consultancies, and project reviewers.
@@ -91,6 +92,7 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - The complete CV PDF menu now stays visible above the following section at desktop and tablet widths instead of cutting off the print option.
 - The CV menu now also downloads a neatly formatted, editable Word version with the same profile, nine-role employment history, platforms, disciplines, portfolio link, comments, and contact details as the current PDF CV.
 - The CV menu now visually distinguishes the open-in-new-tab action from both download actions with the appropriate URL and file-download icons.
+- The CV document menu now uses a clean light surface with readable dark labels and restrained interaction states in light mode while retaining its dark presentation in dark mode.
 
 ### Known limitations
 - Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.

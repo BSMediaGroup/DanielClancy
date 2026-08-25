@@ -3305,10 +3305,10 @@
   display: grid;
   width: min(22rem, calc(100vw - 3rem));
   padding: 0.38rem;
-  border: 1px solid rgba(163, 184, 190, 0.32);
+  border: 1px solid var(--line-strong);
   border-radius: 4px;
-  background: #090c0e;
-  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.54), 0 0 0 1px rgba(255, 255, 255, 0.025) inset;
+  background: var(--panel-strong);
+  box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--text) 2.5%, transparent) inset;
 }
 
 .site-shell--professional .cv-document-menu__popover a {
@@ -3320,19 +3320,19 @@
   padding: 0.8rem 0.9rem;
   border: 1px solid transparent;
   border-radius: 2px;
-  color: #f3f1e9;
+  color: var(--text);
   text-decoration: none;
   transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
 }
 
 .site-shell--professional .cv-document-menu__popover a + a {
-  border-top-color: rgba(199, 215, 219, 0.12);
+  border-top-color: var(--line);
 }
 
 .site-shell--professional .cv-document-menu__popover a:is(:hover, :focus-visible) {
-  border-color: rgba(127, 165, 176, 0.46);
-  background: rgba(127, 165, 176, 0.1);
-  color: #fff;
+  border-color: color-mix(in srgb, var(--accent-cool) 62%, transparent);
+  background: color-mix(in srgb, var(--accent-cool) 12%, var(--panel-strong));
+  color: var(--text);
   outline: none;
 }
 
@@ -3361,9 +3361,33 @@
 }
 
 .site-shell--professional .cv-document-menu__popover small {
-  color: #9da8ac;
+  color: var(--text-muted);
   font-size: 0.76rem;
   line-height: 1.35;
+}
+
+.site-shell--professional[data-professional-theme="light"] .cv-document-menu__popover {
+  border-color: rgba(22, 25, 27, 0.24);
+  background: #faf9f4;
+  box-shadow: 0 20px 48px rgba(28, 35, 38, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.72) inset;
+}
+
+.site-shell--professional[data-professional-theme="light"] .cv-document-menu__popover a {
+  color: #172024;
+}
+
+.site-shell--professional[data-professional-theme="light"] .cv-document-menu__popover a + a {
+  border-top-color: rgba(22, 25, 27, 0.12);
+}
+
+.site-shell--professional[data-professional-theme="light"] .cv-document-menu__popover a:is(:hover, :focus-visible) {
+  border-color: rgba(82, 99, 109, 0.52);
+  background: #e5e9e7;
+  color: #111719;
+}
+
+.site-shell--professional[data-professional-theme="light"] .cv-document-menu__popover small {
+  color: #536166;
 }
 
 .site-shell--professional .project-platforms {
