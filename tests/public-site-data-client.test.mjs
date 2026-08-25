@@ -173,6 +173,8 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(styleSource, /\.site-shell--professional \.detail-meta-grid div:last-child:nth-child\(odd\)/);
   assert.match(styleSource, /\.site-shell--professional \.section__band\s*\{[\s\S]*position: absolute;[\s\S]*width: var\(--container\);/);
   assert.match(styleSource, /\.site-shell--professional \.hero--subpage::after\s*\{\s*display: none;/s);
+  assert.match(styleSource, /\.site-shell--professional \.cv-hero\s*\{\s*z-index: 2;\s*overflow: visible;\s*\}/s);
+  assert.match(styleSource, /\.site-shell--professional \.hero--subpage\s*\{[\s\S]*?overflow: hidden;/);
   assert.match(styleSource, /@keyframes professional-grid-depth/);
   assert.match(styleSource, /@keyframes professional-scan-pass/);
   assert.match(appSource, /function RouteScrollManager/);

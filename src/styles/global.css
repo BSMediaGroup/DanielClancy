@@ -10749,6 +10749,11 @@ select:focus {
   padding-bottom: clamp(5.25rem, 8vw, 7.5rem);
 }
 
+.site-shell--professional .cv-hero {
+  z-index: 2;
+  overflow: visible;
+}
+
 .site-shell--professional .cv-contact-sheet,
 .site-shell--professional .archive-controls,
 .site-shell--professional .archive-summary article,
