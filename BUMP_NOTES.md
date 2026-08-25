@@ -45,6 +45,15 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Expanded the homepage hero motion into a clearly visible layered technical field with animated depth grid, scanning datum, traced structure/dimension/route lines, pulsing nodes, ambient light and drawing drift, all disabled under reduced motion.
 - Added direct regression checks for the rebuilt project-heading structure, clean odd metadata rows, contained section dividers, single gallery full-screen action, and the upgraded hero-motion layers.
 - Changed the shared image-priority DOM emission to the standards-compliant lowercase `fetchpriority` attribute so React 18 no longer logs a production-console warning while retaining the same browser loading hints.
+- Consolidated the CV document actions into one accessible dropdown: the dark CV opens in a new tab through `Open PDF`, while the light `Print version` downloads with an explicit filename.
+- Removed the PO Box field from the shared professional contact data and from both the CV contact sheet and Contact page, without changing email, telephone, or location details.
+- Added standardized 480 px and 800 px WebP variants for all 21 mapped portfolio thumbnails, routed homepage, archive, selected-work, and related-project previews through responsive `srcset` sources, and retained full project media exclusively for detail galleries and fullscreen viewing.
+- Changed the featured-project preloader to preload and decode the responsive previews before a slide can crossfade, keeping the current project visible when a subsequent image is not ready; the first visible archive/feature cards also load eagerly while off-screen cards remain lazy.
+- Removed the eager Vite glob that imported the entire Wix portfolio source archive on every professional route, completed the explicit public-gallery index for all 16 current WorkSet projects, and added 13 optimized public WebP mirrors for the previously unmapped Pheasants Nest, Curtin Creative Quarter, Homebush, Beacon Hill, and Wyoming detail galleries.
+- Split the non-home professional pages plus the existing Personal Studio, watch, donation, account, cart, and shop routes into on-demand chunks so homepage visits no longer request unrelated Contact-map, legal, personal, account, donation, watch, or commerce imagery and page modules.
+- Removed the duplicate practice/company pill below project metadata and replaced the software pills with icon-only marks whose labels appear in dark, keyboard-accessible hover/focus tooltips.
+- Added slim, theme-token-driven document and internal scrollbars with distinct dark and light tracks/thumbs, including the existing cart and account-modal scroll regions.
+- Extended focused regression coverage for CV document behavior, postal-address removal, responsive thumbnail assets and source sets, decoded featured transitions, project software tooltips, and theme-aware scrollbar styling.
 
 ### Human-readable notes
 - The professional homepage now reads more clearly for employers, recruiters, consultancies, and project reviewers.
@@ -69,6 +78,13 @@ CURRENT VER= v1.0 / PENDING VER= v1.0.1
 - Long project names no longer overwhelm or spill out of the project page; titles, summaries, drawings, facts, software badges, controls, and pagination now sit in a cleaner, more balanced dossier layout.
 - Rules and borders now separate major page bands without pressing against headings, cards, buttons, badges, or software groups, and the archive, CV, Contact, and mobile layouts follow the same spacing rhythm.
 - The homepage hero now has noticeably richer architectural motion while remaining restrained, readable, and respectful of reduced-motion preferences.
+- The CV now has one clean document menu: open the dark PDF in a new tab or download the light print version.
+- The PO Box no longer appears on the CV or Contact page.
+- Featured and portfolio previews now use much smaller responsive images, and the homepage waits for the next preview to decode before crossfading instead of showing an empty frame between projects.
+- Homepage and archive visits no longer request the full source drawing archive in the background; full project sheets remain available from their individual project galleries and fullscreen viewer.
+- Professional pages also no longer preload unrelated Personal Studio, watch, donation, account, cart, or shop page content.
+- Project details now show software as a clean row of icons with dark hover/focus labels, without repeating the practice beneath the details table.
+- Page and panel scrollbars are now consistently narrow and styled for the active dark or light presentation.
 
 ### Known limitations
 - Local Vite validation cannot prove deployed Cloudflare Pages Function responses or a future live Admin export; the committed fallback, SPA routing configuration, production build, and local browser routes remain the available pre-deployment evidence.

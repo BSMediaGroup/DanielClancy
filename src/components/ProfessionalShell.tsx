@@ -42,9 +42,11 @@ export function ProfessionalShell() {
   useEffect(() => {
     window.localStorage.setItem(themeStorageKey, theme);
     document.documentElement.style.colorScheme = theme;
+    document.documentElement.dataset.siteTheme = theme;
 
     return () => {
       document.documentElement.style.removeProperty("color-scheme");
+      delete document.documentElement.dataset.siteTheme;
     };
   }, [theme]);
 

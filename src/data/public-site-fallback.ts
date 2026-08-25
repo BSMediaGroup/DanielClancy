@@ -159,6 +159,8 @@ const thumbnailBySlug: Record<string, string> = {
     "/media/portfolio/thumbs/lake-joondalup-thumb.jpg",
 };
 
+export const portfolioThumbnailPaths = Array.from(new Set(Object.values(thumbnailBySlug)));
+
 const builtInFallback: PublicSiteDataModel = {
   schemaVersion: "danielclancy-public-site-data.v1",
   generatedAt: "static-fallback",
@@ -172,7 +174,7 @@ const builtInFallback: PublicSiteDataModel = {
     watchMedia: [],
   },
   assets: {
-    portfolioThumbs: Object.values(thumbnailBySlug).map((path) => ({ path })),
+    portfolioThumbs: portfolioThumbnailPaths.map((path) => ({ path })),
     portfolioImages: portfolioArchive.flatMap((project) => project.media.map((item) => ({ path: item.src, label: item.title }))),
     docs: [
       { path: "/docs/Daniel_Clancy_CV_2026.pdf", label: "Daniel Clancy CV 2026" },

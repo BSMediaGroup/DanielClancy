@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { getSoftwareLogo } from "../content/brandAssets";
 import {
+  portfolioThumbnailPaths,
   publicSiteFallback,
   type PublicCompany,
   type PublicPlatform,
@@ -331,6 +332,28 @@ export function getPlatformIconPath(platform: PublicPlatform | null | undefined,
 
 export function getProjectThumbnailUrl(project: PublicProject) {
   return firstPath(project.thumbnailPath, project.heroImage, project.galleryPaths?.[0], project.image);
+}
+
+const responsivePortfolioThumbnailPaths = new Set(portfolioThumbnailPaths);
+
+export function getProjectThumbnailSources(project: PublicProject) {
+  const source = getProjectThumbnailUrl(project);
+  if (!responsivePortfolioThumbnailPaths.has(source)) {
+    return { src: source, srcSet: "" };
+  }
+
+  const fileName = source.split("/").pop()?.replace(/\.[^.]+$/, "");
+  if (!fileName) {
+    return { src: source, srcSet: "" };
+  }
+
+  const responsiveBase = `/media/portfolio/thumbs/responsive/${fileName}`;
+  const small = `${responsiveBase}-480.webp`;
+  const large = `${responsiveBase}-800.webp`;
+  return {
+    src: large,
+    srcSet: `${small} 480w, ${large} 800w`,
+  };
 }
 
 export function getProjectHeroUrl(project: PublicProject) {

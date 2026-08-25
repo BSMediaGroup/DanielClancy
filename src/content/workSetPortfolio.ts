@@ -1,11 +1,6 @@
 import workSetCsv from "../../cmsdata/wix/collection-tables/WorkSet.csv?raw";
 import type { PortfolioItem, PortfolioMediaItem } from "./siteContent";
 
-const assetModules = import.meta.glob("../../cmsdata/wix/portfolio/**/*.{png,jpg,jpeg,webp}", {
-  eager: true,
-  import: "default",
-});
-
 const SHARED_PROJECT_DOCUMENT_FOLDER_URL =
   "https://dcdesignstudio-my.sharepoint.com/:f:/g/personal/daniel_brainstream_media/IgArejgfpFc-S7Wgd3Hkvg9gAWsmaO1USKdtnKHzXlz3LLA?e=UO9Etz";
 const SHARED_PROJECT_DOCUMENT_FOLDER_NOTE =
@@ -13,8 +8,6 @@ const SHARED_PROJECT_DOCUMENT_FOLDER_NOTE =
 const documentFileNameAliases: Record<string, string> = {
   "pns_ar_da.pdf": "PNN_AR_DA.pdf",
 };
-
-const imageAssetIndex = createAssetIndex(assetModules);
 
 const previewFallbackBySlug: Record<string, string> = {
   "cue-roadhouse": "/media/portfolio/cue-roadhouse-p1.webp",
@@ -30,7 +23,7 @@ const previewFallbackBySlug: Record<string, string> = {
   "wungong-urban-water-master-plan": "/media/portfolio/wungong-masterplan-p1.webp",
 };
 
-const publicGalleryFallbackBySlug: Record<string, string[]> = {
+const publicGalleryBySlug: Record<string, string[]> = {
   "proposed-retail-development-for-dawesville-iga": [
     "/media/portfolio/dawesville-p1.webp",
     "/media/portfolio/dawesville-p2.webp",
@@ -40,8 +33,68 @@ const publicGalleryFallbackBySlug: Record<string, string[]> = {
     "/media/portfolio/cue-roadhouse-p1.webp",
     "/media/portfolio/cue-roadhouse-p2.webp",
   ],
+  "redevelopment-of-highway-service-center-pheasants-nest-m31-north-and-south": [
+    "/media/portfolio/pnn-xx-009.webp",
+    "/media/portfolio/PNN_AR_DA_Page_29.webp",
+    "/media/portfolio/PNN_AR_DA_Page_17.webp",
+    "/media/portfolio/PNN_AR_DA_Page_21.webp",
+    "/media/portfolio/pnn-xx-003.webp",
+    "/media/portfolio/PNN_AR_DA_Page_31.webp",
+    "/media/portfolio/PNN_AR_DA_Page_32.webp",
+    "/media/portfolio/pnn-xx-007.webp",
+    "/media/portfolio/pnn-xx-010.webp",
+    "/media/portfolio/PNN_AR_DA_Page_25.webp",
+    "/media/portfolio/pnn-xx-006.webp",
+    "/media/portfolio/pnn-xx-008.webp",
+    "/media/portfolio/pnn-xx-004.webp",
+    "/media/portfolio/pnn-xx-005.webp",
+    "/media/portfolio/pnn-xx-000.webp",
+    "/media/portfolio/pnn-xx-002.webp",
+    "/media/portfolio/pnn-xx-001.webp",
+    "/media/portfolio/pnn-xx-011.webp",
+    "/media/portfolio/pnn-xx-012.webp",
+    "/media/portfolio/pnn-xx-013.webp",
+    "/media/portfolio/PNN_AR_DA_Page_30.webp",
+    "/media/portfolio/PNN_AR_DA_Page_34.webp",
+    "/media/portfolio/PNN_AR_DA_Page_26.webp",
+    "/media/portfolio/PNN_AR_DA_Page_27.webp",
+    "/media/portfolio/PNN_AR_DA_Page_22.webp",
+    "/media/portfolio/PNN_AR_DA_Page_33.webp",
+    "/media/portfolio/PNN_AR_DA_Page_24.webp",
+    "/media/portfolio/PNN_AR_DA_Page_18.webp",
+    "/media/portfolio/PNN_AR_DA_Page_20.webp",
+    "/media/portfolio/PNN_AR_DA_Page_16.webp",
+    "/media/portfolio/PNN_AR_DA_Page_15.webp",
+  ],
   "proposed-boundary-re-alignment-of-lot-1-on-dp-d073414-234-jull-st-armadale-6112": [
     "/media/portfolio/jull-st.jpg",
+  ],
+  "curtin-creative-quarter-misc-details": [
+    "/media/portfolio/ccq3.webp",
+    "/media/portfolio/ccq24.webp",
+    "/media/portfolio/ccq25.webp",
+    "/media/portfolio/ccq23.webp",
+    "/media/portfolio/ccq22.webp",
+    "/media/portfolio/ccq21.webp",
+    "/media/portfolio/ccq20.webp",
+    "/media/portfolio/ccq19.webp",
+    "/media/portfolio/ccq18.webp",
+    "/media/portfolio/ccq14.webp",
+    "/media/portfolio/ccq17.webp",
+    "/media/portfolio/ccq16.webp",
+    "/media/portfolio/ccq15.webp",
+    "/media/portfolio/ccq11.webp",
+    "/media/portfolio/ccq13.webp",
+    "/media/portfolio/ccq12.webp",
+    "/media/portfolio/ccq9.webp",
+    "/media/portfolio/ccq10.webp",
+    "/media/portfolio/ccq8.webp",
+    "/media/portfolio/ccq7.webp",
+    "/media/portfolio/ccq5.webp",
+    "/media/portfolio/ccq6.webp",
+    "/media/portfolio/ccq1.webp",
+    "/media/portfolio/ccq2.webp",
+    "/media/portfolio/ccq4.webp",
   ],
   "lot-500-eighth-road-land-resumption": ["/media/portfolio/eighth-rd.jpg"],
   "cockburn-coast": [
@@ -56,7 +109,19 @@ const publicGalleryFallbackBySlug: Record<string, string[]> = {
     "/media/portfolio/spratt-residence-p2.webp",
     "/media/portfolio/spratt-residence-p3.webp",
   ],
+  "upss-homebush-nsw": [
+    "/media/portfolio/upss-homebush-p2.webp",
+    "/media/portfolio/upss-homebush-p1.webp",
+    "/media/portfolio/upss-homebush-p3.webp",
+    "/media/portfolio/upss-homebush-p4.webp",
+  ],
   "wungong-urban-water-master-plan": ["/media/portfolio/wungong-masterplan-p1.webp"],
+  "upss-beacon-hill-nsw": [
+    "/media/portfolio/upss-beacon-hill-p1.webp",
+    "/media/portfolio/upss-beacon-hill-p2.webp",
+    "/media/portfolio/upss-beacon-hill-p4.webp",
+    "/media/portfolio/upss-beacon-hill-p3.webp",
+  ],
   "henry-street-residence-structural-documentation": [
     "/media/portfolio/henry-st-p1.webp",
     "/media/portfolio/henry-st-p2.webp",
@@ -72,6 +137,11 @@ const publicGalleryFallbackBySlug: Record<string, string[]> = {
     { length: 10 },
     (_, index) => `/media/portfolio/cottesloe-beach-house-p${index + 1}.webp`,
   ),
+  "upss-wyoming-nsw": [
+    "/media/portfolio/upss-wyoming-p4.webp",
+    "/media/portfolio/upss-wyoming-p3.webp",
+    "/media/portfolio/upss-wyoming-p1.webp",
+  ],
   "geraldton-fire-station-structural-documentation": Array.from(
     { length: 4 },
     (_, index) => `/media/portfolio/fesa-fire0${index + 1}.webp`,
@@ -106,11 +176,6 @@ type WorkSetGalleryItem = {
     width?: number;
     height?: number;
   };
-};
-
-type ResolvedAsset = {
-  src: string;
-  matchedFileName: string;
 };
 
 type ResolvedDocument = {
@@ -241,45 +306,11 @@ function createMediaItems({
   gallery: WorkSetGalleryItem[];
   singleImage: string;
 }): MediaResolution {
-  const missingFileNames = new Set<string>();
-  const singleImageFileName = getFileName(singleImage);
-  const galleryItems = gallery.reduce<PortfolioMediaItem[]>((items, item, index) => {
-    if ((item.type || "image") !== "image") {
-      return items;
-    }
+  const publicGallery = publicGalleryBySlug[slug] || [];
 
-    const canonicalFileName = item.fileName?.trim() || `${title}-${index + 1}.jpg`;
-    const resolvedAsset = resolveImageAsset(index, canonicalFileName, item.src, singleImageFileName);
-    const width = Number(item.settings?.width || 0) || undefined;
-    const height = Number(item.settings?.height || 0) || undefined;
-
-    if (!resolvedAsset) {
-      missingFileNames.add(canonicalFileName);
-      return items;
-    }
-
-    items.push({
-      id: `${slugify(resolvedAsset.matchedFileName)}-${index}`,
-      index,
-      fileName: resolvedAsset.matchedFileName,
-      src: resolvedAsset.src,
-      alt: item.alt?.trim() || item.title?.trim() || title,
-      title: item.title?.trim() || projectLabelFromIndex(title, index),
-      description:
-        tidySentence(item.description ?? "") || `Documentation view ${index + 1} for ${title}.`,
-      width,
-      height,
-      aspectRatio: width && height ? width / height : 16 / 9,
-    });
-
-    return items;
-  }, []);
-
-  const publicGalleryFallback = publicGalleryFallbackBySlug[slug] || [];
-
-  if (publicGalleryFallback.length) {
+  if (publicGallery.length) {
     return {
-      items: publicGalleryFallback.map((src, index) => ({
+      items: publicGallery.map((src, index) => ({
         id: `${slug}-public-${index}`,
         index,
         fileName: getFileName(src),
@@ -289,38 +320,19 @@ function createMediaItems({
         description: `Documentation view ${index + 1} for ${title}.`,
         aspectRatio: 16 / 9,
       })),
-      missingFileNames: Array.from(missingFileNames),
-      usingPreviewFallback: true,
-    };
-  }
-
-  if (galleryItems.length) {
-    return {
-      items: galleryItems,
-      missingFileNames: Array.from(missingFileNames),
+      missingFileNames: [],
       usingPreviewFallback: false,
     };
   }
 
-  const localSingleImage = singleImageFileName ? resolveLocalAsset(singleImageFileName) : null;
+  const referencedFileNames = gallery
+    .filter((item) => (item.type || "image") === "image")
+    .map((item, index) => item.fileName?.trim() || getFileName(item.src || "") || `${title}-${index + 1}.jpg`)
+    .filter(Boolean);
+  const singleImageFileName = getFileName(singleImage);
 
-  if (localSingleImage) {
-    return {
-      items: [
-        {
-          id: `${slugify(localSingleImage.matchedFileName)}-0`,
-          index: 0,
-          fileName: localSingleImage.matchedFileName,
-          src: localSingleImage.src,
-          alt: title,
-          title,
-          description: `Documentation view for ${title}.`,
-          aspectRatio: 16 / 9,
-        },
-      ],
-      missingFileNames: Array.from(missingFileNames),
-      usingPreviewFallback: false,
-    };
+  if (singleImageFileName && !referencedFileNames.includes(singleImageFileName)) {
+    referencedFileNames.push(singleImageFileName);
   }
 
   const previewFallback = previewFallbackBySlug[slug];
@@ -328,7 +340,7 @@ function createMediaItems({
   if (!previewFallback) {
     return {
       items: [],
-      missingFileNames: Array.from(missingFileNames),
+      missingFileNames: referencedFileNames,
       usingPreviewFallback: false,
     };
   }
@@ -346,7 +358,7 @@ function createMediaItems({
         aspectRatio: 16 / 9,
       },
     ],
-    missingFileNames: Array.from(missingFileNames),
+    missingFileNames: referencedFileNames,
     usingPreviewFallback: true,
   };
 }
@@ -462,36 +474,6 @@ function parseLocation(rawLocation: string) {
   }
 }
 
-function resolveLocalAsset(fileName: string) {
-  const assetUrl = imageAssetIndex.byFileName[fileName.toLowerCase()];
-
-  return assetUrl
-    ? {
-        src: assetUrl,
-        matchedFileName: fileName,
-      }
-    : null;
-}
-
-function resolveImageAsset(index: number, canonicalFileName: string, rawSrc: string | undefined, singleImageFileName: string) {
-  const exactMatch = resolveLocalAsset(canonicalFileName);
-
-  if (exactMatch) {
-    return exactMatch;
-  }
-
-  if (index === 0 && singleImageFileName) {
-    const singleImageMatch = resolveLocalAsset(singleImageFileName);
-
-    if (singleImageMatch) {
-      return singleImageMatch;
-    }
-  }
-
-  const srcFileName = getFileName(rawSrc || "");
-  return srcFileName ? resolveLocalAsset(srcFileName) : null;
-}
-
 function resolveDocumentUrl(value: string) {
   if (!value.trim()) {
     return null;
@@ -562,16 +544,4 @@ function getFileName(value: string) {
 
 function projectLabelFromIndex(title: string, index: number) {
   return `${title} ${index + 1}`;
-}
-
-function createAssetIndex(modules: Record<string, unknown>) {
-  const byFileName: Record<string, string> = {};
-
-  for (const [path, assetUrl] of Object.entries(modules)) {
-    byFileName[getFileName(path).toLowerCase()] = String(assetUrl);
-  }
-
-  return {
-    byFileName,
-  };
 }

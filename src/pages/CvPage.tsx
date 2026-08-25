@@ -1,3 +1,4 @@
+import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CompanyLogoMark } from "../components/CompanyLogoMark";
 import { Section } from "../components/Section";
@@ -29,24 +30,7 @@ export function CvPage() {
             <p className="kicker">Curriculum vitae / 2026</p>
             <h1>Drafting, design and technical documentation.</h1>
             <p className="hero-copy__lead">{siteMeta.heroSummary}</p>
-            <div className="hero-actions">
-              <a
-                className="button button--primary"
-                href="/docs/Daniel_Clancy_CV_2026.pdf"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open dark PDF
-              </a>
-              <a
-                className="button button--secondary"
-                href="/docs/Daniel_Clancy_CV_2026_Light.pdf"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open light PDF
-              </a>
-            </div>
+            <CvDocumentMenu />
           </div>
 
           <aside className="cv-contact-sheet" aria-label="Professional contact details">
@@ -65,7 +49,6 @@ export function CvPage() {
                 <dt>Telephone</dt>
                 <dd><a href="tel:+61458747524">{siteMeta.contact.phone}</a></dd>
               </div>
-              <div><dt>Postal</dt><dd>{siteMeta.contact.postal}</dd></div>
             </dl>
           </aside>
         </div>
@@ -160,6 +143,91 @@ export function CvPage() {
         </div>
       </Section>
     </>
+  );
+}
+
+function CvDocumentMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuId = useId();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const firstItemRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isOpen]);
+
+  const openAndFocusFirstItem = () => {
+    setIsOpen(true);
+    window.requestAnimationFrame(() => firstItemRef.current?.focus());
+  };
+
+  return (
+    <div className={`cv-document-menu${isOpen ? " cv-document-menu--open" : ""}`} ref={menuRef}>
+      <button
+        ref={triggerRef}
+        aria-controls={menuId}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        className="button button--primary cv-document-menu__trigger"
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            openAndFocusFirstItem();
+          }
+        }}
+      >
+        <span>CV documents</span>
+        <svg aria-hidden="true" viewBox="0 0 16 16">
+          <path d="m3 6 5 5 5-5" />
+        </svg>
+      </button>
+
+      {isOpen ? (
+        <div aria-label="CV document options" className="cv-document-menu__popover" id={menuId} role="menu">
+          <a
+            ref={firstItemRef}
+            href="/docs/Daniel_Clancy_CV_2026.pdf"
+            rel="noreferrer"
+            role="menuitem"
+            target="_blank"
+            onClick={() => setIsOpen(false)}
+          >
+            <span>Open PDF</span>
+            <small>Dark version · opens in a new tab</small>
+          </a>
+          <a
+            download="Daniel_Clancy_CV_2026_Print.pdf"
+            href="/docs/Daniel_Clancy_CV_2026_Light.pdf"
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+          >
+            <span>Print version</span>
+            <small>Light version · downloads the file</small>
+          </a>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

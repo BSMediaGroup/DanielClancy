@@ -3268,7 +3268,182 @@
   }
 }
 
+/* Document controls, project-software marks, and theme-aware narrow scrollbars. */
+.site-shell--professional .cv-document-menu {
+  position: relative;
+  z-index: 8;
+  display: inline-flex;
+  align-self: start;
+  margin-top: 1.5rem;
 }
+
+.site-shell--professional .cv-document-menu__trigger {
+  min-width: 12rem;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.site-shell--professional .cv-document-menu__trigger svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+  transition: transform 180ms ease;
+}
+
+.site-shell--professional .cv-document-menu--open .cv-document-menu__trigger svg {
+  transform: rotate(180deg);
+}
+
+.site-shell--professional .cv-document-menu__popover {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  left: 0;
+  display: grid;
+  width: min(22rem, calc(100vw - 3rem));
+  padding: 0.38rem;
+  border: 1px solid rgba(163, 184, 190, 0.32);
+  border-radius: 4px;
+  background: #090c0e;
+  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.54), 0 0 0 1px rgba(255, 255, 255, 0.025) inset;
+}
+
+.site-shell--professional .cv-document-menu__popover a {
+  display: grid;
+  gap: 0.2rem;
+  min-height: 4rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: #f3f1e9;
+  text-decoration: none;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.site-shell--professional .cv-document-menu__popover a + a {
+  border-top-color: rgba(199, 215, 219, 0.12);
+}
+
+.site-shell--professional .cv-document-menu__popover a:is(:hover, :focus-visible) {
+  border-color: rgba(127, 165, 176, 0.46);
+  background: rgba(127, 165, 176, 0.1);
+  color: #fff;
+  outline: none;
+}
+
+.site-shell--professional .cv-document-menu__popover a > span {
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  font-size: 0.96rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.site-shell--professional .cv-document-menu__popover small {
+  color: #9da8ac;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.site-shell--professional .project-platforms {
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+.site-shell--professional .project-platform-icon {
+  position: relative;
+  display: grid;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  outline: none;
+}
+
+.site-shell--professional .project-platform-icon img {
+  width: 2.15rem;
+  height: 2.15rem;
+  object-fit: contain;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.site-shell--professional .project-platform-icon:is(:hover, :focus-visible) img {
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.38));
+  transform: translateY(-2px) scale(1.045);
+}
+
+.site-shell--professional .project-platform-icon:focus-visible {
+  outline: 1px solid var(--accent-cool);
+  outline-offset: 2px;
+}
+
+.site-shell--professional .project-platform-icon__tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.55rem);
+  left: 50%;
+  z-index: 20;
+  width: max-content;
+  max-width: min(18rem, calc(100vw - 3rem));
+  padding: 0.48rem 0.62rem;
+  border: 1px solid rgba(163, 184, 190, 0.3);
+  border-radius: 3px;
+  background: #080b0d;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.48);
+  color: #f3f1e9;
+  font-family: "SUSE Mono", monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translate(-50%, 0.3rem);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.site-shell--professional .project-platform-icon__tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border: 0.3rem solid transparent;
+  border-top-color: #080b0d;
+  transform: translateX(-50%);
+}
+
+.site-shell--professional .project-platform-icon:is(:hover, :focus-visible) .project-platform-icon__tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 760px) {
+  .site-shell--professional .cv-document-menu,
+  .site-shell--professional .cv-document-menu__trigger {
+    width: 100%;
+  }
+
+  .site-shell--professional .cv-document-menu__popover {
+    right: 0;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-shell--professional .cv-document-menu__trigger svg,
+  .site-shell--professional .project-platform-icon img,
+  .site-shell--professional .project-platform-icon__tooltip {
+    transition: none;
+  }
+}
+
+} /* @layer professional-foundation */
 
 .shop-hero,
 .shop-detail-hero {
@@ -11234,4 +11409,69 @@ select:focus {
   .site-shell--professional .hero-technical-field::after {
     animation: none !important;
   }
+}
+
+/* Final global scrollbar cascade: narrow, neutral, and theme-aware on page and panel scrollers. */
+:root {
+  --site-scrollbar-size: 0.36rem;
+  --site-scrollbar-track: #07090b;
+  --site-scrollbar-thumb: #4d575c;
+  --site-scrollbar-thumb-hover: #77868c;
+  scrollbar-color: var(--site-scrollbar-thumb) var(--site-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+:root[data-site-theme="light"] {
+  --site-scrollbar-track: #e4e8e6;
+  --site-scrollbar-thumb: #899397;
+  --site-scrollbar-thumb-hover: #58666b;
+}
+
+* {
+  scrollbar-color: var(--site-scrollbar-thumb) var(--site-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: var(--site-scrollbar-size);
+  height: var(--site-scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--site-scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 1px solid var(--site-scrollbar-track);
+  border-radius: 999px;
+  background: var(--site-scrollbar-thumb);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--site-scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--site-scrollbar-track);
+}
+
+.cart-drawer__body,
+.login-modal__panel {
+  scrollbar-color: var(--site-scrollbar-thumb) var(--site-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+.cart-drawer__body::-webkit-scrollbar,
+.login-modal__panel::-webkit-scrollbar {
+  width: var(--site-scrollbar-size);
+}
+
+.cart-drawer__body::-webkit-scrollbar-track,
+.login-modal__panel::-webkit-scrollbar-track {
+  background: var(--site-scrollbar-track);
+}
+
+.cart-drawer__body::-webkit-scrollbar-thumb,
+.login-modal__panel::-webkit-scrollbar-thumb {
+  background: var(--site-scrollbar-thumb);
 }

@@ -1,33 +1,82 @@
-import { useLayoutEffect } from "react";
+import { lazy, Suspense, useLayoutEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { PersonalShell } from "../components/PersonalShell";
 import { PageVisitBeacon } from "../components/PageVisitBeacon";
 import { ProfessionalShell } from "../components/ProfessionalShell";
 import { PublicSiteDataProvider } from "../lib/publicSiteData";
-import {
-  AccountAddressesPage,
-  AccountLoginPage,
-  AccountLogoutPage,
-  AccountOrdersPage,
-  AccountPage,
-  AccountPaymentsPage,
-  AccountPreferencesPage,
-  AccountProfilePage,
-} from "../pages/AccountPage";
-import { ContactPage } from "../pages/ContactPage";
-import { CartPage, ShopCancelPage, ShopSuccessPage } from "../pages/CartPage";
-import { CvPage } from "../pages/CvPage";
-import { DonatePage } from "../pages/DonatePage";
 import { HomePage } from "../pages/HomePage";
-import { LivePage } from "../pages/LivePage";
-import { PersonalHomePage } from "../pages/PersonalHomePage";
-import { PortfolioDetailPage } from "../pages/PortfolioDetailPage";
-import { PortfolioPage } from "../pages/PortfolioPage";
-import { ProductDetailPage } from "../pages/ProductDetailPage";
-import { PrivacyPage } from "../pages/PrivacyPage";
-import { ShopPage } from "../pages/ShopPage";
-import { TermsPage } from "../pages/TermsPage";
-import { WatchPage } from "../pages/WatchPage";
+
+const PersonalShell = lazy(() =>
+  import("../components/PersonalShell").then((module) => ({ default: module.PersonalShell })),
+);
+const ContactPage = lazy(() =>
+  import("../pages/ContactPage").then((module) => ({ default: module.ContactPage })),
+);
+const CvPage = lazy(() =>
+  import("../pages/CvPage").then((module) => ({ default: module.CvPage })),
+);
+const PortfolioDetailPage = lazy(() =>
+  import("../pages/PortfolioDetailPage").then((module) => ({ default: module.PortfolioDetailPage })),
+);
+const PortfolioPage = lazy(() =>
+  import("../pages/PortfolioPage").then((module) => ({ default: module.PortfolioPage })),
+);
+const PrivacyPage = lazy(() =>
+  import("../pages/PrivacyPage").then((module) => ({ default: module.PrivacyPage })),
+);
+const TermsPage = lazy(() =>
+  import("../pages/TermsPage").then((module) => ({ default: module.TermsPage })),
+);
+const AccountPage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountPage })),
+);
+const AccountLoginPage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountLoginPage })),
+);
+const AccountProfilePage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountProfilePage })),
+);
+const AccountOrdersPage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountOrdersPage })),
+);
+const AccountAddressesPage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountAddressesPage })),
+);
+const AccountPreferencesPage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountPreferencesPage })),
+);
+const AccountPaymentsPage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountPaymentsPage })),
+);
+const AccountLogoutPage = lazy(() =>
+  import("../pages/AccountPage").then((module) => ({ default: module.AccountLogoutPage })),
+);
+const CartPage = lazy(() =>
+  import("../pages/CartPage").then((module) => ({ default: module.CartPage })),
+);
+const ShopSuccessPage = lazy(() =>
+  import("../pages/CartPage").then((module) => ({ default: module.ShopSuccessPage })),
+);
+const ShopCancelPage = lazy(() =>
+  import("../pages/CartPage").then((module) => ({ default: module.ShopCancelPage })),
+);
+const DonatePage = lazy(() =>
+  import("../pages/DonatePage").then((module) => ({ default: module.DonatePage })),
+);
+const LivePage = lazy(() =>
+  import("../pages/LivePage").then((module) => ({ default: module.LivePage })),
+);
+const PersonalHomePage = lazy(() =>
+  import("../pages/PersonalHomePage").then((module) => ({ default: module.PersonalHomePage })),
+);
+const ProductDetailPage = lazy(() =>
+  import("../pages/ProductDetailPage").then((module) => ({ default: module.ProductDetailPage })),
+);
+const ShopPage = lazy(() =>
+  import("../pages/ShopPage").then((module) => ({ default: module.ShopPage })),
+);
+const WatchPage = lazy(() =>
+  import("../pages/WatchPage").then((module) => ({ default: module.WatchPage })),
+);
 
 export default function App() {
   return (
@@ -37,18 +86,18 @@ export default function App() {
       <Routes>
         <Route element={<ProfessionalShell />}>
           <Route index element={<HomePage />} />
-          <Route path="/cv" element={<CvPage />} />
-          <Route path="/work" element={<PortfolioPage />} />
-          <Route path="/work/:slug" element={<PortfolioDetailPage />} />
-          <Route path="/workset/:slug" element={<PortfolioDetailPage />} />
-          <Route path="/portfolio" element={<PortfolioPage />} />
-          <Route path="/portfolio/:slug" element={<PortfolioDetailPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/cv" element={<DeferredRoute><CvPage /></DeferredRoute>} />
+          <Route path="/work" element={<DeferredRoute><PortfolioPage /></DeferredRoute>} />
+          <Route path="/work/:slug" element={<DeferredRoute><PortfolioDetailPage /></DeferredRoute>} />
+          <Route path="/workset/:slug" element={<DeferredRoute><PortfolioDetailPage /></DeferredRoute>} />
+          <Route path="/portfolio" element={<DeferredRoute><PortfolioPage /></DeferredRoute>} />
+          <Route path="/portfolio/:slug" element={<DeferredRoute><PortfolioDetailPage /></DeferredRoute>} />
+          <Route path="/contact" element={<DeferredRoute><ContactPage /></DeferredRoute>} />
+          <Route path="/privacy" element={<DeferredRoute><PrivacyPage /></DeferredRoute>} />
+          <Route path="/terms" element={<DeferredRoute><TermsPage /></DeferredRoute>} />
         </Route>
 
-        <Route element={<PersonalShell />}>
+        <Route element={<Suspense fallback={null}><PersonalShell /></Suspense>}>
           <Route path="/home" element={<PersonalHomePage />} />
           <Route path="/live" element={<LivePage />} />
           <Route path="/watch" element={<WatchPage />} />
@@ -76,6 +125,10 @@ export default function App() {
       </Routes>
     </PublicSiteDataProvider>
   );
+}
+
+function DeferredRoute({ children }: { children: ReactNode }) {
+  return <Suspense fallback={null}>{children}</Suspense>;
 }
 
 function RouteScrollManager() {

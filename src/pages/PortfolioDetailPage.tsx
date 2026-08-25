@@ -12,10 +12,10 @@ import {
 } from "../lib/portfolio";
 import {
   getPlatformIconPath,
-  getProjectCompanyLabel,
   getProjectDocumentUrl,
   getProjectGalleryUrls,
   getProjectHeroUrl,
+  getProjectThumbnailSources,
   getProjectThumbnailUrl,
   resolvePlatformByIdNameSlug,
   usePublicSiteData,
@@ -24,7 +24,7 @@ import {
 export function PortfolioDetailPage() {
   const { slug } = useParams();
   const location = useLocation();
-  const { projects: portfolioArchive, companies, platforms, loading } = usePublicSiteData();
+  const { projects: portfolioArchive, platforms, loading } = usePublicSiteData();
   const project = getPortfolioProjectBySlugFrom(portfolioArchive, slug);
   const archivePath = `/portfolio${location.search}`;
 
@@ -69,6 +69,14 @@ export function PortfolioDetailPage() {
     ...(project.media || []).map((item) => item.src),
   ]).size;
   const querySuffix = location.search;
+  const softwareMarks = project.software.map((item, index) => {
+    const platform = resolvePlatformByIdNameSlug(platforms, item);
+    return {
+      id: `${project.id}-software-${index}`,
+      label: platform?.name || item,
+      logo: getPlatformIconPath(platform, item),
+    };
+  }).filter((item) => item.logo);
 
   return (
     <>
@@ -120,18 +128,25 @@ export function PortfolioDetailPage() {
               <div><span>Media</span><strong>{mediaCount || "Unavailable"}</strong></div>
             </div>
 
-            <div className="project-platforms" aria-label="Project company and software">
-              <span className="logo-pill logo-pill--text"><small>{getProjectCompanyLabel(project, companies)}</small></span>
-              {project.software.map((item) => {
-                const platform = resolvePlatformByIdNameSlug(platforms, item);
-                const logo = getPlatformIconPath(platform, item);
-                return logo ? (
-                  <span key={`${project.id}-${item}`} className="logo-pill" title={platform?.name || item}>
-                    <img alt="" src={logo} /><small>{item}</small>
+            {softwareMarks.length ? (
+              <div className="project-platforms" aria-label="Software used for this project" role="list">
+                {softwareMarks.map((item) => (
+                  <span
+                    key={item.id}
+                    aria-describedby={`${item.id}-tooltip`}
+                    aria-label={item.label}
+                    className="project-platform-icon"
+                    role="listitem"
+                    tabIndex={0}
+                  >
+                    <img alt="" decoding="async" src={item.logo} />
+                    <span className="project-platform-icon__tooltip" id={`${item.id}-tooltip`} role="tooltip">
+                      {item.label}
+                    </span>
                   </span>
-                ) : null;
-              })}
-            </div>
+                ))}
+              </div>
+            ) : null}
 
             <div className="hero-actions">
               <Link className="button button--secondary" to={archivePath}>Back to portfolio</Link>
@@ -193,15 +208,26 @@ export function PortfolioDetailPage() {
       {relatedProjects.length ? (
         <Section eyebrow="Related projects" title="More from the same project group">
           <div className="project-grid project-grid--related">
-            {relatedProjects.map((item) => (
-              <Link key={item.id} className="project-card project-card--clickable" to={`/portfolio/${getPortfolioSlug(item)}${querySuffix}`}>
-                <MediaFrame alt={item.title} aspectRatio={1.58} fetchPriority="low" fit="contain" src={getProjectThumbnailUrl(item)} />
-                <div className="project-card__body">
-                  <div className="project-card__topline"><p>{item.client}</p><span>{item.year}</span></div>
-                  <h3>{item.title}</h3><p>{item.summary}</p><span className="text-link">View project</span>
-                </div>
-              </Link>
-            ))}
+            {relatedProjects.map((item) => {
+              const thumbnail = getProjectThumbnailSources(item);
+              return (
+                <Link key={item.id} className="project-card project-card--clickable" to={`/portfolio/${getPortfolioSlug(item)}${querySuffix}`}>
+                  <MediaFrame
+                    alt={item.title}
+                    aspectRatio={1.58}
+                    fetchPriority="low"
+                    fit="contain"
+                    sizes="(max-width: 760px) calc(100vw - 3rem), 31vw"
+                    src={thumbnail.src}
+                    srcSet={thumbnail.srcSet}
+                  />
+                  <div className="project-card__body">
+                    <div className="project-card__topline"><p>{item.client}</p><span>{item.year}</span></div>
+                    <h3>{item.title}</h3><p>{item.summary}</p><span className="text-link">View project</span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </Section>
       ) : null}

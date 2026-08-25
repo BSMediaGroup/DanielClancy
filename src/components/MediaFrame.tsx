@@ -8,6 +8,9 @@ type MediaFrameProps = {
   fetchPriority?: "high" | "low" | "auto";
   fit?: "cover" | "contain";
   aspectRatio?: number;
+  preloaded?: boolean;
+  sizes?: string;
+  srcSet?: string;
 };
 
 export function MediaFrame({
@@ -18,14 +21,17 @@ export function MediaFrame({
   fetchPriority = "auto",
   fit = "cover",
   aspectRatio,
+  preloaded = false,
+  sizes,
+  srcSet = "",
 }: MediaFrameProps) {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(preloaded);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setLoaded(false);
+    setLoaded(preloaded);
     setFailed(false);
-  }, [src]);
+  }, [preloaded, src, srcSet]);
 
   return (
     <div
@@ -40,7 +46,9 @@ export function MediaFrame({
             decoding="async"
             {...{ fetchpriority: fetchPriority }}
             loading={loading}
+            sizes={srcSet ? sizes : undefined}
             src={src}
+            srcSet={srcSet || undefined}
             onError={() => setFailed(true)}
             onLoad={() => setLoaded(true)}
           />

@@ -93,7 +93,6 @@ export const siteMeta = {
     email: "mail@danielclancy.net",
     phone: "+61 458 747 524",
     location: "Potts Point, New South Wales, Australia",
-    postal: "PO Box 422, Potts Point NSW 1335",
   },
   heroSummary:
     "With 18+ years of drafting and design experience, Daniel Clancy has contributed to structural, architectural, urban, landscape, and infrastructure work for firms including GHD, Urbis, PLACE Laboratory, Richmond+Ross, and Meriton Group.",

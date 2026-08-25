@@ -126,7 +126,6 @@ export function ContactPage() {
             <div className="contact-stack">
               <a href={`mailto:${siteMeta.contact.email}`}>{siteMeta.contact.email}</a>
               <a href="tel:+61458747524">{siteMeta.contact.phone}</a>
-              <p>{siteMeta.contact.postal}</p>
               <p>{siteMeta.contact.location}</p>
             </div>
           </aside>

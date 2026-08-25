@@ -274,11 +274,12 @@ Signed-in customer checkout remains optional. Guest checkout still uses the anon
 - Monospace UI: `assets/fonts/mono/SUSEMono-Variable.ttf`
 - Public CV: `public/docs/Daniel_Clancy_CV_2026.pdf`
 - Canonical portfolio source: `cmsdata/wix/collection-tables/WorkSet.csv`
-- Canonical portfolio media root: `cmsdata/wix/portfolio/`
+- Canonical portfolio source-media root: `cmsdata/wix/portfolio/`; this archive is not eagerly imported by the public client
 - Portfolio project PDFs under `cmsdata/wix/portfolio/` are source-only local archive material and should remain gitignored rather than tracked or deployed.
-- Local preview-only fallbacks for genuinely missing WorkSet exports: `public/media/portfolio/`
-- Public portfolio thumbnails: `public/media/portfolio/thumbs/`, addressed as clean paths such as `/media/portfolio/thumbs/example.webp`
+- Verified public WebP gallery mirrors and graceful preview fallbacks: `public/media/portfolio/`; every current public WorkSet project resolves through this explicit index without pulling the source archive into homepage or archive bundles
+- Public portfolio thumbnails: `public/media/portfolio/thumbs/`, with standardized 480 px and 800 px WebP preview variants under `public/media/portfolio/thumbs/responsive/`; cards and featured work use these previews while detail galleries retain the full project media
 - Public portfolio gallery/hero media: `public/media/portfolio/`, addressed as clean paths such as `/media/portfolio/example.webp`
+- Non-home professional routes plus Personal Studio/watch/shop route modules are loaded on demand, so homepage visits do not download unrelated Contact-map, legal, account, donation, watch, or commerce page code and imagery.
 - Public documents: `public/docs/`, addressed as clean paths such as `/docs/example.pdf`
 - Logo/social/software/company marks: `assets/logos/` and `assets/icons/`
 
@@ -432,6 +433,7 @@ DanielClancy/
 │  ├─ docs/
 │  ├─ media/portfolio/
 │  │  └─ thumbs/
+│  │     └─ responsive/
 │  ├─ _headers
 │  ├─ _redirects
 │  ├─ favicon.ico

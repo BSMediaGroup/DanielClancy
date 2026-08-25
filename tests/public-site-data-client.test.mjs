@@ -77,6 +77,9 @@ test("project detail route resolves fallback projects by slug, id, code, and leg
   assert.match(appSource, /path="\/portfolio\/:slug"/);
   assert.match(appSource, /path="\/work\/:slug"/);
   assert.match(appSource, /path="\/workset\/:slug"/);
+  assert.match(appSource, /const PersonalShell = lazy/);
+  assert.match(appSource, /<Suspense fallback=\{null\}><PersonalShell \/><\/Suspense>/);
+  assert.doesNotMatch(appSource, /import \{ DonatePage \}|import \{ ShopPage \}|import \{ WatchPage \}/);
   assert.match(detailSource, /loading \? \(/);
   assert.match(detailSource, /archivePath = `\/portfolio\$\{location\.search\}`/);
   assert.doesNotMatch(detailSource, /Navigate replace to="\/portfolio"/);
@@ -94,16 +97,29 @@ test("committed portfolio fallback enriches incomplete exports with real public 
 
   assert.equal(payload.collections.projects.length, 16);
   assert.ok(payload.collections.projects.every((project) => project.visibility === "public"));
-  assert.match(source, /publicGalleryFallbackBySlug/);
+  assert.match(source, /publicGalleryBySlug/);
+  assert.doesNotMatch(source, /import\.meta\.glob|assetModules|createAssetIndex|resolveImageAsset/);
+  assert.match(source, /PNN_AR_DA_Page_16\.webp/);
+  assert.match(source, /ccq22\.webp/);
+  assert.match(source, /upss-homebush-p4\.webp/);
+  assert.match(source, /upss-beacon-hill-p4\.webp/);
+  assert.match(source, /upss-wyoming-p4\.webp/);
   assert.match(fallbackSource, /builtIn\?\.galleryPaths\?\.length/);
   assert.match(fallbackSource, /normalizeSoftwareLabels/);
   assert.ok(explicitMediaPaths.length > 10);
   assert.match(fallbackSource, /spratt-residence-proposed-addition[\s\S]*spratt-thumb\.webp/);
   assert.match(fallbackSource, /henry-street-residence-structural-documentation[\s\S]*henry-st-thumb\.webp/);
   assert.match(fallbackSource, /lake-joondalup-baptist-college-new-arts-building-structural-plans[\s\S]*lake-joondalup-thumb\.jpg/);
+  assert.match(fallbackSource, /export const portfolioThumbnailPaths/);
 
   for (const publicPath of new Set([...explicitMediaPaths, ...explicitThumbnailPaths])) {
     await access(new URL(`../public${publicPath}`, import.meta.url));
+  }
+
+  for (const publicPath of new Set(explicitThumbnailPaths)) {
+    const fileName = publicPath.split("/").pop().replace(/\.[^.]+$/, "");
+    await access(new URL(`../public/media/portfolio/thumbs/responsive/${fileName}-480.webp`, import.meta.url));
+    await access(new URL(`../public/media/portfolio/thumbs/responsive/${fileName}-800.webp`, import.meta.url));
   }
 });
 
@@ -121,10 +137,13 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   const appSource = await readFile(new URL("../src/app/App.tsx", import.meta.url), "utf8");
   const brandSource = await readFile(new URL("../src/components/SiteBrand.tsx", import.meta.url), "utf8");
   const contactSource = await readFile(new URL("../src/pages/ContactPage.tsx", import.meta.url), "utf8");
+  const cvSource = await readFile(new URL("../src/pages/CvPage.tsx", import.meta.url), "utf8");
   const detailSource = await readFile(new URL("../src/pages/PortfolioDetailPage.tsx", import.meta.url), "utf8");
   const gallerySource = await readFile(new URL("../src/components/PortfolioMediaGallery.tsx", import.meta.url), "utf8");
   const homeSource = await readFile(new URL("../src/pages/HomePage.tsx", import.meta.url), "utf8");
   const mediaFrameSource = await readFile(new URL("../src/components/MediaFrame.tsx", import.meta.url), "utf8");
+  const professionalShellSource = await readFile(new URL("../src/components/ProfessionalShell.tsx", import.meta.url), "utf8");
+  const publicDataSource = await readFile(new URL("../src/lib/publicSiteData.tsx", import.meta.url), "utf8");
   const siteContentSource = await readFile(new URL("../src/content/siteContent.ts", import.meta.url), "utf8");
   const styleSource = await readFile(new URL("../src/styles/global.css", import.meta.url), "utf8");
 
@@ -133,8 +152,12 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(homeSource, /projects\.filter\(\(project\) => project\.featured\)/);
   assert.match(homeSource, /window\.setInterval/);
   assert.match(homeSource, /previousFeatureIndex/);
-  assert.match(homeSource, /image\.fetchPriority = "low"/);
+  assert.match(homeSource, /image\.fetchPriority = index === 0 \? "high" : "low"/);
+  assert.match(homeSource, /image\.decode\(\)/);
+  assert.match(homeSource, /readyFeatureSources\.has/);
+  assert.match(homeSource, /getProjectThumbnailSources/);
   assert.match(mediaFrameSource, /fetchpriority: fetchPriority/);
+  assert.match(mediaFrameSource, /srcSet=\{srcSet \|\| undefined\}/);
   assert.doesNotMatch(mediaFrameSource, /fetchPriority=\{fetchPriority\}/);
   assert.match(homeSource, /DisciplineIcon/);
   assert.match(homeSource, /See full CV/);
@@ -160,6 +183,23 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(gallerySource, /createPortal/);
   assert.equal((contactSource.match(/<Section\b/g) || []).length, 1);
   assert.doesNotMatch(contactSource, /static-host|server-side|Pages Function|delivery endpoint/i);
+  assert.match(cvSource, /CV documents/);
+  assert.match(cvSource, />Open PDF</);
+  assert.match(cvSource, />Print version</);
+  assert.match(cvSource, /href="\/docs\/Daniel_Clancy_CV_2026\.pdf"[\s\S]*target="_blank"/);
+  assert.match(cvSource, /download="Daniel_Clancy_CV_2026_Print\.pdf"[\s\S]*href="\/docs\/Daniel_Clancy_CV_2026_Light\.pdf"/);
+  assert.doesNotMatch(cvSource, /Open dark PDF|Open light PDF|contact\.postal|<dt>Postal<\/dt>/);
+  assert.doesNotMatch(contactSource, /contact\.postal/);
+  assert.doesNotMatch(siteContentSource, /PO Box 422|postal:/);
+  assert.doesNotMatch(detailSource, /logo-pill|Project company and software|getProjectCompanyLabel/);
+  assert.match(detailSource, /className="project-platform-icon"/);
+  assert.match(detailSource, /role="tooltip"/);
+  assert.match(publicDataSource, /export function getProjectThumbnailSources/);
+  assert.match(publicDataSource, /thumbs\/responsive/);
+  assert.match(professionalShellSource, /document\.documentElement\.dataset\.siteTheme = theme/);
+  assert.match(styleSource, /--site-scrollbar-size: 0\.36rem/);
+  assert.match(styleSource, /:root\[data-site-theme="light"\]/);
+  assert.match(styleSource, /\*::\-webkit-scrollbar/);
 });
 
 test("asset URL helper keeps media and docs root-relative while preserving absolute URLs", async () => {

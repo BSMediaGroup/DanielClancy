@@ -13,7 +13,7 @@ import {
 import {
   getPlatformIconPath,
   getProjectCompanyLabel,
-  getProjectThumbnailUrl,
+  getProjectThumbnailSources,
   resolvePlatformByIdNameSlug,
   usePublicSiteData,
 } from "../lib/publicSiteData";
@@ -224,6 +224,8 @@ type ProjectCardProps = {
 };
 
 function ProjectCard({ companies, index, platforms, project, querySuffix, variant }: ProjectCardProps) {
+  const thumbnail = getProjectThumbnailSources(project);
+
   return (
     <Link
       className={`project-card project-card--clickable${variant ? ` project-card--${variant}` : ""}`}
@@ -233,9 +235,12 @@ function ProjectCard({ companies, index, platforms, project, querySuffix, varian
         <MediaFrame
           alt={project.title}
           aspectRatio={variant ? 1.52 : 1.62}
-          fetchPriority={variant ? "auto" : "low"}
+          fetchPriority={variant && index === 0 ? "high" : index < 4 ? "auto" : "low"}
           fit="contain"
-          src={getProjectThumbnailUrl(project)}
+          loading={variant || index < 4 ? "eager" : "lazy"}
+          sizes={variant ? "(max-width: 760px) calc(100vw - 3rem), 45vw" : "(max-width: 760px) calc(100vw - 3rem), (max-width: 1220px) 46vw, 31vw"}
+          src={thumbnail.src}
+          srcSet={thumbnail.srcSet}
         />
         <span className="project-card__index">P-{String(index + 1).padStart(2, "0")}</span>
       </div>

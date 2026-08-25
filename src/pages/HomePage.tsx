@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CapabilityMeter } from "../components/CapabilityMeter";
 import { CompanyLogoMark } from "../components/CompanyLogoMark";
@@ -15,7 +15,7 @@ import {
 } from "../lib/portfolio";
 import {
   getPlatformIconPath,
-  getProjectThumbnailUrl,
+  getProjectThumbnailSources,
   resolvePlatformByIdNameSlug,
   usePublicSiteData,
 } from "../lib/publicSiteData";
@@ -31,11 +31,22 @@ const softwareCapabilities = [
 
 export function HomePage() {
   const { projects, positions, platforms } = usePublicSiteData();
-  const spotlightProjects = projects.filter((project) => project.featured);
-  const selectedProjects = spotlightProjects.length ? spotlightProjects.slice(0, 3) : projects.slice(0, 3);
-  const featuredSlides = spotlightProjects.length ? spotlightProjects : projects.slice(0, 1);
+  const spotlightProjects = useMemo(() => projects.filter((project) => project.featured), [projects]);
+  const selectedProjects = useMemo(
+    () => spotlightProjects.length ? spotlightProjects.slice(0, 3) : projects.slice(0, 3),
+    [projects, spotlightProjects],
+  );
+  const featuredSlides = useMemo(
+    () => spotlightProjects.length ? spotlightProjects : projects.slice(0, 1),
+    [projects, spotlightProjects],
+  );
+  const featuredThumbnailSources = useMemo(
+    () => featuredSlides.map((project) => getProjectThumbnailSources(project)),
+    [featuredSlides],
+  );
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [previousFeatureIndex, setPreviousFeatureIndex] = useState<number | null>(null);
+  const [readyFeatureSources, setReadyFeatureSources] = useState<Set<string>>(() => new Set());
   const activeFeatureIndexRef = useRef(0);
   const featureTransitionTimerRef = useRef<number | null>(null);
   const recentExperience = positions.slice(0, 4);
@@ -45,13 +56,12 @@ export function HomePage() {
       count: projects.filter((project) => project.disciplines.includes(name)).length,
     }))
     .filter((item) => item.count > 0);
-  const nextFeatureThumbnail = featuredSlides.length > 1
-    ? getProjectThumbnailUrl(featuredSlides[(activeFeatureIndex + 1) % featuredSlides.length])
-    : "";
 
   const showFeature = useCallback((nextIndex: number) => {
     const currentIndex = activeFeatureIndexRef.current;
     if (nextIndex === currentIndex) return;
+    const nextSource = featuredThumbnailSources[nextIndex]?.src;
+    if (!nextSource || !readyFeatureSources.has(nextSource)) return;
 
     if (featureTransitionTimerRef.current !== null) {
       window.clearTimeout(featureTransitionTimerRef.current);
@@ -64,7 +74,7 @@ export function HomePage() {
       setPreviousFeatureIndex(null);
       featureTransitionTimerRef.current = null;
     }, 950);
-  }, []);
+  }, [featuredThumbnailSources, readyFeatureSources]);
 
   useEffect(() => {
     const nextIndex = Math.min(activeFeatureIndexRef.current, Math.max(featuredSlides.length - 1, 0));
@@ -92,12 +102,42 @@ export function HomePage() {
   }, [featuredSlides.length, showFeature]);
 
   useEffect(() => {
-    if (!nextFeatureThumbnail) return;
-    const image = new Image();
-    image.decoding = "async";
-    image.fetchPriority = "low";
-    image.src = nextFeatureThumbnail;
-  }, [nextFeatureThumbnail]);
+    let cancelled = false;
+    const preloaders = featuredThumbnailSources.map((source, index) => {
+      const image = new Image();
+      const markReady = () => {
+        if (cancelled) return;
+        setReadyFeatureSources((current) => {
+          if (current.has(source.src)) return current;
+          const next = new Set(current);
+          next.add(source.src);
+          return next;
+        });
+      };
+
+      image.decoding = "async";
+      image.fetchPriority = index === 0 ? "high" : "low";
+      image.sizes = "(max-width: 980px) calc(100vw - 1.5rem), min(52vw, 800px)";
+      image.srcset = source.srcSet;
+      image.onload = () => {
+        if (typeof image.decode === "function") {
+          void image.decode().catch(() => undefined).then(markReady);
+        } else {
+          markReady();
+        }
+      };
+      image.src = source.src;
+      if (image.complete && image.naturalWidth > 0) markReady();
+      return image;
+    });
+
+    return () => {
+      cancelled = true;
+      preloaders.forEach((image) => {
+        image.onload = null;
+      });
+    };
+  }, [featuredThumbnailSources]);
 
   return (
     <>
@@ -190,6 +230,7 @@ export function HomePage() {
                 if (index !== activeFeatureIndex && index !== previousFeatureIndex) return null;
                 const isActive = index === activeFeatureIndex;
                 const isPrevious = index === previousFeatureIndex;
+                const thumbnail = featuredThumbnailSources[index];
                 return (
                   <Link
                     key={project.id}
@@ -209,7 +250,10 @@ export function HomePage() {
                         fetchPriority={isActive ? "high" : "auto"}
                         fit="contain"
                         loading="eager"
-                        src={getProjectThumbnailUrl(project)}
+                        preloaded={readyFeatureSources.has(thumbnail.src)}
+                        sizes="(max-width: 980px) calc(100vw - 1.5rem), min(52vw, 800px)"
+                        src={thumbnail.src}
+                        srcSet={thumbnail.srcSet}
                       />
                     </div>
                     <div className="professional-evidence-board__foot">
@@ -237,6 +281,7 @@ export function HomePage() {
                       aria-label={`Show ${project.title}`}
                       aria-pressed={index === activeFeatureIndex}
                       className={index === activeFeatureIndex ? "is-active" : ""}
+                      disabled={index !== activeFeatureIndex && !readyFeatureSources.has(featuredThumbnailSources[index].src)}
                       type="button"
                       onClick={() => showFeature(index)}
                     />
@@ -276,31 +321,42 @@ export function HomePage() {
         className="section--professional-grid"
       >
         <div className="project-grid project-grid--featured home-feature-grid">
-          {selectedProjects.map((project, index) => (
-            <Link
-              key={project.id}
-              className="project-card project-card--clickable"
-              to={`/portfolio/${getPortfolioSlug(project)}`}
-            >
-              <div className="project-card__media-shell">
-                <MediaFrame alt={project.title} fit="contain" src={getProjectThumbnailUrl(project)} />
-                <span className="project-card__index">{String(index + 1).padStart(2, "0")}</span>
-              </div>
-              <div className="project-card__body">
-                <div className="project-card__topline">
-                  <p>{getPortfolioFamily(project)}</p>
-                  <span>{project.year}</span>
+          {selectedProjects.map((project, index) => {
+            const thumbnail = getProjectThumbnailSources(project);
+            return (
+              <Link
+                key={project.id}
+                className="project-card project-card--clickable"
+                to={`/portfolio/${getPortfolioSlug(project)}`}
+              >
+                <div className="project-card__media-shell">
+                  <MediaFrame
+                    alt={project.title}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    fit="contain"
+                    loading={index < 2 ? "eager" : "lazy"}
+                    sizes="(max-width: 760px) calc(100vw - 3rem), (max-width: 1180px) 45vw, 32vw"
+                    src={thumbnail.src}
+                    srcSet={thumbnail.srcSet}
+                  />
+                  <span className="project-card__index">{String(index + 1).padStart(2, "0")}</span>
                 </div>
-                <h3>{project.title}</h3>
-                <p>{project.summary}</p>
-                <div className="project-card__meta">
-                  <span>{project.client}</span>
-                  <span>{getDocumentationType(project)}</span>
+                <div className="project-card__body">
+                  <div className="project-card__topline">
+                    <p>{getPortfolioFamily(project)}</p>
+                    <span>{project.year}</span>
+                  </div>
+                  <h3>{project.title}</h3>
+                  <p>{project.summary}</p>
+                  <div className="project-card__meta">
+                    <span>{project.client}</span>
+                    <span>{getDocumentationType(project)}</span>
+                  </div>
+                  <span className="text-link">View project</span>
                 </div>
-                <span className="text-link">View project</span>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="section-actions">
