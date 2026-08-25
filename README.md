@@ -272,7 +272,7 @@ Signed-in customer checkout remains optional. Guest checkout still uses the anon
 - Professional body: weighted `assets/fonts/body/Blinker-*.ttf` faces from Thin through Black
 - Existing Recharge and Sui Generis faces remain available to the non-professional Personal Studio/watch/shop surfaces
 - Monospace UI: `assets/fonts/mono/SUSEMono-Variable.ttf`
-- Public CV: `public/docs/Daniel_Clancy_CV_2026.pdf`
+- Public CV documents: `public/docs/Daniel_Clancy_CV_2026.pdf` (dark PDF), `public/docs/Daniel_Clancy_CV_2026_Light.pdf` (light print PDF), and `public/docs/Daniel_Clancy_CV_2026.docx` (clean editable Word version)
 - Canonical portfolio source: `cmsdata/wix/collection-tables/WorkSet.csv`
 - Canonical portfolio source-media root: `cmsdata/wix/portfolio/`; this archive is not eagerly imported by the public client
 - Portfolio project PDFs under `cmsdata/wix/portfolio/` are source-only local archive material and should remain gitignored rather than tracked or deployed.
@@ -431,6 +431,9 @@ DanielClancy/
 ├─ public/
 │  ├─ assets/fonts/
 │  ├─ docs/
+│  │  ├─ Daniel_Clancy_CV_2026.docx
+│  │  ├─ Daniel_Clancy_CV_2026.pdf
+│  │  └─ Daniel_Clancy_CV_2026_Light.pdf
 │  ├─ media/portfolio/
 │  │  └─ thumbs/
 │  │     └─ responsive/

@@ -188,8 +188,14 @@ test("professional presentation keeps featured work, navigation, and employer-fa
   assert.match(cvSource, /CV documents/);
   assert.match(cvSource, />Open PDF</);
   assert.match(cvSource, />Print version</);
+  assert.match(cvSource, />Word document</);
+  assert.equal((cvSource.match(/<DownloadFileIcon \/>/g) || []).length, 2);
+  assert.equal((cvSource.match(/<OpenUrlIcon \/>/g) || []).length, 1);
+  assert.match(styleSource, /\.cv-document-menu__icon\s*\{[\s\S]*stroke: currentColor;/);
   assert.match(cvSource, /href="\/docs\/Daniel_Clancy_CV_2026\.pdf"[\s\S]*target="_blank"/);
   assert.match(cvSource, /download="Daniel_Clancy_CV_2026_Print\.pdf"[\s\S]*href="\/docs\/Daniel_Clancy_CV_2026_Light\.pdf"/);
+  assert.match(cvSource, /download="Daniel_Clancy_CV_2026\.docx"[\s\S]*href="\/docs\/Daniel_Clancy_CV_2026\.docx"/);
+  await access(new URL("../public/docs/Daniel_Clancy_CV_2026.docx", import.meta.url));
   assert.doesNotMatch(cvSource, /Open dark PDF|Open light PDF|contact\.postal|<dt>Postal<\/dt>/);
   assert.doesNotMatch(contactSource, /contact\.postal/);
   assert.doesNotMatch(siteContentSource, /PO Box 422|postal:/);

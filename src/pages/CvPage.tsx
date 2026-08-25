@@ -213,8 +213,11 @@ function CvDocumentMenu() {
             target="_blank"
             onClick={() => setIsOpen(false)}
           >
-            <span>Open PDF</span>
-            <small>Dark version · opens in a new tab</small>
+            <OpenUrlIcon />
+            <span className="cv-document-menu__text">
+              <strong>Open PDF</strong>
+              <small>Dark version · opens in a new tab</small>
+            </span>
           </a>
           <a
             download="Daniel_Clancy_CV_2026_Print.pdf"
@@ -222,12 +225,48 @@ function CvDocumentMenu() {
             role="menuitem"
             onClick={() => setIsOpen(false)}
           >
-            <span>Print version</span>
-            <small>Light version · downloads the file</small>
+            <DownloadFileIcon />
+            <span className="cv-document-menu__text">
+              <strong>Print version</strong>
+              <small>Light version · downloads the file</small>
+            </span>
+          </a>
+          <a
+            download="Daniel_Clancy_CV_2026.docx"
+            href="/docs/Daniel_Clancy_CV_2026.docx"
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+          >
+            <DownloadFileIcon />
+            <span className="cv-document-menu__text">
+              <strong>Word document</strong>
+              <small>Clean editable DOCX · downloads the file</small>
+            </span>
           </a>
         </div>
       ) : null}
     </div>
+  );
+}
+
+function OpenUrlIcon() {
+  return (
+    <svg aria-hidden="true" className="cv-document-menu__icon" viewBox="0 0 24 24">
+      <path d="M14 4h6v6" />
+      <path d="m20 4-9 9" />
+      <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
+    </svg>
+  );
+}
+
+function DownloadFileIcon() {
+  return (
+    <svg aria-hidden="true" className="cv-document-menu__icon" viewBox="0 0 24 24">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+      <path d="M14 3v5h5" />
+      <path d="M12 11v6" />
+      <path d="m9.5 14.5 2.5 2.5 2.5-2.5" />
+    </svg>
   );
 }
 

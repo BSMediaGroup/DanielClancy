@@ -3313,7 +3313,9 @@
 
 .site-shell--professional .cv-document-menu__popover a {
   display: grid;
-  gap: 0.2rem;
+  grid-template-columns: 1.2rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
   min-height: 4rem;
   padding: 0.8rem 0.9rem;
   border: 1px solid transparent;
@@ -3334,7 +3336,23 @@
   outline: none;
 }
 
-.site-shell--professional .cv-document-menu__popover a > span {
+.site-shell--professional .cv-document-menu__icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.55;
+}
+
+.site-shell--professional .cv-document-menu__text {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.site-shell--professional .cv-document-menu__text strong {
   font-family: "Source Sans 3", "Segoe UI", sans-serif;
   font-size: 0.96rem;
   font-weight: 760;
