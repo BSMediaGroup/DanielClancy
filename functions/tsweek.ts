@@ -22,28 +22,10 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Timesheet Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Blinker:wght@400;600&family=Source+Sans+3:wght@650&display=swap" rel="stylesheet">
 <style>
-  @font-face {
-    font-family: "Source Sans 3";
-    src: url("/assets/fonts/heading/SourceSans3-VariableFont_wght.ttf") format("truetype");
-    font-style: normal;
-    font-weight: 200 900;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Blinker";
-    src: url("/assets/fonts/body/Blinker-Regular.ttf") format("truetype");
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Blinker";
-    src: url("/assets/fonts/body/Blinker-SemiBold.ttf") format("truetype");
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-  }
   body {
     background: #07090d;
     color: #f0f3f6;
