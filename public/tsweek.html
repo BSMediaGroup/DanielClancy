@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timesheet — Daniel Clancy | Greg Natale Design</title>
+<style>
+  :root {
+    --bg: #07090d;
+    --bg-elevated: #10141a;
+    --bg-card: #161b22;
+    --bg-hover: #1c2129;
+    --border: #2a3038;
+    --border-light: #3a414b;
+    --text: #f0f3f6;
+    --text-secondary: #b0b8c4;
+    --text-muted: #7d8590;
+    --accent: #5b9cf5;
+    --accent-glow: rgba(91, 156, 245, 0.15);
+    --green: #3fb950;
+    --orange: #f0883e;
+    --red: #f85149;
+    --grey: #6e7681;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 20px;
+    line-height: 1.5;
+    background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(91, 156, 245, 0.08), transparent);
+  }
+
+  .container { max-width: 1040px; margin: 0 auto; }
+
+  header {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+  }
+
+  .brand { display: flex; align-items: center; gap: 16px; }
+
+  .logo-mark {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #5b9cf5, #3d7dd4);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.25rem; color: white;
+    letter-spacing: -0.5px; flex-shrink: 0;
+  }
+
+  .identity h1 { font-size: 1.45rem; font-weight: 650; letter-spacing: -0.3px; margin-bottom: 2px; }
+  .identity .role { color: var(--accent); font-weight: 500; font-size: 0.95rem; }
+  .identity .company { color: var(--text-muted); font-size: 0.85rem; margin-top: 1px; }
+
+  .header-meta { text-align: right; }
+  .standard-control {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .standard-control label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.4px; }
+  .standard-control input {
+    background: transparent; border: none; color: var(--text);
+    font-size: 1.15rem; font-weight: 600; width: 52px; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .standard-control input:focus { outline: none; }
+  .standard-control span { color: var(--text-secondary); font-size: 0.9rem; }
+
+  .summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px;
+  }
+  .stat {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px; transition: border-color 0.15s;
+  }
+  .stat:hover { border-color: var(--border-light); }
+  .stat .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
+  .stat .value { font-size: 1.65rem; font-weight: 650; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+  .stat .value.positive { color: var(--green); }
+  .stat .value.negative { color: var(--red); }
+  .stat .value.neutral { color: var(--text-secondary); }
+
+  .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
+    padding: 9px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: var(--bg-hover); border-color: var(--border-light); color: var(--text); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .btn.primary:hover { filter: brightness(1.1); }
+  .btn:disabled, .btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+  .btn.small { padding: 5px 12px; font-size: 0.78rem; border-radius: 6px; }
+  .btn.icon {
+    width: 32px; height: 32px; padding: 0; display: inline-flex;
+    align-items: center; justify-content: center; border-radius: 6px; font-size: 1rem;
+  }
+  .btn.icon.clear { color: var(--text-muted); }
+  .btn.icon.clear:hover { color: var(--red); border-color: var(--red); }
+
+  .table-wrap {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: #1a1f26; text-align: left; padding: 14px 18px;
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border);
+  }
+  td { padding: 11px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover td { background: var(--bg-hover); }
+
+  .week-num { font-weight: 600; }
+  .date { color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+
+  input[type="number"] {
+    width: 100px; background: #0d1117; border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 1rem;
+    font-variant-numeric: tabular-nums; text-align: right;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input[type="number"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+  .variance {
+    font-weight: 600; font-variant-numeric: tabular-nums;
+    padding: 7px 14px; border-radius: 8px; display: inline-block;
+    min-width: 78px; text-align: right; font-size: 0.95rem;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .hours-indicator {
+    display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+    margin-right: 10px; vertical-align: middle; box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
+  }
+
+  .row-actions { display: flex; gap: 6px; align-items: center; }
+
+  .add-week-row {
+    background: transparent; border: none; width: 100%;
+    padding: 16px; text-align: center; color: var(--accent);
+    font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    border-top: 1px dashed var(--border); transition: background 0.15s;
+  }
+  .add-week-row:hover { background: var(--bg-hover); }
+
+  footer { margin-top: 28px; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(4px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; width: min(640px, 92vw); max-height: 85vh;
+    display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header h2 { font-size: 1.15rem; font-weight: 600; }
+  .modal-close {
+    background: none; border: none; color: var(--text-muted); font-size: 1.4rem;
+    cursor: pointer; line-height: 1; padding: 4px;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 16px 24px; overflow-y: auto; flex: 1; }
+  .url-row {
+    display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center;
+    margin-bottom: 12px;
+  }
+  .url-row label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+  .url-row input {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 12px; font-size: 0.9rem; width: 100%;
+  }
+  .url-row input:focus { outline: none; border-color: var(--accent); }
+  .modal-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  @media (max-width: 720px) {
+    header { grid-template-columns: 1fr; }
+    .header-meta { text-align: left; }
+    .summary { grid-template-columns: 1fr 1fr; }
+    th, td { padding: 10px 12px; }
+    input[type="number"] { width: 80px; }
+    .url-row { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    body { background: white; color: black; padding: 0; }
+    .actions, footer, .standard-control, .row-actions, .modal-overlay, .add-week-row { display: none !important; }
+    header, .stat, .table-wrap { box-shadow: none; border-color: #ccc; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="logo-mark">DC</div>
+      <div class="identity">
+        <h1>Daniel Clancy</h1>
+        <div class="role">Architectural Technician</div>
+        <div class="company">Greg Natale Design</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="standard-control">
+        <label for="standard">Standard</label>
+        <input type="number" id="standard" value="38" step="0.5" min="0">
+        <span>hrs / week</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="summary">
+    <div class="stat">
+      <div class="label">Weeks entered</div>
+      <div class="value" id="weeksEntered">0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total hours</div>
+      <div class="value" id="totalHours">0.00</div>
+    </div>
+    <div class="stat">
+      <div class="label">Average / week</div>
+      <div class="value" id="avgHours">—</div>
+    </div>
+    <div class="stat">
+      <div class="label">Net variance</div>
+      <div class="value" id="netVariance">0.00</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" onclick="exportCSV()">Export CSV</button>
+    <button class="btn" onclick="exportJSON()">Export JSON</button>
+    <button class="btn primary" onclick="exportPDF()">Export PDF</button>
+    <button class="btn" onclick="openUrlModal()">Enter Timesheet URLs</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Ending</th>
+          <th>Hours</th>
+          <th>Variance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <button class="add-week-row" onclick="addWeek()">+ Add Week</button>
+  </div>
+
+  <footer>
+    Hours ≥ standard → green · under → red gradient &nbsp;·&nbsp;
+    Variance: above 0 → grey→orange/red &nbsp;·&nbsp; below 0 → red
+  </footer>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="urlModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Streamtime Timesheet URLs</h2>
+      <button class="modal-close" onclick="closeUrlModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="urlModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeUrlModal()">Cancel</button>
+      <button class="btn primary" onclick="saveUrls()">Save URLs</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STANDARD_DEFAULT = 38;
+const EMPLOYEE = {
+  name: "Daniel Clancy",
+  role: "Architectural Technician",
+  company: "Greg Natale Design"
+};
+
+const STORAGE_KEY = "timesheet_data_daniel_clancy";
+
+const DEFAULT_WEEKS = [
+  { week: "WEEK 1",  ending: "25/09/2026", hours: 38,   url: "" },
+  { week: "WEEK 2",  ending: "2/10/2026",  hours: 42,   url: "" },
+  { week: "WEEK 3",  ending: "9/10/2026",  hours: 40.5, url: "" },
+  { week: "WEEK 4",  ending: "16/10/2026", hours: 39.25,url: "" },
+  { week: "WEEK 5",  ending: "23/10/2026", hours: null, url: "" },
+  { week: "WEEK 6",  ending: "30/10/2026", hours: null, url: "" },
+  { week: "WEEK 7",  ending: "6/11/2026",  hours: null, url: "" },
+  { week: "WEEK 8",  ending: "13/11/2026", hours: null, url: "" },
+  { week: "WEEK 9",  ending: "20/11/2026", hours: null, url: "" },
+  { week: "WEEK 10", ending: "27/11/2026", hours: null, url: "" },
+  { week: "WEEK 11", ending: "4/12/2026",  hours: null, url: "" },
+  { week: "WEEK 12", ending: "11/12/2026", hours: null, url: "" },
+  { week: "WEEK 13", ending: "18/12/2026", hours: null, url: "" },
+];
+
+let WEEKS = [];
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      WEEKS = JSON.parse(saved);
+    } else {
+      WEEKS = JSON.parse(JSON.stringify(DEFAULT_WEEKS));
+    }
+  } catch (e) {
+    WEEKS = JSON.parse(JSON.stringify(DEFAULT_WEEKS));
+  }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(WEEKS));
+}
+
+function parseDate(ddmmyyyy) {
+  const [d, m, y] = ddmmyyyy.split("/").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function formatDate(date) {
+  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+}
+
+function addWeek() {
+  let nextDate;
+  if (WEEKS.length === 0) {
+    nextDate = new Date(2026, 8, 25); // 25/09/2026
+  } else {
+    const last = parseDate(WEEKS[WEEKS.length - 1].ending);
+    nextDate = new Date(last);
+    nextDate.setDate(nextDate.getDate() + 7);
+  }
+  const weekNum = WEEKS.length + 1;
+  WEEKS.push({
+    week: `WEEK ${weekNum}`,
+    ending: formatDate(nextDate),
+    hours: null,
+    url: ""
+  });
+  saveData();
+  render();
+}
+
+function clearWeek(index) {
+  if (confirm(`Clear hours and timesheet URL for ${WEEKS[index].week}?`)) {
+    WEEKS[index].hours = null;
+    WEEKS[index].url = "";
+    saveData();
+    render();
+  }
+}
+
+function getHoursColor(hours, standard) {
+  if (hours == null || hours === "") return "transparent";
+  const h = parseFloat(hours);
+  if (isNaN(h)) return "transparent";
+
+  if (h >= standard) {
+    const excess = Math.min(h - standard, 15);
+    const t = excess / 15;
+    return `hsl(140, ${60 + t * 20}%, ${36 + t * 14}%)`;
+  } else {
+    const deficit = standard - h;
+    const t = Math.min(deficit / 12, 1);
+    const hue = 48 - t * 48;
+    const sat = 65 + t * 25;
+    const light = 40 - t * 10;
+    return `hsl(${hue}, ${sat}%, ${light}%)`;
+  }
+}
+
+function getVarianceColor(variance) {
+  if (variance == null || isNaN(variance)) return "transparent";
+  const v = parseFloat(variance);
+
+  if (Math.abs(v) < 0.25) return "#4a515a";
+
+  if (v > 0) {
+    const t = Math.min(v / 8, 1);
+    const hue = 220 - t * 200;
+    const sat = 15 + t * 70;
+    const light = 32 + t * 18;
+    return `hsl(${hue}, ${sat}%, ${light}%)`;
+  } else {
+    const abs = Math.abs(v);
+    const t = Math.min(abs / 8, 1);
+    const hue = 0;
+    const sat = 40 + t * 50;
+    const light = 38 - t * 8;
+    return `hsl(${hue}, ${sat}%, ${light}%)`;
+  }
+}
+
+function formatVariance(v) {
+  if (v == null || isNaN(v)) return "";
+  const n = parseFloat(v);
+  if (n > 0) return "+" + n.toFixed(2);
+  if (n < 0) return n.toFixed(2);
+  return "0.00";
+}
+
+function getExportData() {
+  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
+  return WEEKS.map(w => {
+    const hours = (w.hours != null && w.hours !== "") ? parseFloat(w.hours) : null;
+    const variance = hours != null ? +(hours - standard).toFixed(2) : null;
+    return { week: w.week, ending: w.ending, hours, variance, standard, url: w.url || "" };
+  });
+}
+
+function exportCSV() {
+  const data = getExportData();
+  const headers = ["Week", "Ending", "Hours", "Variance", "Standard", "Timesheet URL"];
+  const rows = data.map(d => [d.week, d.ending, d.hours ?? "", d.variance ?? "", d.standard, d.url]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  downloadFile(csv, "timesheet-daniel-clancy.csv", "text/csv");
+}
+
+function exportJSON() {
+  const data = {
+    employee: EMPLOYEE,
+    exported: new Date().toISOString(),
+    standardHours: parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT,
+    weeks: getExportData()
+  };
+  downloadFile(JSON.stringify(data, null, 2), "timesheet-daniel-clancy.json", "application/json");
+}
+
+function exportPDF() {
+  const originalTitle = document.title;
+  document.title = "Timesheet — Daniel Clancy — Greg Natale Design";
+  window.print();
+  setTimeout(() => { document.title = originalTitle; }, 500);
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function openTimesheet(url) {
+  if (url && url.trim()) window.open(url, "_blank", "noopener");
+}
+
+function openUrlModal() {
+  const body = document.getElementById("urlModalBody");
+  body.innerHTML = "";
+  WEEKS.forEach((w, i) => {
+    const row = document.createElement("div");
+    row.className = "url-row";
+    row.innerHTML = `
+      <label>${w.week}</label>
+      <input type="url" data-index="${i}" value="${w.url || ""}" placeholder="https://...">
+    `;
+    body.appendChild(row);
+  });
+  document.getElementById("urlModal").classList.add("active");
+}
+
+function closeUrlModal() {
+  document.getElementById("urlModal").classList.remove("active");
+}
+
+function saveUrls() {
+  const inputs = document.querySelectorAll("#urlModalBody input[data-index]");
+  inputs.forEach(input => {
+    const idx = parseInt(input.dataset.index);
+    WEEKS[idx].url = input.value.trim();
+  });
+  saveData();
+  closeUrlModal();
+  render();
+}
+
+function render() {
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
+
+  let totalHours = 0, weeksWithHours = 0, netVar = 0;
+
+  WEEKS.forEach((w, i) => {
+    const hoursVal = w.hours;
+    const variance = (hoursVal != null && hoursVal !== "") ? (parseFloat(hoursVal) - standard) : null;
+
+    if (hoursVal != null && hoursVal !== "" && !isNaN(parseFloat(hoursVal))) {
+      totalHours += parseFloat(hoursVal);
+      weeksWithHours++;
+      netVar += variance;
+    }
+
+    const hoursColor = getHoursColor(hoursVal, standard);
+    const varColor = getVarianceColor(variance);
+    const varTextColor = (varColor === "transparent" || varColor === "#4a515a") ? "var(--text-secondary)" : "#fff";
+    const hasUrl = w.url && w.url.trim();
+
+    const tr = document.createElement("tr");
+    tr.dataset.index = i;
+    tr.innerHTML = `
+      <td class="week-num">${w.week}</td>
+      <td class="date">${w.ending}</td>
+      <td>
+        <span class="hours-indicator" style="background:${hoursColor === "transparent" ? "transparent" : hoursColor}"></span>
+        <input type="number" step="0.25" min="0" max="80" 
+               value="${hoursVal ?? ""}" data-index="${i}" placeholder="—">
+      </td>
+      <td>
+        <span class="variance" style="background:${varColor}; color:${varTextColor}">
+          ${formatVariance(variance)}
+        </span>
+      </td>
+      <td>
+        <div class="row-actions">
+          <button class="btn small ${hasUrl ? "" : "disabled"}" 
+                  ${hasUrl ? "" : "disabled"}
+                  onclick="event.stopPropagation(); openTimesheet('${(w.url || "").replace(/'/g, "\\'")}')">
+            Open
+          </button>
+          <button class="btn icon clear" title="Clear week" onclick="event.stopPropagation(); clearWeek(${i})">✕</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("weeksEntered").textContent = weeksWithHours;
+  document.getElementById("totalHours").textContent = totalHours.toFixed(2);
+  document.getElementById("avgHours").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
+
+  const netEl = document.getElementById("netVariance");
+  netEl.textContent = formatVariance(netVar);
+  netEl.className = "value " + (netVar > 0.05 ? "positive" : netVar < -0.05 ? "negative" : "neutral");
+
+  // Bind hour inputs
+  document.querySelectorAll("#tbody input[type=number]").forEach(input => {
+    input.addEventListener("input", e => {
+      e.stopPropagation();
+      const idx = parseInt(e.target.dataset.index);
+      const val = e.target.value.trim();
+      WEEKS[idx].hours = val === "" ? null : parseFloat(val);
+      saveData();
+      render();
+    });
+    input.addEventListener("click", e => e.stopPropagation());
+  });
+
+  // Double-click row to open URL modal
+  document.querySelectorAll("#tbody tr").forEach(tr => {
+    tr.addEventListener("dblclick", () => openUrlModal());
+  });
+}
+
+document.getElementById("standard").addEventListener("input", () => {
+  saveData(); // optional, standard not stored but re-render
+  render();
+});
+
+document.getElementById("urlModal").addEventListener("click", e => {
+  if (e.target.id === "urlModal") closeUrlModal();
+});
+
+loadData();
+render();
+</script>
+</body>
+</html>
