@@ -62,16 +62,18 @@
 
   .logo-mark {
     width: 58px; height: 58px;
-    background: linear-gradient(135deg, #5b9cf5, #3d7dd4);
-    border-radius: 12px;
+    flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 1.25rem; color: white;
-    letter-spacing: -0.5px; flex-shrink: 0;
+  }
+  .logo-mark img {
+    width: 58px; height: 58px;
+    object-fit: contain;
   }
 
-  .identity h1 { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: -2px; }
-  .identity .role { color: var(--accent); font-weight: 500; font-size: 0.95rem; }
-  .identity .company { color: var(--text-muted); font-size: 0.85rem; margin-top: -2px; }
+  .identity { display: flex; flex-direction: column; gap: 1px; }
+  .identity h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; margin: 0; line-height: 1.1; }
+  .identity .role { color: var(--accent); font-weight: 500; font-size: 0.92rem; margin: 0; line-height: 1.15; }
+  .identity .company { color: var(--text-muted); font-size: 0.82rem; margin: 0; line-height: 1.15; }
 
   .header-meta { text-align: right; }
   .standard-control {
@@ -231,7 +233,7 @@
 <div class="container">
   <header>
     <div class="brand">
-      <div class="logo-mark">DC</div>
+      <div class="logo-mark"><img src="../assets/logos/logomatteblue.webp" alt="DC"></div>
       <div class="identity">
         <h1>Daniel Clancy</h1>
         <div class="role">Architectural Technician</div>
