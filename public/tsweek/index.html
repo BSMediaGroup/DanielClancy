@@ -1104,8 +1104,14 @@ function copyShareLink() {
 }
 function mailtoShare() {
   const link = document.getElementById("shareLink").value;
+  const expirySel = document.getElementById("shareExpiry");
+  const expiryText = expirySel.options[expirySel.selectedIndex].text;
   const subject = encodeURIComponent("Daniel Clancy has shared a timesheet report");
-  const body = encodeURIComponent(`Please find the timesheet report here:\n\n${link}`);
+  const body = encodeURIComponent(
+    `Please find the timesheet report here:\n\n${link}\n\n` +
+    `This link expires: ${expiryText}.\n\n` +
+    `(Most email clients will make the URL above clickable.)`
+  );
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
