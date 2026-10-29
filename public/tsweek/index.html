@@ -30,7 +30,6 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body { overflow-x: hidden; }
   body {
     font-family: "Blinker", "Segoe UI", sans-serif;
     background: var(--bg);
@@ -50,39 +49,52 @@
   /* Sticky header */
   header {
     position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(16, 21, 28, 0.92);
+    top: 12px;
+    z-index: 200;
+    background: rgba(16, 21, 28, 0.96);
     backdrop-filter: blur(16px);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 22px 28px;
-    margin: 20px 0 24px;
+    padding: 18px 24px;
+    margin: 16px 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
-    transition: padding 0.25s ease, border-radius 0.25s ease, margin 0.25s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   header.slim {
-    padding: 8px 20px;
-    margin: 8px 0 12px;
-    border-radius: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10px 24px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    z-index: 300;
   }
   header.slim .logo-mark img { width: 36px; height: 36px; }
   header.slim .identity h1 { font-size: 1.05rem; }
-  header.slim .identity .company { display: none; }
+  header.slim .identity .company { opacity: 0; height: 0; overflow: hidden; margin: 0; }
   header.slim .identity .role { font-size: 0.75rem; }
-  header.slim .standard-control { padding: 4px 10px; }
-  header.slim .standard-control label { display: none; }
-  header.slim .slim-metrics { display: flex; }
+  header.slim .standard-control label { opacity: 0; width: 0; overflow: hidden; padding: 0; }
+  header.slim .slim-metrics { opacity: 1; pointer-events: auto; }
+  .identity .company,
+  .standard-control label,
   .slim-metrics {
-    display: none;
+    transition: opacity 0.2s ease;
+  }
+  .slim-metrics {
+    display: flex;
     gap: 16px;
     align-items: center;
     font-size: 0.8rem;
     color: var(--text-secondary);
+    opacity: 0;
+    pointer-events: none;
   }
   .slim-metrics strong { color: var(--text); font-weight: 650; }
 
@@ -187,6 +199,11 @@
   }
   .btn.icon.clear { color: var(--text-muted); }
   .btn.icon.clear:hover { color: var(--red); border-color: var(--red); }
+
+  .btn.lock { color: var(--text-muted); }
+  .btn.lock.locked { color: var(--orange); }
+  .btn.lock svg { width: 14px; height: 14px; }
+
 
   .table-wrap {
     background: var(--bg-card); border: 1px solid var(--border);
@@ -372,6 +389,8 @@
   <div class="actions">
     <button class="btn" onclick="exportCSV()">Export CSV</button>
     <button class="btn" onclick="exportJSON()">Export JSON</button>
+    <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
     <button class="btn primary" onclick="exportPDF()">Export PDF</button>
     <button class="btn" onclick="openUrlModal()">Enter Timesheet URLs</button>
     <span class="sync-status" id="syncStatus">Ready</span>
@@ -652,7 +671,7 @@ function render() {
       <td class="date">${ending}</td>
       <td>
         <span class="hours-indicator" style="background:${hoursColor === "transparent" ? "transparent" : hoursColor}"></span>
-        <input type="number" step="0.25" min="0" max="80" value="${hoursVal ?? ""}" data-index="${i}" placeholder="—">
+        <input type="number" step="0.25" min="0" max="80" value="${hoursVal ?? ""}" data-index="${i}" placeholder="—" ${w.locked ? "disabled" : ""}>
       </td>
       <td>
         <span class="variance" style="background:${varColor}; color:${varTextColor}">${formatVariance(variance)}</span>
@@ -664,7 +683,12 @@ function render() {
             OPEN TIMESHEET
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </button>
-          <button class="btn icon clear" title="Clear week" onclick="event.stopPropagation(); clearWeek(${i})">✕</button>
+          <button class="btn icon lock ${w.locked ? "locked" : ""}" title="${w.locked ? "Unlock" : "Lock"}" onclick="event.stopPropagation(); toggleLock(${i})">
+            ${w.locked
+              ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+              : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>'}
+          </button>
+          <button class="btn icon clear" title="Clear week" ${w.locked ? "disabled" : ""} onclick="event.stopPropagation(); clearWeek(${i})">✕</button>
         </div>
       </td>
     `;
@@ -679,7 +703,9 @@ function render() {
   netEl.textContent = formatVariance(netVar);
   netEl.className = "value " + (netVar > 0.05 ? "positive" : netVar < -0.05 ? "negative" : "neutral");
   document.getElementById("slimAvg").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
-  document.getElementById("slimVar").textContent = formatVariance(netVar);
+  const slimVarEl = document.getElementById("slimVar");
+  slimVarEl.textContent = formatVariance(netVar);
+  slimVarEl.style.color = netVar > 0.05 ? "var(--green)" : netVar < -0.05 ? "var(--red)" : "var(--text)";
 
   // Bind inputs
   document.querySelectorAll("#tbody input[type=number]").forEach(input => {
@@ -726,7 +752,7 @@ function exportJSON() {
     exported: new Date().toISOString(),
     standardHours: parseFloat(document.getElementById("standard").value) || 38,
     weekEndDay,
-    weeks: WEEKS.map((w, i) => ({ ...w, ending: computeEnding(i) }))
+    weeks: WEEKS.map((w, i) => ({ week: w.week, hours: w.hours, url: w.url || "", locked: !!w.locked, ending: computeEnding(i) }))
   };
   downloadFile(JSON.stringify(data, null, 2), "timesheet-daniel-clancy.json", "application/json");
 }
@@ -831,9 +857,18 @@ function initResize() {
 // Sticky slim header
 function initSticky() {
   const header = document.getElementById("mainHeader");
+  let ticking = false;
   window.addEventListener("scroll", () => {
-    if (window.scrollY > 40) header.classList.add("slim");
-    else header.classList.remove("slim");
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const shouldSlim = window.scrollY > 60;
+        if (shouldSlim !== header.classList.contains("slim")) {
+          header.classList.toggle("slim", shouldSlim);
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
   }, { passive: true });
 }
 
@@ -859,6 +894,49 @@ function adjustStandard(delta) {
 document.getElementById("urlModal").addEventListener("click", e => {
   if (e.target.id === "urlModal") closeUrlModal();
 });
+
+function toggleLock(index) {
+  WEEKS[index].locked = !WEEKS[index].locked;
+  scheduleSave();
+  render();
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!confirm("This will replace the entire timesheet with the imported data. Continue?")) {
+    e.target.value = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (data.weeks && Array.isArray(data.weeks)) {
+        WEEKS = data.weeks.map(w => ({
+          week: w.week,
+          hours: w.hours ?? null,
+          url: w.url || "",
+          locked: !!w.locked
+        }));
+        if (data.standardHours != null) document.getElementById("standard").value = data.standardHours;
+        if (data.weekEndDay != null) {
+          weekEndDay = data.weekEndDay;
+          document.getElementById("weekEndDay").value = weekEndDay;
+        }
+        scheduleSave();
+        render();
+        alert("Timesheet restored.");
+      } else {
+        alert("Invalid timesheet JSON.");
+      }
+    } catch (err) {
+      alert("Failed to parse JSON.");
+    }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+}
 
 // Boot
 (async function init() {
