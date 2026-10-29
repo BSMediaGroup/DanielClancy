@@ -168,21 +168,30 @@
   .spin-pair { display: inline-flex; gap: 2px; }
 
 
+  .page-title {
+    font-family: "Source Sans 3", "Segoe UI", sans-serif;
+    font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--text-secondary);
+    margin: 0 0 12px; padding-left: 2px;
+  }
   .summary {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;
   }
   .stat {
     background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 18px 20px; transition: border-color 0.15s, transform 0.15s;
+    border-radius: 10px; padding: 12px 16px; transition: border-color 0.15s, transform 0.15s;
   }
   .stat:hover { border-color: var(--border-light); transform: translateY(-1px); }
   .stat .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
-  .stat .value { font-size: 1.65rem; font-weight: 650; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+  .stat .value { font-size: 1.45rem; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
   .stat .value.positive { color: var(--green); }
   .stat .value.negative { color: var(--red); }
   .stat .value.neutral { color: var(--text-secondary); }
 
   .actions { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .btn, button {
+    font-family: "Blinker", "Segoe UI", sans-serif;
+  }
   .btn {
     background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
     padding: 9px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500;
@@ -244,10 +253,16 @@
   input[type="number"] {
     width: 100%; max-width: 100px; background: #0d1117; border: 1px solid var(--border);
     border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 1rem;
-    font-variant-numeric: tabular-nums; text-align: right;
+    font-variant-numeric: tabular-nums; text-align: left;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   input[type="number"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  input[type="number"]:disabled {
+    opacity: 0.45;
+    background: #0a0d10;
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
 
   .variance {
     font-weight: 600; font-variant-numeric: tabular-nums;
@@ -367,6 +382,7 @@
     </div>
   </header>
 
+  <div class="page-title">Global Timesheet Ledger</div>
   <div class="summary">
     <div class="stat">
       <div class="label">Weeks entered</div>
@@ -393,6 +409,10 @@
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
     <button class="btn primary" onclick="exportPDF()">Export PDF</button>
     <button class="btn" onclick="openUrlModal()">Enter Timesheet URLs</button>
+    <button class="btn" onclick="openShareModal()" title="Share">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Share
+    </button>
     <span class="sync-status" id="syncStatus">Ready</span>
   </div>
 
@@ -416,6 +436,47 @@
     Hours ≥ standard → green · under → red gradient &nbsp;·&nbsp;
     Variance: above 0 → grey→orange/red &nbsp;·&nbsp; below 0 → red
   </footer>
+</div>
+
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Share Timesheet</h2>
+      <button class="modal-close" onclick="closeShareModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;">
+        <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:6px;">Link expiry</label>
+        <select id="shareExpiry" class="day-select" style="width:100%;">
+          <option value="24h">24 hours</option>
+          <option value="48h">48 hours</option>
+          <option value="7d" selected>7 days</option>
+          <option value="30d">30 days</option>
+          <option value="never">Never</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;">
+          <input type="checkbox" id="sharePassword"> Require password
+        </label>
+      </div>
+      <div id="shareResult" style="display:none; margin-top:12px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input id="shareLink" readonly style="flex:1; background:#0d1117; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:8px 10px; font-size:0.85rem;">
+          <button class="btn icon" onclick="copyShareLink()" title="Copy">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+        <button class="btn" style="margin-top:10px; width:100%;" onclick="mailtoShare()">Send via email</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeShareModal()">Close</button>
+      <button class="btn primary" onclick="generateShare()">Generate link</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal -->
@@ -634,6 +695,50 @@ function saveUrls() {
   render();
 }
 
+
+function updateRowDisplay(i) {
+  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
+  const w = WEEKS[i];
+  const hoursVal = w.hours;
+  const variance = (hoursVal != null && hoursVal !== "") ? (parseFloat(hoursVal) - standard) : null;
+  const hoursColor = getHoursColor(hoursVal, standard);
+  const varColor = getVarianceColor(variance);
+  const varTextColor = (varColor === "transparent" || varColor === "#4a515a") ? "var(--text-secondary)" : "#fff";
+
+  const tr = document.querySelector(`#tbody tr[data-index="${i}"]`);
+  if (!tr) return;
+  const indicator = tr.querySelector(".hours-indicator");
+  if (indicator) indicator.style.background = hoursColor === "transparent" ? "transparent" : hoursColor;
+  const varEl = tr.querySelector(".variance");
+  if (varEl) {
+    varEl.textContent = formatVariance(variance);
+    varEl.style.background = varColor;
+    varEl.style.color = varTextColor;
+  }
+}
+
+function updateSummary() {
+  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
+  let totalHours = 0, weeksWithHours = 0, netVar = 0;
+  WEEKS.forEach(w => {
+    if (w.hours != null && w.hours !== "" && !isNaN(parseFloat(w.hours))) {
+      totalHours += parseFloat(w.hours);
+      weeksWithHours++;
+      netVar += parseFloat(w.hours) - standard;
+    }
+  });
+  document.getElementById("weeksEntered").textContent = weeksWithHours;
+  document.getElementById("totalHours").textContent = totalHours.toFixed(2);
+  document.getElementById("avgHours").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
+  const netEl = document.getElementById("netVariance");
+  netEl.textContent = formatVariance(netVar);
+  netEl.className = "value " + (netVar > 0.05 ? "positive" : netVar < -0.05 ? "negative" : "neutral");
+  document.getElementById("slimAvg").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
+  const slimVarEl = document.getElementById("slimVar");
+  slimVarEl.textContent = formatVariance(netVar);
+  slimVarEl.style.color = netVar > 0.05 ? "var(--green)" : netVar < -0.05 ? "var(--red)" : "var(--text)";
+}
+
 function render() {
   // Capture focus before rebuild
   const active = document.activeElement;
@@ -671,7 +776,13 @@ function render() {
       <td class="date">${ending}</td>
       <td>
         <span class="hours-indicator" style="background:${hoursColor === "transparent" ? "transparent" : hoursColor}"></span>
-        <input type="number" step="0.25" min="0" max="80" value="${hoursVal ?? ""}" data-index="${i}" placeholder="—" ${w.locked ? "disabled" : ""}>
+        <div style="display:inline-flex; align-items:center; gap:4px;">
+          <input type="number" step="0.25" min="0" max="80" value="${hoursVal ?? ""}" data-index="${i}" placeholder="—" ${w.locked ? "disabled" : ""} style="width:72px;">
+          <div class="spin-pair">
+            <button class="spin-btn" type="button" ${w.locked ? "disabled" : ""} onclick="event.stopPropagation(); adjustHours(${i}, -0.25)">−</button>
+            <button class="spin-btn" type="button" ${w.locked ? "disabled" : ""} onclick="event.stopPropagation(); adjustHours(${i}, 0.25)">+</button>
+          </div>
+        </div>
       </td>
       <td>
         <span class="variance" style="background:${varColor}; color:${varTextColor}">${formatVariance(variance)}</span>
@@ -707,15 +818,16 @@ function render() {
   slimVarEl.textContent = formatVariance(netVar);
   slimVarEl.style.color = netVar > 0.05 ? "var(--green)" : netVar < -0.05 ? "var(--red)" : "var(--text)";
 
-  // Bind inputs
+  // Bind inputs — update in place, do not rebuild the row
   document.querySelectorAll("#tbody input[type=number]").forEach(input => {
     input.addEventListener("input", e => {
       e.stopPropagation();
       const idx = parseInt(e.target.dataset.index);
       const val = e.target.value.trim();
       WEEKS[idx].hours = val === "" ? null : parseFloat(val);
+      updateRowDisplay(idx);
+      updateSummary();
       scheduleSave();
-      render();
     });
     input.addEventListener("click", e => e.stopPropagation());
   });
@@ -724,14 +836,6 @@ function render() {
     tr.addEventListener("dblclick", () => openUrlModal());
   });
 
-  // Restore focus
-  if (focusedIndex !== null) {
-    const input = document.querySelector(`#tbody input[data-index="${focusedIndex}"]`);
-    if (input) {
-      input.focus();
-      try { input.setSelectionRange(caretPos, caretPos); } catch {}
-    }
-  }
 }
 
 function exportCSV() {
@@ -771,7 +875,7 @@ function exportPDF() {
   doc.setTextColor(91, 156, 245);
   doc.text("Architectural Technician", 14, 23);
   doc.setTextColor(160, 170, 180);
-  doc.text("Greg Natale Design  ·  Timesheet", 14, 29);
+  doc.text("Greg Natale Design  ·  Global Timesheet Ledger", 14, 29);
 
   doc.setTextColor(20, 20, 20);
   doc.setFontSize(11);
@@ -794,14 +898,15 @@ function exportPDF() {
 
   // Table header
   doc.setFillColor(26, 31, 38);
-  doc.rect(14, y, 182, 8, "F");
+  doc.rect(14, y, 182, 7, "F");
   doc.setTextColor(240, 243, 246);
   doc.setFontSize(9);
-  doc.text("Week", 16, y + 5.5);
-  doc.text("Ending", 50, y + 5.5);
-  doc.text("Hours", 90, y + 5.5);
-  doc.text("Variance", 120, y + 5.5);
-  y += 10;
+  doc.text("Week", 16, y + 5);
+  doc.text("Ending", 42, y + 5);
+  doc.text("Hours", 72, y + 5);
+  doc.text("Variance", 98, y + 5);
+  doc.text("Timesheet", 130, y + 5);
+  y += 12;
 
   doc.setTextColor(30, 30, 30);
   WEEKS.forEach((w, i) => {
@@ -812,9 +917,16 @@ function exportPDF() {
     const hours = (w.hours != null && w.hours !== "") ? parseFloat(w.hours) : null;
     const variance = hours != null ? hours - standard : null;
     doc.text(w.week, 16, y);
-    doc.text(computeEnding(i), 50, y);
-    doc.text(hours != null ? hours.toFixed(2) : "—", 90, y);
-    doc.text(variance != null ? (variance >= 0 ? "+" : "") + variance.toFixed(2) : "—", 120, y);
+    doc.text(computeEnding(i), 42, y);
+    doc.text(hours != null ? hours.toFixed(2) : "—", 72, y);
+    doc.text(variance != null ? (variance >= 0 ? "+" : "") + variance.toFixed(2) : "—", 98, y);
+    if (w.url && w.url.trim()) {
+      doc.setTextColor(91, 156, 245);
+      doc.textWithLink("Open", 130, y, { url: w.url });
+      doc.setTextColor(30, 30, 30);
+    } else {
+      doc.text("—", 130, y);
+    }
     y += 7;
   });
 
@@ -882,6 +994,15 @@ document.getElementById("weekEndDay").addEventListener("change", e => {
   render();
 });
 
+function adjustHours(index, delta) {
+  if (WEEKS[index].locked) return;
+  let v = parseFloat(WEEKS[index].hours) || 0;
+  v = Math.max(0, v + delta);
+  WEEKS[index].hours = v;
+  scheduleSave();
+  render();
+}
+
 function adjustStandard(delta) {
   const el = document.getElementById("standard");
   let v = parseFloat(el.value) || 38;
@@ -936,6 +1057,56 @@ function importJSON(e) {
     e.target.value = "";
   };
   reader.readAsText(file);
+}
+
+
+function openShareModal() {
+  document.getElementById("shareModal").classList.add("active");
+  document.getElementById("shareResult").style.display = "none";
+}
+function closeShareModal() {
+  document.getElementById("shareModal").classList.remove("active");
+}
+async function generateShare() {
+  const expiry = document.getElementById("shareExpiry").value;
+  const password = document.getElementById("sharePassword").checked;
+  const payload = {
+    standard: parseFloat(document.getElementById("standard").value) || 38,
+    weekEndDay,
+    weeks: WEEKS.map((w, i) => ({ week: w.week, ending: computeEnding(i), hours: w.hours, variance: w.hours != null ? +(w.hours - (parseFloat(document.getElementById("standard").value)||38)).toFixed(2) : null, url: w.url || "" })),
+    expiry,
+    password
+  };
+  try {
+    const res = await fetch("/api/share", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Failed");
+    const data = await res.json();
+    const link = `${location.origin}/timesheets/shared/${data.code}`;
+    document.getElementById("shareLink").value = link;
+    document.getElementById("shareResult").style.display = "block";
+  } catch (e) {
+    alert("Could not generate share link. Check that the share function is deployed.");
+  }
+}
+function copyShareLink() {
+  const el = document.getElementById("shareLink");
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = event.currentTarget;
+    const orig = btn.innerHTML;
+    btn.innerHTML = "✓";
+    setTimeout(() => btn.innerHTML = orig, 1200);
+  });
+}
+function mailtoShare() {
+  const link = document.getElementById("shareLink").value;
+  const subject = encodeURIComponent("Daniel Clancy has shared a timesheet report");
+  const body = encodeURIComponent(`Please find the timesheet report here:\n\n${link}`);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
 // Boot
