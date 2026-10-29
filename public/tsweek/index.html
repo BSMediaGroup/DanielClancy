@@ -65,9 +65,15 @@
     transition: padding 0.25s ease, border-radius 0.25s ease, margin 0.25s ease;
   }
   header.slim {
-    padding: 10px 20px;
-    margin: 8px 0 16px;
-    border-radius: 12px;
+    padding: 10px 28px;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    width: 100vw;
+    left: 0;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
   }
   header.slim .logo-mark img { width: 40px; height: 40px; }
   header.slim .identity h1 { font-size: 1.15rem; }
@@ -113,6 +119,38 @@
   .standard-control input:focus { outline: none; }
   .standard-control span { color: var(--text-secondary); font-size: 0.85rem; }
 
+  .day-select {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 6px 10px; font-size: 0.9rem; font-family: inherit;
+    cursor: pointer; min-width: 110px;
+  }
+  .day-select:focus { outline: none; border-color: var(--accent); }
+  .day-select option { background: #161b22; color: var(--text); }
+
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  .spin-wrap {
+    display: inline-flex; align-items: center; background: #0d1117;
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .spin-wrap input {
+    border: none; background: transparent; width: 48px; text-align: center;
+    font-size: 1.05rem; font-weight: 600; color: var(--text); padding: 4px 0;
+  }
+  .spin-btn {
+    background: #1a1f26; color: var(--text-muted); border: none; width: 22px; height: 28px;
+    cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+  }
+  .spin-btn:hover { background: #252b33; color: var(--text); }
+
+
   .summary {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;
   }
@@ -147,8 +185,12 @@
 
   .table-wrap {
     background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 14px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    border-radius: 14px; overflow-x: auto; box-shadow: 0 4px 24px rgba(0,0,0,0.25);
   }
+  .table-wrap::-webkit-scrollbar { height: 6px; }
+  .table-wrap::-webkit-scrollbar-track { background: #0d1117; }
+  .table-wrap::-webkit-scrollbar-thumb { background: #3a414b; border-radius: 3px; }
+  .table-wrap::-webkit-scrollbar-thumb:hover { background: #5b9cf5; }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   th {
     background: #1a1f26; text-align: left; padding: 14px 16px;
@@ -259,7 +301,7 @@
 <div class="container">
   <header id="mainHeader">
     <div class="brand">
-      <div class="logo-mark"><img src="../assets/logos/logomatteblue.webp" alt="DC"></div>
+      <div class="logo-mark"><img src="https://raw.githubusercontent.com/BSMediaGroup/DanielClancy/refs/heads/main/assets/logos/logomatteblue.webp" alt="DC"></div>
       <div class="identity">
         <h1>Daniel Clancy</h1>
         <div class="role">Architectural Technician</div>
@@ -269,13 +311,24 @@
     <div class="header-meta">
       <div class="standard-control">
         <label for="standard">Standard</label>
-        <input type="number" id="standard" value="38" step="0.5" min="0">
+        <div class="spin-wrap">
+          <button class="spin-btn" type="button" onclick="adjustStandard(-0.5)">−</button>
+          <input type="number" id="standard" value="38" step="0.5" min="0">
+          <button class="spin-btn" type="button" onclick="adjustStandard(0.5)">+</button>
+        </div>
         <span>hrs</span>
       </div>
       <div class="standard-control">
-        <label for="offset">Ends +</label>
-        <input type="number" id="offset" value="2" step="1" min="-6" max="6">
-        <span>days</span>
+        <label for="weekEndDay">Ends</label>
+        <select id="weekEndDay" class="day-select">
+          <option value="0" selected>Sunday</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+        </select>
       </div>
     </div>
   </header>
@@ -311,11 +364,11 @@
     <table id="timesheetTable">
       <thead>
         <tr>
-          <th style="width:140px">Week <span class="resize-handle"></span></th>
-          <th style="width:130px">Ending <span class="resize-handle"></span></th>
-          <th style="width:160px">Hours <span class="resize-handle"></span></th>
-          <th style="width:120px">Variance <span class="resize-handle"></span></th>
-          <th>Actions <span class="resize-handle"></span></th>
+          <th style="width:14%">Week <span class="resize-handle"></span></th>
+          <th style="width:16%">Ending <span class="resize-handle"></span></th>
+          <th style="width:22%">Hours <span class="resize-handle"></span></th>
+          <th style="width:16%">Variance <span class="resize-handle"></span></th>
+          <th style="width:32%">Actions <span class="resize-handle"></span></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -353,7 +406,7 @@ const EMPLOYEE = {
 };
 
 const BASE_DATE = new Date(2026, 8, 25); // original Friday 25/09/2026
-let offsetDays = 2;
+let weekEndDay = 0; // Sunday default (25/09 +2)
 let WEEKS = [];
 let saveTimer = null;
 let focusedIndex = null;
@@ -366,11 +419,20 @@ const DEFAULT_WEEKS = Array.from({ length: 13 }, (_, i) => ({
 }));
 
 function computeEnding(index) {
-  const d = new Date(BASE_DATE);
-  d.setDate(d.getDate() + (index * 7) + offsetDays);
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${dd}/${mm}/${d.getFullYear()}`;
+  // BASE_DATE is Friday 25/09/2026. Find the week start (Monday of that week) then add the selected weekday.
+  const base = new Date(BASE_DATE);
+  const dayOfBase = base.getDay(); // 5 = Friday
+  // Shift to the Monday of the week containing BASE_DATE (or Sunday if weekEnd is Sunday)
+  const mondayOffset = dayOfBase === 0 ? -6 : 1 - dayOfBase;
+  const weekStart = new Date(base);
+  weekStart.setDate(base.getDate() + mondayOffset + (index * 7));
+  // Now add days to reach the selected weekday (0=Sun ... 6=Sat)
+  const target = new Date(weekStart);
+  const daysToAdd = weekEndDay === 0 ? 6 : weekEndDay - 1; // Mon=0 offset in weekStart
+  target.setDate(weekStart.getDate() + daysToAdd);
+  const dd = String(target.getDate()).padStart(2, "0");
+  const mm = String(target.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${target.getFullYear()}`;
 }
 
 function loadLocal() {
@@ -379,9 +441,9 @@ function loadLocal() {
     if (raw) {
       const parsed = JSON.parse(raw);
       WEEKS = parsed.weeks || DEFAULT_WEEKS;
-      offsetDays = parsed.offsetDays ?? 2;
+      weekEndDay = parsed.weekEndDay ?? 0;
       document.getElementById("standard").value = parsed.standard ?? 38;
-      document.getElementById("offset").value = offsetDays;
+      document.getElementById("weekEndDay").value = weekEndDay;
     } else {
       WEEKS = JSON.parse(JSON.stringify(DEFAULT_WEEKS));
     }
@@ -393,7 +455,7 @@ function loadLocal() {
 function saveLocal() {
   const payload = {
     standard: parseFloat(document.getElementById("standard").value) || 38,
-    offsetDays,
+    weekEndDay,
     weeks: WEEKS
   };
   localStorage.setItem("timesheet_local_v2", JSON.stringify(payload));
@@ -406,9 +468,9 @@ async function loadRemote() {
     const json = await res.json();
     if (json.data && json.data.weeks) {
       WEEKS = json.data.weeks;
-      offsetDays = json.data.offsetDays ?? 2;
+      weekEndDay = json.data.weekEndDay ?? 0;
       document.getElementById("standard").value = json.data.standard ?? 38;
-      document.getElementById("offset").value = offsetDays;
+      document.getElementById("weekEndDay").value = weekEndDay;
       document.getElementById("syncStatus").textContent = "Synced";
       return true;
     }
@@ -421,7 +483,7 @@ async function loadRemote() {
 async function saveRemote() {
   const payload = {
     standard: parseFloat(document.getElementById("standard").value) || 38,
-    offsetDays,
+    weekEndDay,
     weeks: WEEKS
   };
   document.getElementById("syncStatus").textContent = "Saving…";
@@ -644,7 +706,7 @@ function exportJSON() {
     employee: EMPLOYEE,
     exported: new Date().toISOString(),
     standardHours: parseFloat(document.getElementById("standard").value) || 38,
-    offsetDays,
+    weekEndDay,
     weeks: WEEKS.map((w, i) => ({ ...w, ending: computeEnding(i) }))
   };
   downloadFile(JSON.stringify(data, null, 2), "timesheet-daniel-clancy.json", "application/json");
@@ -669,7 +731,7 @@ function exportPDF() {
   doc.setTextColor(20, 20, 20);
   doc.setFontSize(11);
   let y = 50;
-  doc.text(`Standard week: ${standard} hrs   ·   Week ending offset: +${offsetDays} days`, 14, y);
+  doc.text(`Standard week: ${standard} hrs   ·   Week ends: ${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][weekEndDay]}`, 14, y);
   y += 8;
 
   // Summary
@@ -760,11 +822,20 @@ document.getElementById("standard").addEventListener("input", () => {
   scheduleSave();
   render();
 });
-document.getElementById("offset").addEventListener("input", e => {
-  offsetDays = parseInt(e.target.value) || 0;
+document.getElementById("weekEndDay").addEventListener("change", e => {
+  weekEndDay = parseInt(e.target.value);
   scheduleSave();
   render();
 });
+
+function adjustStandard(delta) {
+  const el = document.getElementById("standard");
+  let v = parseFloat(el.value) || 38;
+  v = Math.max(0, v + delta);
+  el.value = v;
+  scheduleSave();
+  render();
+}
 
 document.getElementById("urlModal").addEventListener("click", e => {
   if (e.target.id === "urlModal") closeUrlModal();
