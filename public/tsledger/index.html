@@ -30,6 +30,7 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html, body { overflow-x: hidden; }
   body {
     font-family: "Blinker", "Segoe UI", sans-serif;
     background: var(--bg);
@@ -57,30 +58,33 @@
     border-radius: 16px;
     padding: 22px 28px;
     margin: 20px 0 24px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 20px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    gap: 16px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.35);
     transition: padding 0.25s ease, border-radius 0.25s ease, margin 0.25s ease;
   }
   header.slim {
-    padding: 10px 28px;
-    margin: 0;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-    width: 100vw;
-    left: 0;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
+    padding: 8px 20px;
+    margin: 8px 0 12px;
+    border-radius: 12px;
   }
-  header.slim .logo-mark img { width: 40px; height: 40px; }
-  header.slim .identity h1 { font-size: 1.15rem; }
-  header.slim .identity .role,
+  header.slim .logo-mark img { width: 36px; height: 36px; }
+  header.slim .identity h1 { font-size: 1.05rem; }
   header.slim .identity .company { display: none; }
-  header.slim .standard-control { padding: 6px 12px; }
+  header.slim .identity .role { font-size: 0.75rem; }
+  header.slim .standard-control { padding: 4px 10px; }
   header.slim .standard-control label { display: none; }
+  header.slim .slim-metrics { display: flex; }
+  .slim-metrics {
+    display: none;
+    gap: 16px;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .slim-metrics strong { color: var(--text); font-weight: 650; }
 
   .brand { display: flex; align-items: center; gap: 14px; }
 
@@ -149,6 +153,7 @@
     cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
   }
   .spin-btn:hover { background: #252b33; color: var(--text); }
+  .spin-pair { display: inline-flex; gap: 2px; }
 
 
   .summary {
@@ -187,6 +192,14 @@
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 14px; overflow-x: auto; box-shadow: 0 4px 24px rgba(0,0,0,0.25);
   }
+
+  /* Dark theme scrollbars — page and table */
+  ::-webkit-scrollbar { width: 8px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0d1117; }
+  ::-webkit-scrollbar-thumb { background: #3a414b; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #5b9cf5; }
+  * { scrollbar-width: thin; scrollbar-color: #3a414b #0d1117; }
+
   .table-wrap::-webkit-scrollbar { height: 6px; }
   .table-wrap::-webkit-scrollbar-track { background: #0d1117; }
   .table-wrap::-webkit-scrollbar-thumb { background: #3a414b; border-radius: 3px; }
@@ -308,18 +321,22 @@
         <div class="company">Greg Natale Design</div>
       </div>
     </div>
+    <div class="slim-metrics" id="slimMetrics">
+      <span>Avg <strong id="slimAvg">—</strong></span>
+      <span>Var <strong id="slimVar">0.00</strong></span>
+    </div>
     <div class="header-meta">
       <div class="standard-control">
         <label for="standard">Standard</label>
-        <div class="spin-wrap">
+        <input type="number" id="standard" value="38" step="0.5" min="0" style="width:52px; text-align:center; background:#0d1117; border:1px solid var(--border); border-radius:6px; padding:4px;">
+        <div class="spin-pair">
           <button class="spin-btn" type="button" onclick="adjustStandard(-0.5)">−</button>
-          <input type="number" id="standard" value="38" step="0.5" min="0">
           <button class="spin-btn" type="button" onclick="adjustStandard(0.5)">+</button>
         </div>
         <span>hrs</span>
       </div>
       <div class="standard-control">
-        <label for="weekEndDay">Ends</label>
+        <label for="weekEndDay">Week ends</label>
         <select id="weekEndDay" class="day-select">
           <option value="0" selected>Sunday</option>
           <option value="1">Monday</option>
@@ -661,6 +678,8 @@ function render() {
   const netEl = document.getElementById("netVariance");
   netEl.textContent = formatVariance(netVar);
   netEl.className = "value " + (netVar > 0.05 ? "positive" : netVar < -0.05 ? "negative" : "neutral");
+  document.getElementById("slimAvg").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
+  document.getElementById("slimVar").textContent = formatVariance(netVar);
 
   // Bind inputs
   document.querySelectorAll("#tbody input[type=number]").forEach(input => {
