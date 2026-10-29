@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Blinker:wght@100;200;300;400;600;700;800;900&family=Source+Sans+3:wght@200..900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --bg: #07090d;
@@ -19,11 +20,12 @@
     --text-secondary: #b0b8c4;
     --text-muted: #7d8590;
     --accent: #5b9cf5;
-    --accent-glow: rgba(91, 156, 245, 0.15);
+    --accent-glow: rgba(91, 156, 245, 0.18);
     --green: #3fb950;
     --orange: #f0883e;
     --red: #f85149;
     --grey: #6e7681;
+    --header-h: 88px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,80 +35,99 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 32px 20px;
+    padding: 0 20px 40px;
     line-height: 1.5;
-    background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(91, 156, 245, 0.08), transparent);
+    background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(91, 156, 245, 0.07), transparent);
   }
 
-  
   h1, h2, .identity h1, .modal-header h2, .stat .value {
     font-family: "Source Sans 3", "Segoe UI", sans-serif;
   }
 
-  .container { max-width: 1040px; margin: 0 auto; }
+  .container { max-width: 1100px; margin: 0 auto; }
 
+  /* Sticky header */
   header {
-    background: var(--bg-card);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(16, 21, 28, 0.92);
+    backdrop-filter: blur(16px);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 28px 32px;
-    margin-bottom: 28px;
+    padding: 22px 28px;
+    margin: 20px 0 24px;
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 24px;
+    gap: 20px;
     align-items: center;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    transition: padding 0.25s ease, border-radius 0.25s ease, margin 0.25s ease;
   }
+  header.slim {
+    padding: 10px 20px;
+    margin: 8px 0 16px;
+    border-radius: 12px;
+  }
+  header.slim .logo-mark img { width: 40px; height: 40px; }
+  header.slim .identity h1 { font-size: 1.15rem; }
+  header.slim .identity .role,
+  header.slim .identity .company { display: none; }
+  header.slim .standard-control { padding: 6px 12px; }
+  header.slim .standard-control label { display: none; }
 
-  .brand { display: flex; align-items: center; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
 
   .logo-mark {
     width: 58px; height: 58px;
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
+    transition: width 0.25s, height 0.25s;
   }
   .logo-mark img {
     width: 58px; height: 58px;
     object-fit: contain;
+    transition: width 0.25s, height 0.25s;
   }
 
   .identity { display: flex; flex-direction: column; gap: 1px; }
-  .identity h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; margin: 0; line-height: 1.1; }
+  .identity h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; margin: 0; line-height: 1.1; transition: font-size 0.25s; }
   .identity .role { color: var(--accent); font-weight: 500; font-size: 0.92rem; margin: 0; line-height: 1.15; }
   .identity .company { color: var(--text-muted); font-size: 0.82rem; margin: 0; line-height: 1.15; }
 
-  .header-meta { text-align: right; }
+  .header-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
   .standard-control {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 10px 16px;
-    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: padding 0.25s;
   }
-  .standard-control label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.4px; }
+  .standard-control label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.4px; }
   .standard-control input {
     background: transparent; border: none; color: var(--text);
-    font-size: 1.15rem; font-weight: 600; width: 52px; text-align: center;
+    font-size: 1.05rem; font-weight: 600; width: 48px; text-align: center;
     font-variant-numeric: tabular-nums;
   }
   .standard-control input:focus { outline: none; }
-  .standard-control span { color: var(--text-secondary); font-size: 0.9rem; }
+  .standard-control span { color: var(--text-secondary); font-size: 0.85rem; }
 
   .summary {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;
   }
   .stat {
     background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 18px 20px; transition: border-color 0.15s;
+    border-radius: 12px; padding: 18px 20px; transition: border-color 0.15s, transform 0.15s;
   }
-  .stat:hover { border-color: var(--border-light); }
+  .stat:hover { border-color: var(--border-light); transform: translateY(-1px); }
   .stat .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
   .stat .value { font-size: 1.65rem; font-weight: 650; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
   .stat .value.positive { color: var(--green); }
   .stat .value.negative { color: var(--red); }
   .stat .value.neutral { color: var(--text-secondary); }
 
-  .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .actions { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
   .btn {
     background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
     padding: 9px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500;
@@ -116,7 +137,7 @@
   .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
   .btn.primary:hover { filter: brightness(1.1); }
   .btn:disabled, .btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-  .btn.small { padding: 5px 12px; font-size: 0.78rem; border-radius: 6px; }
+  .btn.small { padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; }
   .btn.icon {
     width: 32px; height: 32px; padding: 0; display: inline-flex;
     align-items: center; justify-content: center; border-radius: 6px; font-size: 1rem;
@@ -126,15 +147,21 @@
 
   .table-wrap {
     background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    border-radius: 14px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.25);
   }
-  table { width: 100%; border-collapse: collapse; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   th {
-    background: #1a1f26; text-align: left; padding: 14px 18px;
+    background: #1a1f26; text-align: left; padding: 14px 16px;
     font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
     color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border);
+    position: relative; user-select: none;
   }
-  td { padding: 11px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th .resize-handle {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 6px;
+    cursor: col-resize; background: transparent;
+  }
+  th .resize-handle:hover { background: var(--accent); opacity: 0.4; }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tbody tr { cursor: pointer; }
   tbody tr:hover td { background: var(--bg-hover); }
@@ -143,7 +170,7 @@
   .date { color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
 
   input[type="number"] {
-    width: 100px; background: #0d1117; border: 1px solid var(--border);
+    width: 100%; max-width: 100px; background: #0d1117; border: 1px solid var(--border);
     border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 1rem;
     font-variant-numeric: tabular-nums; text-align: right;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -173,6 +200,8 @@
   .add-week-row:hover { background: var(--bg-hover); }
 
   footer { margin-top: 28px; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+
+  .sync-status { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
 
   /* Modal */
   .modal-overlay {
@@ -214,26 +243,23 @@
 
   @media (max-width: 720px) {
     header { grid-template-columns: 1fr; }
-    .header-meta { text-align: left; }
+    .header-meta { justify-content: flex-start; }
     .summary { grid-template-columns: 1fr 1fr; }
     th, td { padding: 10px 12px; }
-    input[type="number"] { width: 80px; }
-    .url-row { grid-template-columns: 1fr; }
   }
 
   @media print {
     body { background: white; color: black; padding: 0; }
-    .actions, footer, .standard-control, .row-actions, .modal-overlay, .add-week-row { display: none !important; }
-    header, .stat, .table-wrap { box-shadow: none; border-color: #ccc; }
+    .actions, footer, .standard-control, .row-actions, .modal-overlay, .add-week-row, .sync-status { display: none !important; }
+    header, .stat, .table-wrap { box-shadow: none; border-color: #ccc; position: static; }
   }
 </style>
-
 </head>
 <body>
 <div class="container">
-  <header>
+  <header id="mainHeader">
     <div class="brand">
-      <div class="logo-mark"><img src="https://raw.githubusercontent.com/BSMediaGroup/DanielClancy/refs/heads/main/assets/logos/logomatteblue.webp" alt="DC"></div>
+      <div class="logo-mark"><img src="../assets/logos/logomatteblue.webp" alt="DC"></div>
       <div class="identity">
         <h1>Daniel Clancy</h1>
         <div class="role">Architectural Technician</div>
@@ -244,7 +270,12 @@
       <div class="standard-control">
         <label for="standard">Standard</label>
         <input type="number" id="standard" value="38" step="0.5" min="0">
-        <span>hrs / week</span>
+        <span>hrs</span>
+      </div>
+      <div class="standard-control">
+        <label for="offset">Ends +</label>
+        <input type="number" id="offset" value="2" step="1" min="-6" max="6">
+        <span>days</span>
       </div>
     </div>
   </header>
@@ -273,17 +304,18 @@
     <button class="btn" onclick="exportJSON()">Export JSON</button>
     <button class="btn primary" onclick="exportPDF()">Export PDF</button>
     <button class="btn" onclick="openUrlModal()">Enter Timesheet URLs</button>
+    <span class="sync-status" id="syncStatus">Ready</span>
   </div>
 
   <div class="table-wrap">
-    <table>
+    <table id="timesheetTable">
       <thead>
         <tr>
-          <th>Week</th>
-          <th>Ending</th>
-          <th>Hours</th>
-          <th>Variance</th>
-          <th>Actions</th>
+          <th style="width:140px">Week <span class="resize-handle"></span></th>
+          <th style="width:130px">Ending <span class="resize-handle"></span></th>
+          <th style="width:160px">Hours <span class="resize-handle"></span></th>
+          <th style="width:120px">Variance <span class="resize-handle"></span></th>
+          <th>Actions <span class="resize-handle"></span></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -320,89 +352,106 @@ const EMPLOYEE = {
   company: "Greg Natale Design"
 };
 
-const STORAGE_KEY = "timesheet_data_daniel_clancy";
-
-const DEFAULT_WEEKS = [
-  { week: "WEEK 1",  ending: "25/09/2026", hours: 38,   url: "" },
-  { week: "WEEK 2",  ending: "2/10/2026",  hours: 42,   url: "" },
-  { week: "WEEK 3",  ending: "9/10/2026",  hours: 40.5, url: "" },
-  { week: "WEEK 4",  ending: "16/10/2026", hours: 39.25,url: "" },
-  { week: "WEEK 5",  ending: "23/10/2026", hours: null, url: "" },
-  { week: "WEEK 6",  ending: "30/10/2026", hours: null, url: "" },
-  { week: "WEEK 7",  ending: "6/11/2026",  hours: null, url: "" },
-  { week: "WEEK 8",  ending: "13/11/2026", hours: null, url: "" },
-  { week: "WEEK 9",  ending: "20/11/2026", hours: null, url: "" },
-  { week: "WEEK 10", ending: "27/11/2026", hours: null, url: "" },
-  { week: "WEEK 11", ending: "4/12/2026",  hours: null, url: "" },
-  { week: "WEEK 12", ending: "11/12/2026", hours: null, url: "" },
-  { week: "WEEK 13", ending: "18/12/2026", hours: null, url: "" },
-];
-
+const BASE_DATE = new Date(2026, 8, 25); // original Friday 25/09/2026
+let offsetDays = 2;
 let WEEKS = [];
+let saveTimer = null;
+let focusedIndex = null;
+let caretPos = null;
 
-function loadData() {
+const DEFAULT_WEEKS = Array.from({ length: 13 }, (_, i) => ({
+  week: `WEEK ${i + 1}`,
+  hours: i === 0 ? 38 : i === 1 ? 42 : i === 2 ? 40.5 : i === 3 ? 39.25 : null,
+  url: ""
+}));
+
+function computeEnding(index) {
+  const d = new Date(BASE_DATE);
+  d.setDate(d.getDate() + (index * 7) + offsetDays);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+function loadLocal() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      WEEKS = JSON.parse(saved);
+    const raw = localStorage.getItem("timesheet_local_v2");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      WEEKS = parsed.weeks || DEFAULT_WEEKS;
+      offsetDays = parsed.offsetDays ?? 2;
+      document.getElementById("standard").value = parsed.standard ?? 38;
+      document.getElementById("offset").value = offsetDays;
     } else {
       WEEKS = JSON.parse(JSON.stringify(DEFAULT_WEEKS));
     }
-  } catch (e) {
+  } catch {
     WEEKS = JSON.parse(JSON.stringify(DEFAULT_WEEKS));
   }
 }
 
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(WEEKS));
+function saveLocal() {
+  const payload = {
+    standard: parseFloat(document.getElementById("standard").value) || 38,
+    offsetDays,
+    weeks: WEEKS
+  };
+  localStorage.setItem("timesheet_local_v2", JSON.stringify(payload));
 }
 
-function parseDate(ddmmyyyy) {
-  const [d, m, y] = ddmmyyyy.split("/").map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function formatDate(date) {
-  const d = String(date.getDate()).padStart(2, "0");
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const y = date.getFullYear();
-  return `${d}/${m}/${y}`;
-}
-
-function addWeek() {
-  let nextDate;
-  if (WEEKS.length === 0) {
-    nextDate = new Date(2026, 8, 25); // 25/09/2026
-  } else {
-    const last = parseDate(WEEKS[WEEKS.length - 1].ending);
-    nextDate = new Date(last);
-    nextDate.setDate(nextDate.getDate() + 7);
+async function loadRemote() {
+  try {
+    const res = await fetch("/api/timesheet", { credentials: "same-origin" });
+    if (!res.ok) return false;
+    const json = await res.json();
+    if (json.data && json.data.weeks) {
+      WEEKS = json.data.weeks;
+      offsetDays = json.data.offsetDays ?? 2;
+      document.getElementById("standard").value = json.data.standard ?? 38;
+      document.getElementById("offset").value = offsetDays;
+      document.getElementById("syncStatus").textContent = "Synced";
+      return true;
+    }
+  } catch (e) {
+    console.warn("Remote load failed", e);
   }
-  const weekNum = WEEKS.length + 1;
-  WEEKS.push({
-    week: `WEEK ${weekNum}`,
-    ending: formatDate(nextDate),
-    hours: null,
-    url: ""
-  });
-  saveData();
-  render();
+  return false;
 }
 
-function clearWeek(index) {
-  if (confirm(`Clear hours and timesheet URL for ${WEEKS[index].week}?`)) {
-    WEEKS[index].hours = null;
-    WEEKS[index].url = "";
-    saveData();
-    render();
+async function saveRemote() {
+  const payload = {
+    standard: parseFloat(document.getElementById("standard").value) || 38,
+    offsetDays,
+    weeks: WEEKS
+  };
+  document.getElementById("syncStatus").textContent = "Saving…";
+  try {
+    const res = await fetch("/api/timesheet", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      document.getElementById("syncStatus").textContent = "Synced";
+    } else {
+      document.getElementById("syncStatus").textContent = "Local only";
+    }
+  } catch {
+    document.getElementById("syncStatus").textContent = "Local only";
   }
+  saveLocal();
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveRemote, 600);
 }
 
 function getHoursColor(hours, standard) {
   if (hours == null || hours === "") return "transparent";
   const h = parseFloat(hours);
   if (isNaN(h)) return "transparent";
-
   if (h >= standard) {
     const excess = Math.min(h - standard, 15);
     const t = excess / 15;
@@ -420,9 +469,7 @@ function getHoursColor(hours, standard) {
 function getVarianceColor(variance) {
   if (variance == null || isNaN(variance)) return "transparent";
   const v = parseFloat(variance);
-
   if (Math.abs(v) < 0.25) return "#4a515a";
-
   if (v > 0) {
     const t = Math.min(v / 8, 1);
     const hue = 220 - t * 200;
@@ -432,10 +479,7 @@ function getVarianceColor(variance) {
   } else {
     const abs = Math.abs(v);
     const t = Math.min(abs / 8, 1);
-    const hue = 0;
-    const sat = 40 + t * 50;
-    const light = 38 - t * 8;
-    return `hsl(${hue}, ${sat}%, ${light}%)`;
+    return `hsl(0, ${40 + t * 50}%, ${38 - t * 8}%)`;
   }
 }
 
@@ -447,47 +491,19 @@ function formatVariance(v) {
   return "0.00";
 }
 
-function getExportData() {
-  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
-  return WEEKS.map(w => {
-    const hours = (w.hours != null && w.hours !== "") ? parseFloat(w.hours) : null;
-    const variance = hours != null ? +(hours - standard).toFixed(2) : null;
-    return { week: w.week, ending: w.ending, hours, variance, standard, url: w.url || "" };
-  });
+function addWeek() {
+  WEEKS.push({ week: `WEEK ${WEEKS.length + 1}`, hours: null, url: "" });
+  scheduleSave();
+  render();
 }
 
-function exportCSV() {
-  const data = getExportData();
-  const headers = ["Week", "Ending", "Hours", "Variance", "Standard", "Timesheet URL"];
-  const rows = data.map(d => [d.week, d.ending, d.hours ?? "", d.variance ?? "", d.standard, d.url]);
-  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
-  downloadFile(csv, "timesheet-daniel-clancy.csv", "text/csv");
-}
-
-function exportJSON() {
-  const data = {
-    employee: EMPLOYEE,
-    exported: new Date().toISOString(),
-    standardHours: parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT,
-    weeks: getExportData()
-  };
-  downloadFile(JSON.stringify(data, null, 2), "timesheet-daniel-clancy.json", "application/json");
-}
-
-function exportPDF() {
-  const originalTitle = document.title;
-  document.title = "Timesheet — Daniel Clancy — Greg Natale Design";
-  window.print();
-  setTimeout(() => { document.title = originalTitle; }, 500);
-}
-
-function downloadFile(content, filename, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
+function clearWeek(index) {
+  if (confirm(`Clear hours and timesheet URL for ${WEEKS[index].week}?`)) {
+    WEEKS[index].hours = null;
+    WEEKS[index].url = "";
+    scheduleSave();
+    render();
+  }
 }
 
 function openTimesheet(url) {
@@ -500,10 +516,7 @@ function openUrlModal() {
   WEEKS.forEach((w, i) => {
     const row = document.createElement("div");
     row.className = "url-row";
-    row.innerHTML = `
-      <label>${w.week}</label>
-      <input type="url" data-index="${i}" value="${w.url || ""}" placeholder="https://...">
-    `;
+    row.innerHTML = `<label>${w.week}</label><input type="url" data-index="${i}" value="${w.url || ""}" placeholder="https://...">`;
     body.appendChild(row);
   });
   document.getElementById("urlModal").classList.add("active");
@@ -514,17 +527,23 @@ function closeUrlModal() {
 }
 
 function saveUrls() {
-  const inputs = document.querySelectorAll("#urlModalBody input[data-index]");
-  inputs.forEach(input => {
+  document.querySelectorAll("#urlModalBody input[data-index]").forEach(input => {
     const idx = parseInt(input.dataset.index);
     WEEKS[idx].url = input.value.trim();
   });
-  saveData();
+  scheduleSave();
   closeUrlModal();
   render();
 }
 
 function render() {
+  // Capture focus before rebuild
+  const active = document.activeElement;
+  if (active && active.dataset && active.dataset.index) {
+    focusedIndex = active.dataset.index;
+    caretPos = active.selectionStart;
+  }
+
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
   const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
@@ -534,6 +553,7 @@ function render() {
   WEEKS.forEach((w, i) => {
     const hoursVal = w.hours;
     const variance = (hoursVal != null && hoursVal !== "") ? (parseFloat(hoursVal) - standard) : null;
+    const ending = computeEnding(i);
 
     if (hoursVal != null && hoursVal !== "" && !isNaN(parseFloat(hoursVal))) {
       totalHours += parseFloat(hoursVal);
@@ -550,23 +570,20 @@ function render() {
     tr.dataset.index = i;
     tr.innerHTML = `
       <td class="week-num">${w.week}</td>
-      <td class="date">${w.ending}</td>
+      <td class="date">${ending}</td>
       <td>
         <span class="hours-indicator" style="background:${hoursColor === "transparent" ? "transparent" : hoursColor}"></span>
-        <input type="number" step="0.25" min="0" max="80" 
-               value="${hoursVal ?? ""}" data-index="${i}" placeholder="—">
+        <input type="number" step="0.25" min="0" max="80" value="${hoursVal ?? ""}" data-index="${i}" placeholder="—">
       </td>
       <td>
-        <span class="variance" style="background:${varColor}; color:${varTextColor}">
-          ${formatVariance(variance)}
-        </span>
+        <span class="variance" style="background:${varColor}; color:${varTextColor}">${formatVariance(variance)}</span>
       </td>
       <td>
         <div class="row-actions">
-          <button class="btn small ${hasUrl ? "" : "disabled"}" 
-                  ${hasUrl ? "" : "disabled"}
+          <button class="btn small ${hasUrl ? "" : "disabled"}" ${hasUrl ? "" : "disabled"}
                   onclick="event.stopPropagation(); openTimesheet('${(w.url || "").replace(/'/g, "\\'")}')">
-            Open
+            OPEN TIMESHEET
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </button>
           <button class="btn icon clear" title="Clear week" onclick="event.stopPropagation(); clearWeek(${i})">✕</button>
         </div>
@@ -583,27 +600,169 @@ function render() {
   netEl.textContent = formatVariance(netVar);
   netEl.className = "value " + (netVar > 0.05 ? "positive" : netVar < -0.05 ? "negative" : "neutral");
 
-  // Bind hour inputs
+  // Bind inputs
   document.querySelectorAll("#tbody input[type=number]").forEach(input => {
     input.addEventListener("input", e => {
       e.stopPropagation();
       const idx = parseInt(e.target.dataset.index);
       const val = e.target.value.trim();
       WEEKS[idx].hours = val === "" ? null : parseFloat(val);
-      saveData();
+      scheduleSave();
       render();
     });
     input.addEventListener("click", e => e.stopPropagation());
   });
 
-  // Double-click row to open URL modal
   document.querySelectorAll("#tbody tr").forEach(tr => {
     tr.addEventListener("dblclick", () => openUrlModal());
   });
+
+  // Restore focus
+  if (focusedIndex !== null) {
+    const input = document.querySelector(`#tbody input[data-index="${focusedIndex}"]`);
+    if (input) {
+      input.focus();
+      try { input.setSelectionRange(caretPos, caretPos); } catch {}
+    }
+  }
+}
+
+function exportCSV() {
+  const standard = parseFloat(document.getElementById("standard").value) || 38;
+  const headers = ["Week", "Ending", "Hours", "Variance", "Standard", "Timesheet URL"];
+  const rows = WEEKS.map((w, i) => {
+    const hours = (w.hours != null && w.hours !== "") ? parseFloat(w.hours) : "";
+    const variance = hours !== "" ? +(hours - standard).toFixed(2) : "";
+    return [w.week, computeEnding(i), hours, variance, standard, w.url || ""];
+  });
+  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  downloadFile(csv, "timesheet-daniel-clancy.csv", "text/csv");
+}
+
+function exportJSON() {
+  const data = {
+    employee: EMPLOYEE,
+    exported: new Date().toISOString(),
+    standardHours: parseFloat(document.getElementById("standard").value) || 38,
+    offsetDays,
+    weeks: WEEKS.map((w, i) => ({ ...w, ending: computeEnding(i) }))
+  };
+  downloadFile(JSON.stringify(data, null, 2), "timesheet-daniel-clancy.json", "application/json");
+}
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const standard = parseFloat(document.getElementById("standard").value) || 38;
+
+  doc.setFillColor(16, 21, 28);
+  doc.rect(0, 0, 210, 40, "F");
+  doc.setTextColor(240, 243, 246);
+  doc.setFontSize(18);
+  doc.text("Daniel Clancy", 14, 16);
+  doc.setFontSize(10);
+  doc.setTextColor(91, 156, 245);
+  doc.text("Architectural Technician", 14, 23);
+  doc.setTextColor(160, 170, 180);
+  doc.text("Greg Natale Design  ·  Timesheet", 14, 29);
+
+  doc.setTextColor(20, 20, 20);
+  doc.setFontSize(11);
+  let y = 50;
+  doc.text(`Standard week: ${standard} hrs   ·   Week ending offset: +${offsetDays} days`, 14, y);
+  y += 8;
+
+  // Summary
+  let total = 0, count = 0, net = 0;
+  WEEKS.forEach(w => {
+    if (w.hours != null && w.hours !== "") {
+      total += parseFloat(w.hours);
+      count++;
+      net += parseFloat(w.hours) - standard;
+    }
+  });
+  doc.setFontSize(10);
+  doc.text(`Weeks entered: ${count}    Total hours: ${total.toFixed(2)}    Average: ${count ? (total/count).toFixed(2) : "—"}    Net variance: ${net >= 0 ? "+" : ""}${net.toFixed(2)}`, 14, y);
+  y += 10;
+
+  // Table header
+  doc.setFillColor(26, 31, 38);
+  doc.rect(14, y, 182, 8, "F");
+  doc.setTextColor(240, 243, 246);
+  doc.setFontSize(9);
+  doc.text("Week", 16, y + 5.5);
+  doc.text("Ending", 50, y + 5.5);
+  doc.text("Hours", 90, y + 5.5);
+  doc.text("Variance", 120, y + 5.5);
+  y += 10;
+
+  doc.setTextColor(30, 30, 30);
+  WEEKS.forEach((w, i) => {
+    if (y > 270) {
+      doc.addPage();
+      y = 20;
+    }
+    const hours = (w.hours != null && w.hours !== "") ? parseFloat(w.hours) : null;
+    const variance = hours != null ? hours - standard : null;
+    doc.text(w.week, 16, y);
+    doc.text(computeEnding(i), 50, y);
+    doc.text(hours != null ? hours.toFixed(2) : "—", 90, y);
+    doc.text(variance != null ? (variance >= 0 ? "+" : "") + variance.toFixed(2) : "—", 120, y);
+    y += 7;
+  });
+
+  doc.save("timesheet-daniel-clancy.pdf");
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// Column resize
+function initResize() {
+  const table = document.getElementById("timesheetTable");
+  const handles = table.querySelectorAll(".resize-handle");
+  handles.forEach(handle => {
+    handle.addEventListener("mousedown", e => {
+      e.preventDefault();
+      const th = handle.parentElement;
+      const startX = e.pageX;
+      const startWidth = th.offsetWidth;
+      function onMove(ev) {
+        const w = Math.max(60, startWidth + (ev.pageX - startX));
+        th.style.width = w + "px";
+      }
+      function onUp() {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      }
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
+  });
+}
+
+// Sticky slim header
+function initSticky() {
+  const header = document.getElementById("mainHeader");
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 40) header.classList.add("slim");
+    else header.classList.remove("slim");
+  }, { passive: true });
 }
 
 document.getElementById("standard").addEventListener("input", () => {
-  saveData(); // optional, standard not stored but re-render
+  scheduleSave();
+  render();
+});
+document.getElementById("offset").addEventListener("input", e => {
+  offsetDays = parseInt(e.target.value) || 0;
+  scheduleSave();
   render();
 });
 
@@ -611,8 +770,14 @@ document.getElementById("urlModal").addEventListener("click", e => {
   if (e.target.id === "urlModal") closeUrlModal();
 });
 
-loadData();
-render();
+// Boot
+(async function init() {
+  loadLocal();
+  await loadRemote();
+  render();
+  initResize();
+  initSticky();
+})();
 </script>
 </body>
 </html>

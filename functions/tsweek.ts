@@ -7,7 +7,7 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
     const password = form.get("password")?.toString() || "";
     if (password === env.TSWEEK_PASSWORD) {
       const headers = new Headers();
-      headers.set("Set-Cookie", `tsweek_auth=1; Path=/tsweek; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`);
+      headers.set("Set-Cookie", `tsweek_auth=1; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`);
       headers.set("Location", "/tsweek");
       return new Response(null, { status: 302, headers });
     }
@@ -26,6 +26,7 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Blinker:wght@400;600&family=Source+Sans+3:wght@650&display=swap" rel="stylesheet">
 <style>
+  * { box-sizing: border-box; }
   body {
     background: #07090d;
     color: #f0f3f6;
@@ -39,10 +40,11 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
   form {
     background: #161b22;
     padding: 36px 32px;
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid #2a3038;
     text-align: center;
-    min-width: 280px;
+    width: 320px;
+    max-width: 90vw;
   }
   h2 {
     font-family: "Source Sans 3", "Segoe UI", sans-serif;
@@ -55,8 +57,8 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
     background: #0d1117;
     border: 1px solid #2a3038;
     color: #f0f3f6;
-    padding: 10px 14px;
-    border-radius: 6px;
+    padding: 12px 14px;
+    border-radius: 8px;
     width: 100%;
     font-family: inherit;
     font-size: 1rem;
@@ -66,8 +68,8 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
     background: #5b9cf5;
     color: #fff;
     border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
+    padding: 12px 18px;
+    border-radius: 8px;
     margin-top: 14px;
     cursor: pointer;
     width: 100%;
