@@ -14,8 +14,10 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
     return new Response("Wrong password", { status: 401 });
   }
 
+  const url = new URL(request.url);
+  const forceLogin = url.searchParams.get("login") === "1";
   const cookie = request.headers.get("Cookie") || "";
-  if (!cookie.includes("tsweek_auth=1")) {
+  if (forceLogin || !cookie.includes("tsweek_auth=1")) {
     return new Response(`<!DOCTYPE html>
 <html lang="en">
 <head>
