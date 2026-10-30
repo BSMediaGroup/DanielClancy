@@ -414,6 +414,7 @@
       Share
     </button>
     <span class="sync-status" id="syncStatus">Ready</span>
+    <button class="btn small" onclick="forceRefresh()" title="Pull latest from server">Refresh</button>
   </div>
 
   <div class="table-wrap">
@@ -560,21 +561,29 @@ function saveLocal() {
 
 async function loadRemote() {
   try {
-    const res = await fetch("/api/timesheet", { credentials: "same-origin" });
-    if (!res.ok) return false;
+    const res = await fetch("/api/timesheet", { credentials: "same-origin", cache: "no-store" });
+    if (res.status === 401) {
+      console.warn("Timesheet API: not authenticated");
+      return false;
+    }
+    if (!res.ok) {
+      console.warn("Timesheet API error", res.status);
+      return false;
+    }
     const json = await res.json();
-    if (json.data && json.data.weeks) {
+    if (json.data && Array.isArray(json.data.weeks)) {
       WEEKS = json.data.weeks;
       weekEndDay = json.data.weekEndDay ?? 0;
       document.getElementById("standard").value = json.data.standard ?? 38;
       document.getElementById("weekEndDay").value = weekEndDay;
-      document.getElementById("syncStatus").textContent = "Synced";
       return true;
     }
+    // No data yet on server
+    return false;
   } catch (e) {
     console.warn("Remote load failed", e);
+    return false;
   }
-  return false;
 }
 
 async function saveRemote() {
@@ -1115,10 +1124,36 @@ function mailtoShare() {
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
-// Boot
+async function forceRefresh() {
+  const statusEl = document.getElementById("syncStatus");
+  statusEl.textContent = "Refreshing…";
+  statusEl.style.color = "";
+  const ok = await loadRemote();
+  if (ok) {
+    saveLocal();
+    statusEl.textContent = "Synced from server";
+    render();
+  } else {
+    statusEl.textContent = "Could not reach server";
+    statusEl.style.color = "var(--orange)";
+  }
+}
+
+// Boot — prefer remote (D1) over localStorage
 (async function init() {
-  loadLocal();
-  await loadRemote();
+  const statusEl = document.getElementById("syncStatus");
+  statusEl.textContent = "Loading…";
+
+  const remoteOk = await loadRemote();
+  if (remoteOk) {
+    saveLocal(); // keep local in sync with remote
+    statusEl.textContent = "Synced from server";
+  } else {
+    loadLocal();
+    statusEl.textContent = "Using local data (server unavailable or not signed in)";
+    statusEl.style.color = "var(--orange)";
+  }
+
   render();
   initResize();
   initSticky();
