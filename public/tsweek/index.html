@@ -172,11 +172,25 @@
   .spin-pair { display: inline-flex; gap: 2px; }
 
 
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 8px;
+  }
+  .sync-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: right;
+    white-space: nowrap;
+  }
   .page-title {
     font-family: "Source Sans 3", "Segoe UI", sans-serif;
     font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em;
     text-transform: uppercase; color: var(--text-secondary);
-    margin: 0 0 12px; padding-left: 2px;
+    margin: 0; padding-left: 2px;
+    flex-shrink: 0;
   }
   .summary {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;
@@ -192,7 +206,7 @@
   .stat .value.negative { color: var(--red); }
   .stat .value.neutral { color: var(--text-secondary); }
 
-  .actions { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .actions { display: flex; gap: 8px; margin: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
   .btn, button {
     font-family: "Blinker", "Segoe UI", sans-serif;
   }
@@ -387,7 +401,29 @@
     </div>
   </header>
 
-  <div class="page-title">Global Timesheet Ledger</div>
+  <div class="title-row">
+    <div class="page-title">Global Timesheet Ledger</div>
+    <span class="sync-status" id="syncStatus">Ready</span>
+  </div>
+  <div class="actions" style="justify-content:space-between; margin-bottom:14px;">
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="btn" onclick="exportCSV()">Export CSV</button>
+      <button class="btn" onclick="exportJSON()">Export JSON</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+      <button class="btn primary" onclick="exportPDF()">Export PDF</button>
+      <button class="btn" onclick="openUrlModal()">Enter Timesheet URLs</button>
+      <button class="btn" onclick="openShareModal()" title="Share">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="btn small" onclick="forceRefresh()" title="Pull latest from server">Refresh</button>
+      <button class="btn small" onclick="forcePush()" title="Push current data to server">Push</button>
+      <button class="btn small" onclick="logout()" title="Sign out">Sign out</button>
+    </div>
+  </div>
   <div class="summary">
     <div class="stat">
       <div class="label">Weeks entered</div>
@@ -405,23 +441,6 @@
       <div class="label">Net variance</div>
       <div class="value" id="netVariance">0.00</div>
     </div>
-  </div>
-
-  <div class="actions">
-    <button class="btn" onclick="exportCSV()">Export CSV</button>
-    <button class="btn" onclick="exportJSON()">Export JSON</button>
-    <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
-    <button class="btn primary" onclick="exportPDF()">Export PDF</button>
-    <button class="btn" onclick="openUrlModal()">Enter Timesheet URLs</button>
-    <button class="btn" onclick="openShareModal()" title="Share">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      Share
-    </button>
-    <span class="sync-status" id="syncStatus">Ready</span>
-    <button class="btn small" onclick="forceRefresh()" title="Pull latest from server">Refresh</button>
-    <button class="btn small" onclick="forcePush()" title="Push current data to server">Push</button>
-    <button class="btn small" onclick="logout()" title="Sign out">Sign out</button>
   </div>
 
   <div class="table-wrap">
