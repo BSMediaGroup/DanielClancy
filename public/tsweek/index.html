@@ -420,6 +420,7 @@
     </button>
     <span class="sync-status" id="syncStatus">Ready</span>
     <button class="btn small" onclick="forceRefresh()" title="Pull latest from server">Refresh</button>
+    <button class="btn small" onclick="forcePush()" title="Push current data to server">Push</button>
     <button class="btn small" onclick="logout()" title="Sign out">Sign out</button>
   </div>
 
@@ -515,6 +516,7 @@ let WEEKS = [];
 let saveTimer = null;
 let focusedIndex = null;
 let caretPos = null;
+let serverUpdatedAt = null;
 
 const DEFAULT_WEEKS = Array.from({ length: 13 }, (_, i) => ({
   week: `WEEK ${i + 1}`,
@@ -583,6 +585,7 @@ async function loadRemote() {
       weekEndDay = json.data.weekEndDay ?? 0;
       document.getElementById("standard").value = json.data.standard ?? 38;
       document.getElementById("weekEndDay").value = weekEndDay;
+      serverUpdatedAt = json.updated_at || null;
       return true;
     }
     // No data yet on server
@@ -1136,6 +1139,13 @@ function logout() {
   window.location.href = "/tsweek?login=1";
 }
 
+async function forcePush() {
+  const statusEl = document.getElementById("syncStatus");
+  statusEl.textContent = "Pushing…";
+  statusEl.style.color = "";
+  await saveRemote();
+}
+
 async function forceRefresh() {
   const statusEl = document.getElementById("syncStatus");
   statusEl.textContent = "Refreshing…";
@@ -1143,7 +1153,8 @@ async function forceRefresh() {
   const ok = await loadRemote();
   if (ok) {
     saveLocal();
-    statusEl.textContent = "Synced from server";
+    const when = serverUpdatedAt ? new Date(serverUpdatedAt).toLocaleString() : "unknown time";
+    statusEl.textContent = "Synced from server · " + when;
     render();
   } else {
     statusEl.textContent = "Could not reach server";
@@ -1159,7 +1170,8 @@ async function forceRefresh() {
   const remoteOk = await loadRemote();
   if (remoteOk) {
     saveLocal(); // keep local in sync with remote
-    statusEl.textContent = "Synced from server";
+    const when = serverUpdatedAt ? new Date(serverUpdatedAt).toLocaleString() : "unknown time";
+    statusEl.textContent = "Synced from server · " + when;
   } else {
     loadLocal();
     statusEl.textContent = "Using local data (server unavailable or not signed in)";
