@@ -221,6 +221,40 @@
   .super-proj th:first-child, .super-proj td:first-child { text-align: left; }
   .super-proj th { color: var(--text-muted); font-weight: 500; }
 
+
+  .salary-cards { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; align-items: stretch; }
+  .salary-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 22px; min-width: 220px; flex: 1;
+    position: relative; cursor: pointer; transition: border-color 0.15s;
+  }
+  .salary-card:hover { border-color: var(--border-light, #3a414b); }
+  .salary-card.gross { border-color: rgba(63,185,80,0.4); }
+  .salary-card .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .salary-card .display {
+    font-family: "Source Sans 3", sans-serif; font-size: 1.8rem; font-weight: 700;
+    margin-top: 4px; letter-spacing: -0.5px;
+  }
+  .salary-card.gross .display { color: var(--green); }
+  .salary-card .edit-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: transparent; border: none; color: var(--text-muted);
+    cursor: pointer; padding: 4px; border-radius: 4px;
+  }
+  .salary-card .edit-btn:hover { color: var(--text); background: var(--bg-elevated); }
+  .salary-card input.editing {
+    background: #0d1117; border: 1px solid var(--accent); border-radius: 8px;
+    color: var(--text); padding: 8px 12px; font-size: 1.4rem; font-weight: 600;
+    width: 100%; margin-top: 6px; font-family: inherit;
+  }
+  .salary-card input.editing:focus { outline: none; box-shadow: 0 0 0 3px var(--accent-glow); }
+  .phone-field { display: flex; flex-direction: column; justify-content: center; }
+  .phone-field label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+  .phone-field input {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 12px; font-size: 1rem; width: 100px; font-family: inherit;
+  }
+
 </style>
 </head>
 <body>
@@ -254,16 +288,20 @@
     </div>
   </div>
 
-  <div class="income-row">
-    <div>
-      <label style="color:var(--green); font-weight:600;">Gross annual salary (plus super)</label>
-      <input type="number" id="grossSalaryTop" value="90000" step="100" oninput="syncGross(); scheduleSave(); render();" style="border-color:var(--green);">
+  <div class="salary-cards">
+    <div class="salary-card gross" onclick="editField('gross')">
+      <button class="edit-btn" onclick="event.stopPropagation(); editField('gross')" title="Edit">✎</button>
+      <div class="label">Gross annual salary (plus super)</div>
+      <div class="display" id="grossDisplay">$90,000</div>
+      <input type="number" id="grossSalaryTop" value="90000" step="100" class="editing" style="display:none;" onblur="finishEdit('gross')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
-    <div>
-      <label>Net monthly (after tax)</label>
-      <input type="number" id="income" value="5888" step="0.01" oninput="scheduleSave(); render();">
+    <div class="salary-card" onclick="editField('net')">
+      <button class="edit-btn" onclick="event.stopPropagation(); editField('net')" title="Edit">✎</button>
+      <div class="label">Net monthly (after tax)</div>
+      <div class="display" id="netDisplay">$5,888</div>
+      <input type="number" id="income" value="5888" step="0.01" class="editing" style="display:none;" onblur="finishEdit('net')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
-    <div>
+    <div class="phone-field">
       <label>Phone allowance / month</label>
       <input type="number" id="phoneAllowance" value="44" step="1" oninput="scheduleSave(); render();">
     </div>
@@ -432,6 +470,7 @@ function money(n) {
 }
 
 function render() {
+  updateDisplays();
   const income = parseFloat(document.getElementById("income").value) || 0;
   const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
   const incomeDaily = toDaily(income, "month");
@@ -853,6 +892,35 @@ function initSticky() {
       ticking = true;
     }
   }, { passive: true });
+}
+
+
+function editField(which) {
+  const isGross = which === "gross";
+  const display = document.getElementById(isGross ? "grossDisplay" : "netDisplay");
+  const input = document.getElementById(isGross ? "grossSalaryTop" : "income");
+  display.style.display = "none";
+  input.style.display = "block";
+  input.focus();
+  input.select();
+}
+function finishEdit(which) {
+  const isGross = which === "gross";
+  const display = document.getElementById(isGross ? "grossDisplay" : "netDisplay");
+  const input = document.getElementById(isGross ? "grossSalaryTop" : "income");
+  const val = parseFloat(input.value) || 0;
+  display.textContent = isGross ? "$" + val.toLocaleString() : money(val);
+  display.style.display = "block";
+  input.style.display = "none";
+  if (isGross) syncGross();
+  scheduleSave();
+  render();
+}
+function updateDisplays() {
+  const g = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
+  const n = parseFloat(document.getElementById("income").value) || 0;
+  document.getElementById("grossDisplay").textContent = "$" + g.toLocaleString();
+  document.getElementById("netDisplay").textContent = money(n);
 }
 
 function syncGross() {
