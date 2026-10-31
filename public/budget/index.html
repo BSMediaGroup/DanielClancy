@@ -37,23 +37,42 @@
     font-family: "Source Sans 3", "Segoe UI", sans-serif;
   }
   header {
-    background: var(--bg-card);
+    position: sticky;
+    top: 12px;
+    z-index: 200;
+    background: rgba(16, 21, 28, 0.96);
+    backdrop-filter: blur(16px);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 20px 28px;
-    margin-bottom: 20px;
+    padding: 18px 24px;
+    margin: 0 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
+  header.slim {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10px 24px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    z-index: 300;
+  }
+  header.slim .logo { width: 36px; height: 36px; }
+  header.slim .identity h1 { font-size: 1.05rem; }
+  header.slim .identity .role { font-size: 0.75rem; }
   .brand { display: flex; align-items: center; gap: 14px; }
   .logo {
     width: 48px; height: 48px;
-    background: linear-gradient(135deg, #5b9cf5, #3d7dd4);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: #fff; font-size: 1.1rem;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
   }
+  .logo img { width: 100%; height: 100%; object-fit: cover; }
   .identity h1 { font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.1; }
   .identity .role { color: var(--accent); font-size: 0.9rem; }
   .identity .company { color: var(--text-muted); font-size: 0.8rem; }
@@ -208,11 +227,10 @@
 <div class="container">
   <header>
     <div class="brand">
-      <div class="logo">DC</div>
+      <div class="logo"><img src="https://raw.githubusercontent.com/BSMediaGroup/DanielClancy/refs/heads/main/assets/logos/logomatteblue.webp" alt="DC"></div>
       <div class="identity">
         <h1>Daniel Clancy</h1>
         <div class="role">Budget</div>
-        <div class="company">Greg Natale Design</div>
       </div>
     </div>
     <button class="btn small" onclick="logout()">Sign out</button>
@@ -237,9 +255,18 @@
   </div>
 
   <div class="income-row">
-    <label>Net income (monthly, after tax)</label>
-    <input type="number" id="income" value="5888" step="0.01" oninput="scheduleSave(); render()">
-    <span style="color:var(--text-muted); font-size:0.85rem;">All other periods are projected from this</span>
+    <div>
+      <label style="color:var(--green); font-weight:600;">Gross annual salary (plus super)</label>
+      <input type="number" id="grossSalaryTop" value="90000" step="100" oninput="syncGross(); scheduleSave(); render();" style="border-color:var(--green);">
+    </div>
+    <div>
+      <label>Net monthly (after tax)</label>
+      <input type="number" id="income" value="5888" step="0.01" oninput="scheduleSave(); render();">
+    </div>
+    <div>
+      <label>Phone allowance / month</label>
+      <input type="number" id="phoneAllowance" value="44" step="1" oninput="scheduleSave(); render();">
+    </div>
   </div>
 
   <div class="salary-toggle" onclick="toggleSalary()">
@@ -250,7 +277,7 @@
     <div class="salary-inputs">
       <div>
         <label>Gross annual salary</label>
-        <input type="number" id="grossSalary" value="85000" step="100" oninput="calcSalary(); scheduleSave();">
+        <input type="number" id="grossSalary" value="90000" step="100" oninput="syncGrossFromDetail(); calcSalary(); scheduleSave();">
       </div>
       <div>
         <label>Super rate %</label>
@@ -550,7 +577,8 @@ function scheduleSave() {
 async function saveRemote() {
   const payload = {
     income: parseFloat(document.getElementById("income").value) || 0,
-    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 0,
+    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 90000,
+    phoneAllowance: parseFloat(document.getElementById("phoneAllowance").value) || 44,
     superRate: parseFloat(document.getElementById("superRate").value) || 12,
     hasHelp: document.getElementById("hasHelp").value === "1",
     savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
@@ -584,7 +612,11 @@ async function loadRemote() {
     const json = await res.json();
     if (json.data) {
       document.getElementById("income").value = json.data.income ?? 5888;
-      if (json.data.grossSalary) document.getElementById("grossSalary").value = json.data.grossSalary;
+      if (json.data.grossSalary) {
+        document.getElementById("grossSalary").value = json.data.grossSalary;
+        document.getElementById("grossSalaryTop").value = json.data.grossSalary;
+      }
+      if (json.data.phoneAllowance) document.getElementById("phoneAllowance").value = json.data.phoneAllowance;
       if (json.data.superRate) document.getElementById("superRate").value = json.data.superRate;
       if (json.data.hasHelp) document.getElementById("hasHelp").value = "1";
       document.getElementById("savingsAmount").value = json.data.savings ?? 850;
@@ -603,7 +635,11 @@ function loadLocal() {
     if (raw) {
       const d = JSON.parse(raw);
       document.getElementById("income").value = d.income ?? 5888;
-      if (d.grossSalary) document.getElementById("grossSalary").value = d.grossSalary;
+      if (d.grossSalary) {
+        document.getElementById("grossSalary").value = d.grossSalary;
+        document.getElementById("grossSalaryTop").value = d.grossSalary;
+      }
+      if (d.phoneAllowance) document.getElementById("phoneAllowance").value = d.phoneAllowance;
       if (d.superRate) document.getElementById("superRate").value = d.superRate;
       if (d.hasHelp) document.getElementById("hasHelp").value = "1";
       document.getElementById("savingsAmount").value = d.savings ?? 850;
@@ -651,7 +687,11 @@ function importJSON(e) {
     try {
       const d = JSON.parse(reader.result);
       document.getElementById("income").value = d.income ?? 5888;
-      if (d.grossSalary) document.getElementById("grossSalary").value = d.grossSalary;
+      if (d.grossSalary) {
+        document.getElementById("grossSalary").value = d.grossSalary;
+        document.getElementById("grossSalaryTop").value = d.grossSalary;
+      }
+      if (d.phoneAllowance) document.getElementById("phoneAllowance").value = d.phoneAllowance;
       if (d.superRate) document.getElementById("superRate").value = d.superRate;
       if (d.hasHelp) document.getElementById("hasHelp").value = "1";
       document.getElementById("savingsAmount").value = d.savings ?? 850;
@@ -672,7 +712,8 @@ function closeShareModal() { document.getElementById("shareModal").classList.rem
 async function generateShare() {
   const payload = {
     income: parseFloat(document.getElementById("income").value) || 0,
-    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 0,
+    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 90000,
+    phoneAllowance: parseFloat(document.getElementById("phoneAllowance").value) || 44,
     superRate: parseFloat(document.getElementById("superRate").value) || 12,
     hasHelp: document.getElementById("hasHelp").value === "1",
     savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
@@ -799,6 +840,31 @@ function calcSalary() {
 }
 
 
+
+function initSticky() {
+  const header = document.querySelector("header");
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        header.classList.toggle("slim", window.scrollY > 60);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
+
+function syncGross() {
+  const v = document.getElementById("grossSalaryTop").value;
+  document.getElementById("grossSalary").value = v;
+  calcSalary();
+}
+function syncGrossFromDetail() {
+  const v = document.getElementById("grossSalary").value;
+  document.getElementById("grossSalaryTop").value = v;
+}
+
 (async function init() {
   document.getElementById("syncStatus").textContent = "Loading…";
   const ok = await loadRemote();
@@ -810,6 +876,7 @@ function calcSalary() {
   }
   render();
   calcSalary();
+  initSticky();
 })();
 </script>
 </body>
