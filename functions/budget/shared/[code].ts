@@ -75,6 +75,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   *::-webkit-scrollbar-thumb:hover { background: #3a414b; }
   *::-webkit-scrollbar-corner { background: #0d1117; }
 
+
+  body.density-compact{font-size:14px}
+  body.density-large{font-size:17px}
+  body.density-compact td,body.density-compact th{padding:6px 8px}
+  body.density-large td,body.density-large th{padding:12px 14px}
+  .density-toggle{position:fixed;bottom:16px;left:16px;display:flex;background:#161b22;border:1px solid #2a3038;border-radius:20px;padding:3px;z-index:100}
+  .density-toggle button{background:transparent;border:none;color:#7d8590;padding:5px 9px;border-radius:14px;cursor:pointer;font-size:0.7rem}
+  .density-toggle button.active{background:#5b9cf5;color:#fff}
+
 </style></head>
 <body>
   <form method="GET">
@@ -82,6 +91,19 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     <input type="password" name="p" placeholder="Password" autofocus required>
     <button type="submit">View</button>
   </form>
+
+<div class="density-toggle">
+  <button data-d="compact" onclick="setD('compact')">S</button>
+  <button data-d="medium" class="active" onclick="setD('medium')">M</button>
+  <button data-d="large" onclick="setD('large')">L</button>
+</div>
+<script>
+function setD(m){
+  document.body.className = m === "medium" ? "" : "density-" + m;
+  document.querySelectorAll(".density-toggle button").forEach(b => b.classList.toggle("active", b.dataset.d === m));
+}
+</script>
+
 </body></html>`, { headers: { "Content-Type": "text/html" } });
   }
 
@@ -150,10 +172,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   .card .value{font-family:"Source Sans 3",sans-serif;font-size:1.3rem;font-weight:650;margin-top:4px}
   .card .value.green{color:#3fb950}
   table{width:100%;border-collapse:collapse;background:#161b22;border-radius:10px;overflow:hidden}
-  th{background:#1a1f26;text-align:left;padding:10px 12px;font-size:0.72rem;text-transform:uppercase;color:#8b949e}
-  td{padding:10px 12px;border-top:1px solid #2a3038}
+  th{background:#1a1f26;text-align:left;padding:8px 10px;font-size:0.68rem;text-transform:uppercase;color:#8b949e}
+  td{padding:8px 10px;border-top:1px solid #2a3038;font-size:0.85rem}
   .icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:#1a1f26}
-  .icon svg{stroke:#b0b8c4}
+  .icon svg{width:16px;height:16px;stroke:#b0b8c4}
   .cat{font-size:0.8rem;color:#7d8590;text-transform:capitalize}
   .note{margin-top:16px;font-size:0.8rem;color:#7d8590;text-align:center}
   @media(max-width:720px){.cards{grid-template-columns:1fr 1fr}}
@@ -168,6 +190,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   *::-webkit-scrollbar-thumb { background: #2a3038; border-radius: 3px; }
   *::-webkit-scrollbar-thumb:hover { background: #3a414b; }
   *::-webkit-scrollbar-corner { background: #0d1117; }
+
+
+  body.density-compact{font-size:14px}
+  body.density-large{font-size:17px}
+  body.density-compact td,body.density-compact th{padding:6px 8px}
+  body.density-large td,body.density-large th{padding:12px 14px}
+  .density-toggle{position:fixed;bottom:16px;left:16px;display:flex;background:#161b22;border:1px solid #2a3038;border-radius:20px;padding:3px;z-index:100}
+  .density-toggle button{background:transparent;border:none;color:#7d8590;padding:5px 9px;border-radius:14px;cursor:pointer;font-size:0.7rem}
+  .density-toggle button.active{background:#5b9cf5;color:#fff}
 
 </style>
 </head>
@@ -204,6 +235,19 @@ window.addEventListener("scroll", () => {
   document.getElementById("hdr").classList.toggle("slim", window.scrollY > 40);
 }, { passive: true });
 </script>
+
+<div class="density-toggle">
+  <button data-d="compact" onclick="setD('compact')">S</button>
+  <button data-d="medium" class="active" onclick="setD('medium')">M</button>
+  <button data-d="large" onclick="setD('large')">L</button>
+</div>
+<script>
+function setD(m){
+  document.body.className = m === "medium" ? "" : "density-" + m;
+  document.querySelectorAll(".density-toggle button").forEach(b => b.classList.toggle("active", b.dataset.d === m));
+}
+</script>
+
 </body>
 </html>`, { headers: { "Content-Type": "text/html" } });
 };

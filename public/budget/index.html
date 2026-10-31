@@ -304,7 +304,7 @@
   .exp-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: var(--bg-elevated); }
   .exp-icon svg { width: 16px; height: 16px; stroke: var(--text-secondary); }
   .cat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: capitalize; }
-  .settings-btn { position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); border: none; color: #fff; cursor: pointer; box-shadow: 0 4px 16px rgba(91,156,245,0.4); z-index: 100; display: flex; align-items: center; justify-content: center; }
+  .settings-btn { display: none; position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); border: none; color: #fff; cursor: pointer; box-shadow: 0 4px 16px rgba(91,156,245,0.4); z-index: 100; display: flex; align-items: center; justify-content: center; }
   .settings-btn:hover { filter: brightness(1.1); }
 
 
@@ -318,6 +318,35 @@
   *::-webkit-scrollbar-thumb { background: #2a3038; border-radius: 3px; }
   *::-webkit-scrollbar-thumb:hover { background: #3a414b; }
   *::-webkit-scrollbar-corner { background: #0d1117; }
+
+
+  :root { --density: 1; }
+  body.density-compact { --density: 0.85; }
+  body.density-large { --density: 1.15; }
+  body.density-compact { font-size: 14px; }
+  body.density-large { font-size: 17px; }
+  body.density-compact .expense-row { padding: 5px 12px; }
+  body.density-large .expense-row { padding: 12px 18px; }
+  body.density-compact .stat { padding: 10px 12px; }
+  body.density-large .stat { padding: 18px 20px; }
+  body.density-compact .section-header { padding: 8px 12px; }
+  body.density-large .section-header { padding: 16px 20px; }
+  body.density-compact td, body.density-compact th { padding: 6px 8px; }
+  body.density-large td, body.density-large th { padding: 12px 14px; }
+
+  .density-toggle {
+    position: fixed; bottom: 20px; left: 20px;
+    display: flex; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 3px; z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  .density-toggle button {
+    background: transparent; border: none; color: var(--text-muted);
+    padding: 6px 10px; border-radius: 16px; cursor: pointer;
+    font-size: 0.7rem; font-weight: 500; transition: all 0.15s;
+  }
+  .density-toggle button.active { background: var(--accent); color: #fff; }
+  .density-toggle button:hover:not(.active) { color: var(--text); }
 
 </style>
 </head>
@@ -1276,6 +1305,17 @@ try {
     if (CATEGORIES[k]) CATEGORIES[k].icon = v;
   }
 } catch {}
+
+function setDensity(mode) {
+  document.body.classList.remove("density-compact", "density-large");
+  if (mode === "compact") document.body.classList.add("density-compact");
+  if (mode === "large") document.body.classList.add("density-large");
+  document.querySelectorAll(".density-toggle button").forEach(b => {
+    b.classList.toggle("active", b.dataset.density === mode);
+  });
+  localStorage.setItem("budget_density", mode);
+}
+
 (async function init() {
   document.getElementById("syncStatus").textContent = "Loading…";
   const ok = await loadRemote();
@@ -1285,13 +1325,24 @@ try {
   } else {
     document.getElementById("syncStatus").textContent = "Synced from server";
   }
+  const savedDensity = localStorage.getItem("budget_density") || "medium";
+  setDensity(savedDensity);
   render();
   calcSalary();
   initSticky();
 })();
 </script>
 
-<button class="settings-btn" onclick="openSettings()" title="Settings">
+
+<div class="density-toggle" id="densityToggle">
+  <button data-density="compact" onclick="setDensity('compact')" title="Compact">S</button>
+  <button data-density="medium" class="active" onclick="setDensity('medium')" title="Medium">M</button>
+  <button data-density="large" onclick="setDensity('large')" title="Large">L</button>
+  <button onclick="openSettings()" title="Settings" style="display:flex;align-items:center;padding:6px 10px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</div>
+<button class="settings-btn" style="display:none;" onclick="openSettings()" title="Settings">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
 </button>
 
