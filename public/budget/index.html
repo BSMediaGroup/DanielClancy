@@ -307,6 +307,18 @@
   .settings-btn { position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); border: none; color: #fff; cursor: pointer; box-shadow: 0 4px 16px rgba(91,156,245,0.4); z-index: 100; display: flex; align-items: center; justify-content: center; }
   .settings-btn:hover { filter: brightness(1.1); }
 
+
+  /* Slim dark scrollbars — all contexts */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2a3038 #0d1117;
+  }
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track { background: #0d1117; }
+  *::-webkit-scrollbar-thumb { background: #2a3038; border-radius: 3px; }
+  *::-webkit-scrollbar-thumb:hover { background: #3a414b; }
+  *::-webkit-scrollbar-corner { background: #0d1117; }
+
 </style>
 </head>
 <body>
@@ -1184,7 +1196,36 @@ function setCategoryIcon(catKey, iconKey) {
   render();
 }
 
+
+function populateIconSelect() {
+  const sel = document.getElementById("newCatIcon");
+  if (!sel || sel.options.length) return;
+  for (const key of Object.keys(ICONS)) {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = key;
+    sel.appendChild(opt);
+  }
+}
+function addCategory() {
+  const label = document.getElementById("newCatLabel").value.trim();
+  const iconKey = document.getElementById("newCatIcon").value;
+  if (!label) return;
+  const key = label.toLowerCase().replace(/\s+/g, "_");
+  if (CATEGORIES[key]) { alert("Category exists"); return; }
+  CATEGORIES[key] = { label, keywords: [label.toLowerCase()], icon: ICONS[iconKey] || ICONS.circle };
+  categoryIcons[key] = CATEGORIES[key].icon;
+  localStorage.setItem("budget_custom_cats", JSON.stringify(
+    Object.fromEntries(Object.entries(CATEGORIES).filter(([k]) => !["housing","transport","groceries","dining","fastfood","coffee","power","water","internet","phone","health","apple","microsoft","google","subscriptions","leisure","gambling","retail","cigarettes","other"].includes(k)))
+  ));
+  localStorage.setItem("budget_icons", JSON.stringify(categoryIcons));
+  document.getElementById("newCatLabel").value = "";
+  renderIconEditor();
+  render();
+}
+
 function openSettings() {
+  populateIconSelect();
   renderIconEditor();
   renderRules();
   document.getElementById("settingsModal").classList.add("active");
@@ -1226,6 +1267,10 @@ function removeRule(cat, idx) {
 
 try { customRules = JSON.parse(localStorage.getItem("budget_rules") || "{}"); } catch {}
 try {
+  const custom = JSON.parse(localStorage.getItem("budget_custom_cats") || "{}");
+  Object.assign(CATEGORIES, custom);
+} catch {}
+try {
   categoryIcons = JSON.parse(localStorage.getItem("budget_icons") || "{}");
   for (const [k, v] of Object.entries(categoryIcons)) {
     if (CATEGORIES[k]) CATEGORIES[k].icon = v;
@@ -1257,6 +1302,13 @@ try {
       <button class="btn" onclick="closeSettings()" style="padding:4px 8px;">&times;</button>
     </div>
     <div class="modal-body" style="max-height:60vh; overflow-y:auto;">
+      <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Add category</h4>
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <input type="text" id="newCatLabel" placeholder="Category name" style="flex:1; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:6px;">
+        <select id="newCatIcon" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:6px; border-radius:6px;">
+        </select>
+        <button class="btn" onclick="addCategory()">Add</button>
+      </div>
       <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Category icons</h4>
       <div id="iconEditor" style="display:flex; flex-direction:column; gap:4px; margin-bottom:20px; max-height:280px; overflow-y:auto;"></div>
       <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Match rules</h4>
