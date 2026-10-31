@@ -282,6 +282,24 @@
     color: var(--text); padding: 8px 12px; font-size: 1rem; width: 100px; font-family: inherit;
   }
 
+
+  .slim-cards { display: none; gap: 10px; align-items: center; }
+  header.slim .slim-cards { display: flex; }
+  .slim-card {
+    background: rgba(13,17,23,0.8); border: 1px solid var(--border);
+    border-radius: 8px; padding: 4px 10px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .slim-card.gross { border-color: rgba(63,185,80,0.4); }
+  .slim-card .lbl { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+  .slim-card .val { font-family: "Source Sans 3", sans-serif; font-size: 0.95rem; font-weight: 650; }
+  .slim-card.gross .val { color: var(--green); }
+  .slim-card input {
+    background: transparent; border: none; color: var(--text);
+    font-size: 0.95rem; font-weight: 650; width: 80px; font-family: inherit;
+  }
+  .slim-card input:focus { outline: none; }
+
 </style>
 </head>
 <body>
@@ -292,6 +310,18 @@
       <div class="identity">
         <h1>Daniel Clancy</h1>
         <div class="role">Budget</div>
+      </div>
+    </div>
+    <div class="slim-cards">
+      <div class="slim-card gross" onclick="editSlim('gross')">
+        <span class="lbl">Gross</span>
+        <span class="val" id="slimGross">$90,000</span>
+        <input type="number" id="slimGrossInput" style="display:none;" onblur="finishSlim('gross')" onkeydown="if(event.key==='Enter')this.blur()">
+      </div>
+      <div class="slim-card" onclick="editSlim('net')">
+        <span class="lbl">Net</span>
+        <span class="val" id="slimNet">$5,888</span>
+        <input type="number" id="slimNetInput" style="display:none;" onblur="finishSlim('net')" onkeydown="if(event.key==='Enter')this.blur()">
       </div>
     </div>
     <button class="btn small" onclick="logout()">Sign out</button>
@@ -949,6 +979,32 @@ function initSticky() {
 }
 
 
+
+function editSlim(which) {
+  const isGross = which === "gross";
+  const display = document.getElementById(isGross ? "slimGross" : "slimNet");
+  const input = document.getElementById(isGross ? "slimGrossInput" : "slimNetInput");
+  const mainInput = document.getElementById(isGross ? "grossSalaryTop" : "income");
+  input.value = mainInput.value;
+  display.style.display = "none";
+  input.style.display = "inline";
+  input.focus();
+  input.select();
+}
+function finishSlim(which) {
+  const isGross = which === "gross";
+  const display = document.getElementById(isGross ? "slimGross" : "slimNet");
+  const input = document.getElementById(isGross ? "slimGrossInput" : "slimNetInput");
+  const mainInput = document.getElementById(isGross ? "grossSalaryTop" : "income");
+  mainInput.value = input.value;
+  display.style.display = "inline";
+  input.style.display = "none";
+  if (isGross) syncGross();
+  updateDisplays();
+  scheduleSave();
+  render();
+}
+
 function editField(which) {
   const isGross = which === "gross";
   const display = document.getElementById(isGross ? "grossDisplay" : "netDisplay");
@@ -973,8 +1029,14 @@ function finishEdit(which) {
 function updateDisplays() {
   const g = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
   const n = parseFloat(document.getElementById("income").value) || 0;
-  document.getElementById("grossDisplay").textContent = "$" + g.toLocaleString();
-  document.getElementById("netDisplay").textContent = money(n);
+  const gStr = "$" + g.toLocaleString();
+  const nStr = money(n);
+  document.getElementById("grossDisplay").textContent = gStr;
+  document.getElementById("netDisplay").textContent = nStr;
+  const sg = document.getElementById("slimGross");
+  const sn = document.getElementById("slimNet");
+  if (sg) sg.textContent = gStr;
+  if (sn) sn.textContent = nStr;
 }
 
 function syncGross() {
