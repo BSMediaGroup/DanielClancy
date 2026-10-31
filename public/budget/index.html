@@ -127,7 +127,9 @@
     background: var(--bg-elevated); padding: 12px 16px;
     display: flex; justify-content: space-between; align-items: center;
     border-bottom: 1px solid var(--border);
+    cursor: pointer;
   }
+  .section-header:hover { background: #1e242c; }
   .section-header h3 { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); }
   .section-body { padding: 8px 0; }
   .expense-row {
@@ -150,14 +152,39 @@
     gap: 8px; padding: 8px 16px; font-size: 0.7rem; text-transform: uppercase;
     color: var(--text-muted); letter-spacing: 0.4px;
   }
+  .collapsible-header {
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; user-select: none;
+  }
+  .collapsible-header:hover { opacity: 0.85; }
+  .collapse-icon { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.2s; }
+  .collapsed .collapse-icon { transform: rotate(-90deg); }
+  .collapsible-body { overflow: hidden; transition: max-height 0.25s ease; }
+  .collapsed .collapsible-body { max-height: 0 !important; }
+
   .charts {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
   }
   .chart-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px;
+    background: linear-gradient(145deg, #161b22 0%, #0d1117 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
   }
-  .chart-card h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary); }
+  .chart-card::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--purple), var(--green));
+    opacity: 0.6;
+  }
+  .chart-card h3 {
+    font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 8px;
+  }
+  .chart-card canvas { max-height: 160px; }
   .savings-panel {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 14px; padding: 20px; margin-bottom: 20px;
@@ -364,21 +391,34 @@
     </div>
   </div>
 
-  <div class="charts">
-    <div class="chart-card">
-      <h3>Expense breakdown</h3>
-      <canvas id="pieChart" height="200"></canvas>
+  <div class="section" id="chartsSection">
+    <div class="section-header collapsible-header" onclick="toggleSection('chartsSection')">
+      <h3>Charts</h3>
+      <span class="collapse-icon">▼</span>
     </div>
-    <div class="chart-card">
-      <h3>Monthly allocation</h3>
-      <canvas id="barChart" height="200"></canvas>
+    <div class="collapsible-body">
+      <div class="charts" style="padding:12px;">
+        <div class="chart-card">
+          <h3>Expense breakdown</h3>
+          <canvas id="pieChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Monthly allocation</h3>
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 
   <div id="expenseSections"></div>
 
-  <div class="savings-panel">
-    <h3>Savings</h3>
+  <div class="section" id="savingsSection">
+    <div class="section-header collapsible-header" onclick="toggleSection('savingsSection')">
+      <h3>Savings</h3>
+      <span class="collapse-icon">▼</span>
+    </div>
+    <div class="collapsible-body">
+    <div class="savings-panel" style="border:none; margin:0;">
     <div class="savings-grid">
       <div class="savings-item">
         <label>Monthly savings target</label>
@@ -394,7 +434,7 @@
       </div>
     </div>
     <div class="savings-projections" id="savingsProjections"></div>
-  </div>
+    </div></div></div>
 </div>
 
 <!-- Share Modal -->
@@ -496,16 +536,20 @@ function render() {
     const group = expenses.filter(e => e.frequency === freq);
     const section = document.createElement("div");
     section.className = "section";
+    section.id = "sec-" + freq;
     section.innerHTML = `
-      <div class="section-header">
+      <div class="section-header collapsible-header" onclick="toggleSection('sec-${freq}')">
         <h3>${FREQ_LABELS[freq]} expenses</h3>
-        <button class="btn small" onclick="addExpense('${freq}')">+ Add</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn small" onclick="event.stopPropagation(); addExpense('${freq}')">+ Add</button>
+          <span class="collapse-icon">▼</span>
+        </div>
       </div>
       <div class="col-headers">
         <span>Name</span><span>Amount</span>
         <span>Day</span><span>Week</span><span>Month</span><span>Year</span><span></span><span></span>
       </div>
-      <div class="section-body" id="group-${freq}"></div>
+      <div class="collapsible-body"><div class="section-body" id="group-${freq}"></div></div>
     `;
     container.appendChild(section);
     const body = section.querySelector(".section-body");
@@ -576,7 +620,11 @@ function updateCharts(expenses, income, savings, leftover) {
   pieChart = new Chart(document.getElementById("pieChart"), {
     type: "doughnut",
     data: pieData,
-    options: { plugins: { legend: { labels: { color: "#b0b8c4" } } } }
+    options: {
+      cutout: "65%",
+      plugins: { legend: { position: "bottom", labels: { color: "#b0b8c4", boxWidth: 12, padding: 8, font: { size: 11 } } } },
+      animation: { animateRotate: true, animateScale: true }
+    }
   });
 
   barChart = new Chart(document.getElementById("barChart"), {
@@ -585,9 +633,10 @@ function updateCharts(expenses, income, savings, leftover) {
     options: {
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: "#7d8590" }, grid: { color: "#2a3038" } },
-        y: { ticks: { color: "#7d8590" }, grid: { color: "#2a3038" } }
-      }
+        x: { ticks: { color: "#7d8590", font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: "#7d8590", font: { size: 10 } }, grid: { color: "rgba(42,48,56,0.5)" } }
+      },
+      animation: { duration: 600 }
     }
   });
 }
@@ -790,6 +839,11 @@ function logout() {
   window.location.href = "/budget?login=1";
 }
 
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle("collapsed");
+}
 
 function toggleSalary() {
   const el = document.getElementById("salaryDetails");
