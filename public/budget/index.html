@@ -626,11 +626,11 @@ function render() {
       const daily = toDaily(e.amount, e.frequency);
       const row = document.createElement("div");
       row.className = "expense-row";
-      const cat = detectCategory(e.name);
+      const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
       row.innerHTML = `
-        <div class="exp-icon" title="${cat.label}">${cat.icon}</div>
+        <div class="exp-icon" title="${cat.label} (double-click to change)" ondblclick="cycleCategory(${globalIdx})" style="cursor:pointer;">${cat.icon}</div>
         <input type="text" value="${e.name}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
-        <span class="cat-label">${cat.label}</span>
+        <span class="cat-label" ondblclick="cycleCategory(${globalIdx})" style="cursor:pointer;" title="Double-click to change">${cat.label}</span>
         <input type="number" step="0.01" value="${e.amount}" onchange="updateExpense(${globalIdx}, 'amount', parseFloat(this.value)||0)">
         <span class="proj ${freq === 'day' ? 'base' : ''}">${money(project(daily, 'day'))}</span>
         <span class="proj ${freq === 'week' ? 'base' : ''}">${money(project(daily, 'week'))}</span>
@@ -709,6 +709,16 @@ function updateCharts(expenses, income, savings, leftover) {
       animation: { duration: 600 }
     }
   });
+}
+
+const CAT_KEYS = Object.keys(CATEGORIES);
+function cycleCategory(idx) {
+  const current = expenses[idx].categoryOverride || detectCategory(expenses[idx].name);
+  const currentKey = typeof current === "string" ? current : Object.keys(CATEGORIES).find(k => CATEGORIES[k].label === current.label) || "other";
+  const nextIdx = (CAT_KEYS.indexOf(currentKey) + 1) % CAT_KEYS.length;
+  expenses[idx].categoryOverride = CAT_KEYS[nextIdx];
+  scheduleSave();
+  render();
 }
 
 function addExpense(freq) {
