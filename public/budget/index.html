@@ -365,9 +365,11 @@
       <div class="display" id="netDisplay">$5,888</div>
       <input type="number" id="income" value="5888" step="0.01" class="editing" style="display:none;" onblur="finishEdit('net')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
-    <div class="phone-field">
-      <label>Phone allowance / month</label>
-      <input type="number" id="phoneAllowance" value="44" step="1" oninput="scheduleSave(); render();">
+    <div class="salary-card" onclick="editField('phone')">
+      <button class="edit-btn" onclick="event.stopPropagation(); editField('phone')" title="Edit">✎</button>
+      <div class="label">Phone allowance / month</div>
+      <div class="display" id="phoneDisplay">$44</div>
+      <input type="number" id="phoneAllowance" value="44" step="1" class="editing" style="display:none;" onblur="finishEdit('phone')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
   </div>
 
@@ -580,6 +582,8 @@ function detectCategory(name) {
 function render() {
   updateDisplays();
   const income = parseFloat(document.getElementById("income").value) || 0;
+  const phone = parseFloat(document.getElementById("phoneAllowance").value) || 0;
+  const spendable = income + phone;
   const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
   const incomeDaily = toDaily(income, "month");
   const savingsDaily = toDaily(savings, "month");
@@ -588,9 +592,9 @@ function render() {
   expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
 
   const expMonth = project(totalDaily, "month");
-  const leftoverMonth = income - expMonth - savings;
+  const leftoverMonth = spendable - expMonth - savings;
 
-  document.getElementById("sumIncome").textContent = money(income);
+  document.getElementById("sumIncome").textContent = money(spendable);
   document.getElementById("sumExpenses").textContent = money(expMonth);
   document.getElementById("sumSavings").textContent = money(savings);
   const leftEl = document.getElementById("sumLeftover");
@@ -1056,23 +1060,25 @@ function finishSlim(which) {
 }
 
 function editField(which) {
-  const isGross = which === "gross";
-  const display = document.getElementById(isGross ? "grossDisplay" : "netDisplay");
-  const input = document.getElementById(isGross ? "grossSalaryTop" : "income");
+  const map = { gross: ["grossDisplay", "grossSalaryTop"], net: ["netDisplay", "income"], phone: ["phoneDisplay", "phoneAllowance"] };
+  const [dId, iId] = map[which] || map.net;
+  const display = document.getElementById(dId);
+  const input = document.getElementById(iId);
   display.style.display = "none";
   input.style.display = "block";
   input.focus();
   input.select();
 }
 function finishEdit(which) {
-  const isGross = which === "gross";
-  const display = document.getElementById(isGross ? "grossDisplay" : "netDisplay");
-  const input = document.getElementById(isGross ? "grossSalaryTop" : "income");
+  const map = { gross: ["grossDisplay", "grossSalaryTop"], net: ["netDisplay", "income"], phone: ["phoneDisplay", "phoneAllowance"] };
+  const [dId, iId] = map[which] || map.net;
+  const display = document.getElementById(dId);
+  const input = document.getElementById(iId);
   const val = parseFloat(input.value) || 0;
-  display.textContent = isGross ? "$" + val.toLocaleString() : money(val);
+  display.textContent = which === "gross" ? "$" + val.toLocaleString() : money(val);
   display.style.display = "block";
   input.style.display = "none";
-  if (isGross) syncGross();
+  if (which === "gross") syncGross();
   scheduleSave();
   render();
 }
@@ -1083,6 +1089,9 @@ function updateDisplays() {
   const nStr = money(n);
   document.getElementById("grossDisplay").textContent = gStr;
   document.getElementById("netDisplay").textContent = nStr;
+  const ph = parseFloat(document.getElementById("phoneAllowance").value) || 0;
+  const pd = document.getElementById("phoneDisplay");
+  if (pd) pd.textContent = money(ph);
   const sg = document.getElementById("slimGross");
   const sn = document.getElementById("slimNet");
   if (sg) sg.textContent = gStr;

@@ -66,6 +66,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const data = JSON.parse(row.data);
   const income = data.income || 0;
   const gross = data.grossSalary || 90000;
+  const phone = data.phoneAllowance || 0;
   const expenses = data.expenses || [];
   const savings = data.savings || 0;
 
@@ -77,7 +78,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   expenses.forEach((e: any) => { totalDaily += toDaily(Number(e.amount) || 0, e.frequency); });
   const savingsDaily = toDaily(Number(savings) || 0, "month");
   const incomeDaily = toDaily(Number(income) || 0, "month");
-  const leftoverDaily = incomeDaily - totalDaily - savingsDaily;
+  const spendableDaily = incomeDaily + toDaily(phone, "month");
+  const leftoverDaily = spendableDaily - totalDaily - savingsDaily;
   const leftoverMonth = project(leftoverDaily, "month");
 
   const rows = expenses.map((e: any) => {
@@ -147,11 +149,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   <div class="slim-cards">
     <div class="slim-card gross"><span class="lbl">Gross</span><span class="val">$${Number(gross).toLocaleString()}</span></div>
     <div class="slim-card"><span class="lbl">Net</span><span class="val">$${Number(income).toFixed(2)}</span></div>
+    <div class="slim-card"><span class="lbl">Phone</span><span class="val">$${Number(phone).toFixed(2)}</span></div>
   </div>
 </header>
 <div class="wrap">
   <div class="cards">
-    <div class="card"><div class="label">Net income / month</div><div class="value">$${Number(income).toFixed(2)}</div></div>
+    <div class="card"><div class="label">Spendable / month</div><div class="value">$${(Number(income) + Number(phone)).toFixed(2)}</div></div>
     <div class="card"><div class="label">Total expenses / month</div><div class="value">$${project(totalDaily, "month").toFixed(2)}</div></div>
     <div class="card"><div class="label">Savings / month</div><div class="value">$${Number(savings).toFixed(2)}</div></div>
     <div class="card"><div class="label">Leftover / month</div><div class="value green">$${leftoverMonth.toFixed(2)}</div></div>
