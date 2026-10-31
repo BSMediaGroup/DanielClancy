@@ -171,6 +171,37 @@
     .expense-row, .col-headers { grid-template-columns: 1fr 80px 70px 40px; }
     .expense-row .proj:nth-child(n+5), .col-headers span:nth-child(n+5) { display: none; }
   }
+
+  .salary-toggle {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
+    cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  }
+  .salary-toggle:hover { border-color: var(--accent); }
+  .salary-details {
+    display: none; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-bottom: 20px;
+  }
+  .salary-details.open { display: block; }
+  .salary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .salary-col h4 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
+  .salary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .salary-row:last-child { border-bottom: none; }
+  .salary-row .label { color: var(--text-secondary); }
+  .salary-row .value { font-variant-numeric: tabular-nums; }
+  .salary-row.total { font-weight: 600; border-top: 1px solid var(--border); margin-top: 6px; padding-top: 10px; }
+  .salary-inputs { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .salary-inputs label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+  .salary-inputs input, .salary-inputs select {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 8px 10px; font-size: 0.95rem; font-family: inherit;
+  }
+  .super-proj { margin-top: 16px; }
+  .super-proj table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .super-proj th, .super-proj td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .super-proj th:first-child, .super-proj td:first-child { text-align: left; }
+  .super-proj th { color: var(--text-muted); font-weight: 500; }
+
 </style>
 </head>
 <body>
@@ -209,6 +240,44 @@
     <label>Net income (monthly, after tax)</label>
     <input type="number" id="income" value="5888" step="0.01" oninput="scheduleSave(); render()">
     <span style="color:var(--text-muted); font-size:0.85rem;">All other periods are projected from this</span>
+  </div>
+
+  <div class="salary-toggle" onclick="toggleSalary()">
+    <span>Salary details — tax, Medicare, super</span>
+    <span id="salaryChevron">▼</span>
+  </div>
+  <div class="salary-details" id="salaryDetails">
+    <div class="salary-inputs">
+      <div>
+        <label>Gross annual salary</label>
+        <input type="number" id="grossSalary" value="85000" step="100" oninput="calcSalary(); scheduleSave();">
+      </div>
+      <div>
+        <label>Super rate %</label>
+        <input type="number" id="superRate" value="12" step="0.5" min="0" max="30" oninput="calcSalary(); scheduleSave();">
+      </div>
+      <div>
+        <label>HELP/HECS debt</label>
+        <select id="hasHelp" onchange="calcSalary(); scheduleSave();">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+    </div>
+    <div class="salary-grid">
+      <div class="salary-col">
+        <h4>Annual breakdown</h4>
+        <div id="salaryBreakdown"></div>
+      </div>
+      <div class="salary-col">
+        <h4>Pay periods (net)</h4>
+        <div id="payPeriods"></div>
+      </div>
+    </div>
+    <div class="super-proj">
+      <h4 style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">Super projections (employer only)</h4>
+      <table id="superTable"></table>
+    </div>
   </div>
 
   <div class="summary">
@@ -481,6 +550,9 @@ function scheduleSave() {
 async function saveRemote() {
   const payload = {
     income: parseFloat(document.getElementById("income").value) || 0,
+    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 0,
+    superRate: parseFloat(document.getElementById("superRate").value) || 12,
+    hasHelp: document.getElementById("hasHelp").value === "1",
     savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
     savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
     savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
@@ -512,6 +584,9 @@ async function loadRemote() {
     const json = await res.json();
     if (json.data) {
       document.getElementById("income").value = json.data.income ?? 5888;
+      if (json.data.grossSalary) document.getElementById("grossSalary").value = json.data.grossSalary;
+      if (json.data.superRate) document.getElementById("superRate").value = json.data.superRate;
+      if (json.data.hasHelp) document.getElementById("hasHelp").value = "1";
       document.getElementById("savingsAmount").value = json.data.savings ?? 850;
       document.getElementById("savingsGoal").value = json.data.savingsGoal ?? 10000;
       document.getElementById("savingsBalance").value = json.data.savingsBalance ?? 0;
@@ -528,6 +603,9 @@ function loadLocal() {
     if (raw) {
       const d = JSON.parse(raw);
       document.getElementById("income").value = d.income ?? 5888;
+      if (d.grossSalary) document.getElementById("grossSalary").value = d.grossSalary;
+      if (d.superRate) document.getElementById("superRate").value = d.superRate;
+      if (d.hasHelp) document.getElementById("hasHelp").value = "1";
       document.getElementById("savingsAmount").value = d.savings ?? 850;
       document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
       document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
@@ -573,6 +651,9 @@ function importJSON(e) {
     try {
       const d = JSON.parse(reader.result);
       document.getElementById("income").value = d.income ?? 5888;
+      if (d.grossSalary) document.getElementById("grossSalary").value = d.grossSalary;
+      if (d.superRate) document.getElementById("superRate").value = d.superRate;
+      if (d.hasHelp) document.getElementById("hasHelp").value = "1";
       document.getElementById("savingsAmount").value = d.savings ?? 850;
       document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
       document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
@@ -591,6 +672,9 @@ function closeShareModal() { document.getElementById("shareModal").classList.rem
 async function generateShare() {
   const payload = {
     income: parseFloat(document.getElementById("income").value) || 0,
+    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 0,
+    superRate: parseFloat(document.getElementById("superRate").value) || 12,
+    hasHelp: document.getElementById("hasHelp").value === "1",
     savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
     expenses,
     expiry: document.getElementById("shareExpiry").value,
@@ -626,6 +710,95 @@ function logout() {
   window.location.href = "/budget?login=1";
 }
 
+
+function toggleSalary() {
+  const el = document.getElementById("salaryDetails");
+  const chev = document.getElementById("salaryChevron");
+  el.classList.toggle("open");
+  chev.textContent = el.classList.contains("open") ? "▲" : "▼";
+}
+
+function calcTax(income) {
+  // 2025-26 / 2026-27 resident rates (Stage 3)
+  if (income <= 18200) return 0;
+  if (income <= 45000) return (income - 18200) * 0.15;
+  if (income <= 135000) return 4020 + (income - 45000) * 0.30;
+  if (income <= 190000) return 31020 + (income - 135000) * 0.37;
+  return 51370 + (income - 190000) * 0.45;
+}
+
+function calcHelp(income) {
+  // Simplified HELP thresholds 2025-26
+  if (income < 54435) return 0;
+  if (income < 62850) return income * 0.01;
+  if (income < 66620) return income * 0.02;
+  if (income < 70618) return income * 0.025;
+  if (income < 74855) return income * 0.03;
+  if (income < 79346) return income * 0.035;
+  if (income < 84107) return income * 0.04;
+  if (income < 89154) return income * 0.045;
+  if (income < 94503) return income * 0.05;
+  if (income < 100174) return income * 0.055;
+  if (income < 106185) return income * 0.06;
+  if (income < 112556) return income * 0.065;
+  if (income < 119309) return income * 0.07;
+  if (income < 126467) return income * 0.075;
+  if (income < 134056) return income * 0.08;
+  if (income < 142100) return income * 0.085;
+  if (income < 150626) return income * 0.09;
+  if (income < 159663) return income * 0.095;
+  return income * 0.10;
+}
+
+function calcSalary() {
+  const gross = parseFloat(document.getElementById("grossSalary").value) || 0;
+  const superRate = (parseFloat(document.getElementById("superRate").value) || 12) / 100;
+  const hasHelp = document.getElementById("hasHelp").value === "1";
+
+  const tax = calcTax(gross);
+  const medicare = gross * 0.02;
+  const help = hasHelp ? calcHelp(gross) : 0;
+  const totalTax = tax + medicare + help;
+  const net = gross - totalTax;
+  const superAmt = gross * superRate;
+
+  document.getElementById("salaryBreakdown").innerHTML = `
+    <div class="salary-row"><span class="label">Gross salary</span><span class="value">${money(gross)}</span></div>
+    <div class="salary-row"><span class="label">Income tax</span><span class="value">-${money(tax)}</span></div>
+    <div class="salary-row"><span class="label">Medicare levy (2%)</span><span class="value">-${money(medicare)}</span></div>
+    ${hasHelp ? `<div class="salary-row"><span class="label">HELP repayment</span><span class="value">-${money(help)}</span></div>` : ""}
+    <div class="salary-row total"><span class="label">Net (take-home)</span><span class="value">${money(net)}</span></div>
+    <div class="salary-row"><span class="label">Super (employer)</span><span class="value">${money(superAmt)}</span></div>
+    <div class="salary-row"><span class="label">Total package</span><span class="value">${money(gross + superAmt)}</span></div>
+  `;
+
+  document.getElementById("payPeriods").innerHTML = `
+    <div class="salary-row"><span class="label">Weekly</span><span class="value">${money(net / 52)}</span></div>
+    <div class="salary-row"><span class="label">Fortnightly</span><span class="value">${money(net / 26)}</span></div>
+    <div class="salary-row"><span class="label">Monthly</span><span class="value">${money(net / 12)}</span></div>
+    <div class="salary-row total"><span class="label">Annually</span><span class="value">${money(net)}</span></div>
+  `;
+
+  // Super projections (simple compound at 7% assumed return)
+  const rate = 0.07;
+  let balance = 0;
+  let rows = "";
+  [1, 5, 10, 20, 30].forEach(years => {
+    // FV of annuity: superAmt * ((1+r)^n - 1) / r
+    const fv = superAmt * (Math.pow(1 + rate, years) - 1) / rate;
+    rows += `<tr><td>${years} year${years > 1 ? "s" : ""}</td><td>${money(fv)}</td></tr>`;
+  });
+  document.getElementById("superTable").innerHTML = `
+    <tr><th>Horizon</th><th>Projected balance</th></tr>
+    ${rows}
+    <tr><td colspan="2" style="font-size:0.75rem; color:var(--text-muted); text-align:left; padding-top:8px;">Assumes 7% annual return, employer contributions only, no fees.</td></tr>
+  `;
+
+  // Optionally sync net monthly to income field
+  // document.getElementById("income").value = (net / 12).toFixed(2);
+}
+
+
 (async function init() {
   document.getElementById("syncStatus").textContent = "Loading…";
   const ok = await loadRemote();
@@ -636,6 +809,7 @@ function logout() {
     document.getElementById("syncStatus").textContent = "Synced from server";
   }
   render();
+  calcSalary();
 })();
 </script>
 </body>
