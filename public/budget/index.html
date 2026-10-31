@@ -1166,10 +1166,10 @@ function renderIconEditor() {
   let html = "";
   for (const [key, cat] of Object.entries(CATEGORIES)) {
     const currentIcon = categoryIcons[key] || cat.icon;
-    html += `<div style="background:var(--bg-elevated); border-radius:8px; padding:8px; text-align:center;">
-      <div style="width:32px; height:32px; margin:0 auto 6px; display:flex; align-items:center; justify-content:center;">${currentIcon}</div>
-      <div style="font-size:0.75rem; margin-bottom:6px;">${cat.label}</div>
-      <select onchange="setCategoryIcon('${key}', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px; font-size:0.75rem;">
+    html += `<div style="display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:6px; background:var(--bg-elevated);">
+      <div style="width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${currentIcon}</div>
+      <span style="flex:1; font-size:0.85rem;">${cat.label}</span>
+      <select onchange="setCategoryIcon('${key}', this.value)" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px 8px; border-radius:4px; font-size:0.75rem;">
         ${Object.keys(ICONS).map(ik => `<option value="${ik}" ${currentIcon === ICONS[ik] ? "selected" : ""}>${ik}</option>`).join("")}
       </select>
     </div>`;
@@ -1258,7 +1258,7 @@ try {
     </div>
     <div class="modal-body" style="max-height:60vh; overflow-y:auto;">
       <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Category icons</h4>
-      <div id="iconEditor" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:8px; margin-bottom:20px;"></div>
+      <div id="iconEditor" style="display:flex; flex-direction:column; gap:4px; margin-bottom:20px; max-height:280px; overflow-y:auto;"></div>
       <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Match rules</h4>
       <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">Add keywords that map to categories.</p>
       <div id="rulesList"></div>
