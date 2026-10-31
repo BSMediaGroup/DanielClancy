@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget — Daniel Clancy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Blinker:wght@300;400;500;600;700&family=Source+Sans+3:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #07090d;
+    --bg-card: #12161c;
+    --bg-elevated: #1a1f26;
+    --border: #2a3038;
+    --text: #f0f3f6;
+    --text-secondary: #b0b8c4;
+    --text-muted: #7d8590;
+    --accent: #5b9cf5;
+    --accent-glow: rgba(91,156,245,0.25);
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --purple: #a371f7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Blinker", "Segoe UI", sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+  h1, h2, .stat .value, .page-title {
+    font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  }
+  header {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 28px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #5b9cf5, #3d7dd4);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff; font-size: 1.1rem;
+  }
+  .identity h1 { font-size: 1.4rem; font-weight: 800; margin: 0; line-height: 1.1; }
+  .identity .role { color: var(--accent); font-size: 0.9rem; }
+  .identity .company { color: var(--text-muted); font-size: 0.8rem; }
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 8px;
+  }
+  .page-title {
+    font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--text-secondary); margin: 0;
+  }
+  .sync-status { font-size: 0.8rem; color: var(--text-muted); }
+  .actions { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .btn, button {
+    font-family: "Blinker", sans-serif;
+    background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
+    padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: var(--bg-elevated); color: var(--text); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.small { padding: 6px 12px; font-size: 0.8rem; }
+  .summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .stat .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat .value { font-size: 1.5rem; font-weight: 650; margin-top: 4px; }
+  .stat .value.green { color: var(--green); }
+  .stat .value.red { color: var(--red); }
+  .income-row {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .income-row label { font-size: 0.85rem; color: var(--text-secondary); }
+  .income-row input {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 12px; font-size: 1.1rem; width: 140px; font-family: inherit;
+  }
+  .income-row input:focus { outline: none; border-color: var(--accent); }
+  .section {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; margin-bottom: 16px; overflow: hidden;
+  }
+  .section-header {
+    background: var(--bg-elevated); padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header h3 { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); }
+  .section-body { padding: 8px 0; }
+  .expense-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 90px 90px 90px 90px 90px 40px;
+    gap: 8px; align-items: center;
+    padding: 8px 16px; border-bottom: 1px solid var(--border);
+  }
+  .expense-row:last-child { border-bottom: none; }
+  .expense-row input, .expense-row select {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 6px 8px; font-size: 0.9rem; font-family: inherit; width: 100%;
+  }
+  .expense-row input:focus, .expense-row select:focus { outline: none; border-color: var(--accent); }
+  .expense-row .proj { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.9rem; color: var(--text-secondary); }
+  .expense-row .proj.base { color: var(--green); font-weight: 600; }
+  .col-headers {
+    display: grid;
+    grid-template-columns: 1fr 100px 90px 90px 90px 90px 90px 40px;
+    gap: 8px; padding: 8px 16px; font-size: 0.7rem; text-transform: uppercase;
+    color: var(--text-muted); letter-spacing: 0.4px;
+  }
+  .charts {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+  }
+  .chart-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px;
+  }
+  .chart-card h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary); }
+  .savings-panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-bottom: 20px;
+  }
+  .savings-panel h3 { font-size: 1rem; margin-bottom: 14px; }
+  .savings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .savings-item label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+  .savings-item input {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 8px 10px; font-size: 1rem; width: 100%; font-family: inherit;
+  }
+  .savings-projections { margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .proj-card { background: var(--bg-elevated); border-radius: 8px; padding: 12px; text-align: center; }
+  .proj-card .label { font-size: 0.7rem; color: var(--text-muted); }
+  .proj-card .value { font-size: 1.1rem; font-weight: 600; margin-top: 4px; color: var(--green); }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; width: min(480px, 92vw); padding: 0;
+  }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-body { padding: 16px 20px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+  @media (max-width: 900px) {
+    .summary, .charts, .savings-grid, .savings-projections { grid-template-columns: 1fr 1fr; }
+    .expense-row, .col-headers { grid-template-columns: 1fr 80px 70px 40px; }
+    .expense-row .proj:nth-child(n+5), .col-headers span:nth-child(n+5) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="logo">DC</div>
+      <div class="identity">
+        <h1>Daniel Clancy</h1>
+        <div class="role">Budget</div>
+        <div class="company">Greg Natale Design</div>
+      </div>
+    </div>
+    <button class="btn small" onclick="logout()">Sign out</button>
+  </header>
+
+  <div class="title-row">
+    <div class="page-title">Budget Ledger</div>
+    <span class="sync-status" id="syncStatus">Ready</span>
+  </div>
+
+  <div class="actions">
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="btn" onclick="exportJSON()">Export JSON</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+      <button class="btn" onclick="openShareModal()">Share</button>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small" onclick="forceRefresh()">Refresh</button>
+      <button class="btn small" onclick="forcePush()">Push</button>
+    </div>
+  </div>
+
+  <div class="income-row">
+    <label>Net income (monthly, after tax)</label>
+    <input type="number" id="income" value="5888" step="0.01" oninput="scheduleSave(); render()">
+    <span style="color:var(--text-muted); font-size:0.85rem;">All other periods are projected from this</span>
+  </div>
+
+  <div class="summary">
+    <div class="stat">
+      <div class="label">Income / month</div>
+      <div class="value" id="sumIncome">$0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Expenses / month</div>
+      <div class="value" id="sumExpenses">$0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Savings / month</div>
+      <div class="value" id="sumSavings">$0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Leftover / month</div>
+      <div class="value green" id="sumLeftover">$0</div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <h3>Expense breakdown</h3>
+      <canvas id="pieChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Monthly allocation</h3>
+      <canvas id="barChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <div id="expenseSections"></div>
+
+  <div class="savings-panel">
+    <h3>Savings</h3>
+    <div class="savings-grid">
+      <div class="savings-item">
+        <label>Monthly savings target</label>
+        <input type="number" id="savingsAmount" value="850" step="0.01" oninput="scheduleSave(); render()">
+      </div>
+      <div class="savings-item">
+        <label>Goal amount</label>
+        <input type="number" id="savingsGoal" value="10000" step="1" oninput="scheduleSave(); render()">
+      </div>
+      <div class="savings-item">
+        <label>Current balance</label>
+        <input type="number" id="savingsBalance" value="0" step="0.01" oninput="scheduleSave(); render()">
+      </div>
+    </div>
+    <div class="savings-projections" id="savingsProjections"></div>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Share Budget</h2>
+      <button class="btn" onclick="closeShareModal()" style="padding:4px 8px;">&times;</button>
+    </div>
+    <div class="modal-body">
+      <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:6px;">Link expiry</label>
+      <select id="shareExpiry" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:8px; border-radius:6px; margin-bottom:12px;">
+        <option value="24h">24 hours</option>
+        <option value="48h">48 hours</option>
+        <option value="7d" selected>7 days</option>
+        <option value="30d">30 days</option>
+        <option value="never">Never</option>
+      </select>
+      <label style="display:flex; align-items:center; gap:8px; font-size:0.9rem; margin-bottom:12px;">
+        <input type="checkbox" id="sharePassword"> Require password
+      </label>
+      <div id="shareResult" style="display:none;">
+        <div style="display:flex; gap:8px;">
+          <input id="shareLink" readonly style="flex:1; background:#0d1117; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:8px;">
+          <button class="btn" onclick="copyShareLink()">Copy</button>
+        </div>
+        <button class="btn" style="margin-top:10px; width:100%;" onclick="mailtoShare()">Send via email</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeShareModal()">Close</button>
+      <button class="btn primary" onclick="generateShare()">Generate</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FREQS = ["day", "week", "2week", "4week", "month", "year"];
+const FREQ_DAYS = { day: 1, week: 7, "2week": 14, "4week": 28, month: 365 / 12, year: 365 };
+const FREQ_LABELS = { day: "Daily", week: "Weekly", "2week": "Fortnightly", "4week": "4-Weekly", month: "Monthly", year: "Yearly" };
+
+let expenses = [];
+let saveTimer = null;
+let pieChart = null;
+let barChart = null;
+
+const DEFAULT_EXPENSES = [
+  { name: "rent", frequency: "month", amount: 443.08 },
+  { name: "energy", frequency: "month", amount: 400 },
+  { name: "water", frequency: "week", amount: 5.5 },
+  { name: "internet", frequency: "month", amount: 172 },
+  { name: "phone", frequency: "month", amount: 47.67 },
+  { name: "work phone", frequency: "month", amount: 47.67 },
+  { name: "microsoft", frequency: "month", amount: 22 },
+  { name: "google", frequency: "month", amount: 22 },
+  { name: "apple", frequency: "month", amount: 14 },
+  { name: "opal", frequency: "week", amount: 40 },
+  { name: "medication", frequency: "week", amount: 120 },
+  { name: "coffee", frequency: "day", amount: 5 },
+  { name: "work lunches", frequency: "day", amount: 10 },
+  { name: "groceries (home)", frequency: "week", amount: 200 },
+  { name: "cigarettes", frequency: "week", amount: 30 }
+];
+
+function toDaily(amount, freq) {
+  return (Number(amount) || 0) / (FREQ_DAYS[freq] || 1);
+}
+function project(daily, freq) {
+  return daily * (FREQ_DAYS[freq] || 1);
+}
+function money(n) {
+  return "$" + (Number(n) || 0).toFixed(2);
+}
+
+function render() {
+  const income = parseFloat(document.getElementById("income").value) || 0;
+  const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
+  const incomeDaily = toDaily(income, "month");
+  const savingsDaily = toDaily(savings, "month");
+
+  let totalDaily = 0;
+  expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
+
+  const expMonth = project(totalDaily, "month");
+  const leftoverMonth = income - expMonth - savings;
+
+  document.getElementById("sumIncome").textContent = money(income);
+  document.getElementById("sumExpenses").textContent = money(expMonth);
+  document.getElementById("sumSavings").textContent = money(savings);
+  const leftEl = document.getElementById("sumLeftover");
+  leftEl.textContent = money(leftoverMonth);
+  leftEl.className = "value " + (leftoverMonth >= 0 ? "green" : "red");
+
+  // Sections by frequency
+  const container = document.getElementById("expenseSections");
+  container.innerHTML = "";
+  FREQS.forEach(freq => {
+    const group = expenses.filter(e => e.frequency === freq);
+    const section = document.createElement("div");
+    section.className = "section";
+    section.innerHTML = `
+      <div class="section-header">
+        <h3>${FREQ_LABELS[freq]} expenses</h3>
+        <button class="btn small" onclick="addExpense('${freq}')">+ Add</button>
+      </div>
+      <div class="col-headers">
+        <span>Name</span><span>Amount</span>
+        <span>Day</span><span>Week</span><span>Month</span><span>Year</span><span></span><span></span>
+      </div>
+      <div class="section-body" id="group-${freq}"></div>
+    `;
+    container.appendChild(section);
+    const body = section.querySelector(".section-body");
+    group.forEach((e, idx) => {
+      const globalIdx = expenses.indexOf(e);
+      const daily = toDaily(e.amount, e.frequency);
+      const row = document.createElement("div");
+      row.className = "expense-row";
+      row.innerHTML = `
+        <input type="text" value="${e.name}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
+        <input type="number" step="0.01" value="${e.amount}" onchange="updateExpense(${globalIdx}, 'amount', parseFloat(this.value)||0)">
+        <span class="proj ${freq === 'day' ? 'base' : ''}">${money(project(daily, 'day'))}</span>
+        <span class="proj ${freq === 'week' ? 'base' : ''}">${money(project(daily, 'week'))}</span>
+        <span class="proj ${freq === 'month' ? 'base' : ''}">${money(project(daily, 'month'))}</span>
+        <span class="proj ${freq === 'year' ? 'base' : ''}">${money(project(daily, 'year'))}</span>
+        <span></span>
+        <button class="btn small" onclick="removeExpense(${globalIdx})" style="padding:4px 8px;">✕</button>
+      `;
+      body.appendChild(row);
+    });
+    if (group.length === 0) {
+      body.innerHTML = `<div style="padding:12px 16px; color:var(--text-muted); font-size:0.85rem;">No ${FREQ_LABELS[freq].toLowerCase()} expenses</div>`;
+    }
+  });
+
+  // Savings projections
+  const goal = parseFloat(document.getElementById("savingsGoal").value) || 0;
+  const balance = parseFloat(document.getElementById("savingsBalance").value) || 0;
+  const remaining = Math.max(0, goal - balance);
+  const monthsToGoal = savings > 0 ? Math.ceil(remaining / savings) : Infinity;
+  const projEl = document.getElementById("savingsProjections");
+  projEl.innerHTML = `
+    <div class="proj-card"><div class="label">Weekly</div><div class="value">${money(project(savingsDaily, 'week'))}</div></div>
+    <div class="proj-card"><div class="label">Monthly</div><div class="value">${money(savings)}</div></div>
+    <div class="proj-card"><div class="label">Yearly</div><div class="value">${money(project(savingsDaily, 'year'))}</div></div>
+    <div class="proj-card"><div class="label">Months to goal</div><div class="value">${isFinite(monthsToGoal) ? monthsToGoal : "—"}</div></div>
+  `;
+
+  updateCharts(expenses, income, savings, leftoverMonth);
+}
+
+function updateCharts(expenses, income, savings, leftover) {
+  const byFreq = {};
+  FREQS.forEach(f => byFreq[f] = 0);
+  expenses.forEach(e => {
+    byFreq[e.frequency] = (byFreq[e.frequency] || 0) + project(toDaily(e.amount, e.frequency), "month");
+  });
+
+  const pieData = {
+    labels: Object.keys(byFreq).filter(k => byFreq[k] > 0).map(k => FREQ_LABELS[k]),
+    datasets: [{
+      data: Object.values(byFreq).filter(v => v > 0),
+      backgroundColor: ["#5b9cf5", "#3fb950", "#d29922", "#a371f7", "#f85149", "#79c0ff"]
+    }]
+  };
+
+  const barData = {
+    labels: ["Income", "Expenses", "Savings", "Leftover"],
+    datasets: [{
+      data: [income, project(expenses.reduce((s, e) => s + toDaily(e.amount, e.frequency), 0), "month"), savings, leftover],
+      backgroundColor: ["#5b9cf5", "#f85149", "#3fb950", leftover >= 0 ? "#3fb950" : "#f85149"]
+    }]
+  };
+
+  if (pieChart) pieChart.destroy();
+  if (barChart) barChart.destroy();
+
+  pieChart = new Chart(document.getElementById("pieChart"), {
+    type: "doughnut",
+    data: pieData,
+    options: { plugins: { legend: { labels: { color: "#b0b8c4" } } } }
+  });
+
+  barChart = new Chart(document.getElementById("barChart"), {
+    type: "bar",
+    data: barData,
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#7d8590" }, grid: { color: "#2a3038" } },
+        y: { ticks: { color: "#7d8590" }, grid: { color: "#2a3038" } }
+      }
+    }
+  });
+}
+
+function addExpense(freq) {
+  expenses.push({ name: "New expense", frequency: freq, amount: 0 });
+  scheduleSave();
+  render();
+}
+function updateExpense(idx, field, value) {
+  expenses[idx][field] = value;
+  scheduleSave();
+  render();
+}
+function removeExpense(idx) {
+  expenses.splice(idx, 1);
+  scheduleSave();
+  render();
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveRemote, 800);
+}
+
+async function saveRemote() {
+  const payload = {
+    income: parseFloat(document.getElementById("income").value) || 0,
+    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
+    savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
+    savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
+    expenses
+  };
+  document.getElementById("syncStatus").textContent = "Saving…";
+  try {
+    const res = await fetch("/api/budget", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    document.getElementById("syncStatus").textContent = res.ok ? "Synced" : "Local only";
+  } catch {
+    document.getElementById("syncStatus").textContent = "Local only";
+  }
+  localStorage.setItem("budget_local", JSON.stringify(payload));
+}
+
+async function loadRemote() {
+  try {
+    const res = await fetch("/api/budget", { credentials: "same-origin", cache: "no-store" });
+    if (res.status === 401) {
+      window.location.href = "/budget?login=1";
+      return false;
+    }
+    if (!res.ok) return false;
+    const json = await res.json();
+    if (json.data) {
+      document.getElementById("income").value = json.data.income ?? 5888;
+      document.getElementById("savingsAmount").value = json.data.savings ?? 850;
+      document.getElementById("savingsGoal").value = json.data.savingsGoal ?? 10000;
+      document.getElementById("savingsBalance").value = json.data.savingsBalance ?? 0;
+      expenses = json.data.expenses || DEFAULT_EXPENSES;
+      return true;
+    }
+  } catch (e) { console.warn(e); }
+  return false;
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem("budget_local");
+    if (raw) {
+      const d = JSON.parse(raw);
+      document.getElementById("income").value = d.income ?? 5888;
+      document.getElementById("savingsAmount").value = d.savings ?? 850;
+      document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
+      document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
+      expenses = d.expenses || DEFAULT_EXPENSES;
+    } else {
+      expenses = JSON.parse(JSON.stringify(DEFAULT_EXPENSES));
+    }
+  } catch {
+    expenses = JSON.parse(JSON.stringify(DEFAULT_EXPENSES));
+  }
+}
+
+async function forceRefresh() {
+  const ok = await loadRemote();
+  document.getElementById("syncStatus").textContent = ok ? "Synced from server" : "Could not reach server";
+  render();
+}
+async function forcePush() {
+  await saveRemote();
+}
+
+function exportJSON() {
+  const data = {
+    income: parseFloat(document.getElementById("income").value) || 0,
+    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
+    savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
+    savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
+    expenses
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "budget-daniel-clancy.json";
+  a.click();
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!confirm("Replace entire budget with imported data?")) { e.target.value = ""; return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      document.getElementById("income").value = d.income ?? 5888;
+      document.getElementById("savingsAmount").value = d.savings ?? 850;
+      document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
+      document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
+      expenses = d.expenses || [];
+      scheduleSave();
+      render();
+    } catch { alert("Invalid JSON"); }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+}
+
+function openShareModal() { document.getElementById("shareModal").classList.add("active"); }
+function closeShareModal() { document.getElementById("shareModal").classList.remove("active"); }
+
+async function generateShare() {
+  const payload = {
+    income: parseFloat(document.getElementById("income").value) || 0,
+    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
+    expenses,
+    expiry: document.getElementById("shareExpiry").value,
+    password: document.getElementById("sharePassword").checked
+  };
+  try {
+    const res = await fetch("/api/budget-share", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    document.getElementById("shareLink").value = `${location.origin}/budget/shared/${data.code}`;
+    document.getElementById("shareResult").style.display = "block";
+  } catch { alert("Could not generate share link"); }
+}
+
+function copyShareLink() {
+  navigator.clipboard.writeText(document.getElementById("shareLink").value);
+}
+function mailtoShare() {
+  const link = document.getElementById("shareLink").value;
+  const expiry = document.getElementById("shareExpiry").options[document.getElementById("shareExpiry").selectedIndex].text;
+  const subject = encodeURIComponent("Daniel Clancy has shared a budget report");
+  const body = encodeURIComponent(`Please find the budget report here:\n\n${link}\n\nThis link expires: ${expiry}.`);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function logout() {
+  document.cookie = "budget_auth=; Path=/; Max-Age=0; Secure; SameSite=Lax";
+  window.location.href = "/budget?login=1";
+}
+
+(async function init() {
+  document.getElementById("syncStatus").textContent = "Loading…";
+  const ok = await loadRemote();
+  if (!ok) {
+    loadLocal();
+    document.getElementById("syncStatus").textContent = "Using local data";
+  } else {
+    document.getElementById("syncStatus").textContent = "Synced from server";
+  }
+  render();
+})();
+</script>
+</body>
+</html>
