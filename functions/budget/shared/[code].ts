@@ -270,6 +270,20 @@ function setD(m){
       <div><div style="font-size:0.7rem; color:#7d8590;">LEFTOVER</div><div style="font-size:1.1rem; font-weight:600; color:#3fb950;">$${leftoverMonth.toFixed(2)}</div></div>
     </div>
   </div>
+  
+  ${purchases.length > 0 ? `
+  <div style="margin-top:20px;">
+    <h3 style="font-size:0.85rem; color:#a78bfa; margin-bottom:10px;">One-off purchases</h3>
+    <table>
+      <thead><tr><th></th><th>Purchase</th><th>Category</th><th>Amount</th></tr></thead>
+      <tbody>
+        ${purchases.map((p: any) => {
+          const cat = detectCategory(p.name);
+          return `<tr><td><div class="icon">${cat.icon}</div></td><td style="color:#a78bfa;">${p.name}</td><td class="cat">${cat.label}</td><td>$${(Number(p.amount)||0).toFixed(2)}</td></tr>`;
+        }).join("")}
+      </tbody>
+    </table>
+  </div>` : ""}
   <div class="note">Shared budget · View only</div>
 </div>
 <script>
