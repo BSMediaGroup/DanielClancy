@@ -49,6 +49,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   header.slim {
@@ -134,7 +135,7 @@
   .section-body { padding: 8px 0; }
   .expense-row {
     display: grid;
-    grid-template-columns: 36px 1fr 110px 90px 80px 80px 80px 80px 40px;
+    grid-template-columns: 36px 1fr 28px 100px 90px 80px 80px 80px 80px 40px;
     gap: 8px; align-items: center;
     padding: 8px 16px; border-bottom: 1px solid var(--border);
   }
@@ -148,7 +149,7 @@
   .expense-row .proj.base { color: var(--green); font-weight: 600; }
   .col-headers {
     display: grid;
-    grid-template-columns: 36px 1fr 110px 90px 80px 80px 80px 80px 40px;
+    grid-template-columns: 36px 1fr 28px 100px 90px 80px 80px 80px 80px 40px;
     gap: 8px; padding: 8px 16px; font-size: 0.7rem; text-transform: uppercase;
     color: var(--text-muted); letter-spacing: 0.4px;
   }
@@ -157,8 +158,8 @@
     cursor: pointer; user-select: none;
   }
   .collapsible-header:hover { opacity: 0.85; }
-  .collapse-icon { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.2s; }
-  .collapsed .collapse-icon { transform: rotate(-90deg); }
+  .collapse-icon { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+  .collapsed .collapse-icon::before { content: "+"; } .collapsed .collapse-icon { font-size: 0; } .collapsed .collapse-icon::before { font-size: 1.1rem; }
   .collapsible-body { overflow: hidden; transition: max-height 0.25s ease; }
   .collapsed .collapsible-body { max-height: 0 !important; }
 
@@ -348,6 +349,88 @@
   .density-toggle button.active { background: var(--accent); color: #fff; }
   .density-toggle button:hover:not(.active) { color: var(--text); }
 
+
+  .leftover-sub {
+    font-size: 0.75rem; margin-top: 4px; font-weight: 500;
+  }
+  .leftover-sub.ok { color: var(--green); }
+  .leftover-sub.warn { color: var(--orange); }
+  .leftover-sub.bad { color: var(--red); }
+  .purchase-row {
+    display: grid; grid-template-columns: 1fr 100px 40px;
+    gap: 8px; align-items: center; padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .purchase-row input {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 6px 8px; font-size: 0.9rem; font-family: inherit;
+  }
+  .purchase-row .amt { text-align: right; font-variant-numeric: tabular-nums; }
+
+
+  .income-sources-btn {
+    background: transparent; border: 1px dashed var(--border); color: var(--text-muted);
+    padding: 8px 14px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .income-sources-btn:hover { border-color: var(--accent); color: var(--text); }
+  .source-row {
+    display: grid; grid-template-columns: 24px 1fr 100px 40px;
+    gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .source-row input[type="text"], .source-row input[type="number"] {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 6px 8px; font-size: 0.9rem; font-family: inherit;
+  }
+  .source-dropdown {
+    position: relative; display: inline-block;
+  }
+  .source-dropdown-menu {
+    display: none; position: absolute; top: 100%; left: 0; margin-top: 4px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px; min-width: 180px; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .source-dropdown.open .source-dropdown-menu { display: block; }
+  .source-dropdown-menu label {
+    display: flex; align-items: center; gap: 8px; padding: 6px 4px;
+    font-size: 0.85rem; cursor: pointer;
+  }
+  .source-dropdown-menu label:hover { background: var(--bg-elevated); border-radius: 4px; }
+
+
+  .period-nav {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .period-nav h2 {
+    font-family: "Source Sans 3", sans-serif; font-size: 1.3rem; font-weight: 700;
+    min-width: 200px; text-align: center;
+  }
+  .period-nav button { padding: 6px 12px; }
+
+
+  .expense-row:hover { background: rgba(255,255,255,0.03); }
+  .expense-row.paid { background: rgba(63,185,80,0.06); }
+  .expense-row.paid input, .expense-row.paid .cat-label, .expense-row.paid .proj { color: var(--text-muted); }
+  .paid-check {
+    width: 20px; height: 20px; border: 1.5px solid var(--border); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    background: transparent; transition: all 0.15s;
+  }
+  .paid-check.checked { background: var(--green); border-color: var(--green); }
+  .paid-check svg { width: 12px; height: 12px; stroke: #fff; opacity: 0; }
+  .paid-check.checked svg { opacity: 1; }
+
+
+  .picker-item {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 12px 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s;
+  }
+  .picker-item:hover { background: var(--bg-elevated); }
+  .picker-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .picker-icon svg { width: 20px; height: 20px; }
+  .picker-item span { font-size: 0.75rem; color: var(--text-secondary); }
+
 </style>
 </head>
 <body>
@@ -360,19 +443,30 @@
         <div class="role">Budget</div>
       </div>
     </div>
-    <div class="slim-cards">
-      <div class="slim-card gross" onclick="editSlim('gross')">
-        <span class="lbl">Gross</span>
-        <span class="val" id="slimGross">$90,000</span>
-        <input type="number" id="slimGrossInput" style="display:none;" onblur="finishSlim('gross')" onkeydown="if(event.key==='Enter')this.blur()">
-      </div>
-      <div class="slim-card" onclick="editSlim('net')">
-        <span class="lbl">Net</span>
-        <span class="val" id="slimNet">$5,888</span>
-        <input type="number" id="slimNetInput" style="display:none;" onblur="finishSlim('net')" onkeydown="if(event.key==='Enter')this.blur()">
-      </div>
+    <div class="period-nav">
+      <button class="btn small" onclick="prevPeriod()" title="Previous" style="padding:6px 8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span id="periodTitle" style="font-family:'Source Sans 3',sans-serif; font-size:0.95rem; font-weight:600; min-width:140px; text-align:center;">Budget</span>
+      <button class="btn small" onclick="nextPeriod()" title="Next" style="padding:6px 8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     </div>
-    <button class="btn small" onclick="logout()">Sign out</button>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="slim-cards">
+        <div class="slim-card gross" onclick="editSlim('gross')">
+          <span class="lbl">Gross</span>
+          <span class="val" id="slimGross">$90,000</span>
+          <input type="number" id="slimGrossInput" style="display:none;" onblur="finishSlim('gross')" onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+        <div class="slim-card" onclick="editSlim('net')">
+          <span class="lbl">Net</span>
+          <span class="val" id="slimNet">$5,888</span>
+          <input type="number" id="slimNetInput" style="display:none;" onblur="finishSlim('net')" onkeydown="if(event.key==='Enter')this.blur()">
+        </div>
+      </div>
+      <button class="btn small" onclick="logout()">Sign out</button>
+    </div>
   </header>
 
   <div class="title-row">
@@ -395,28 +489,38 @@
 
   <div class="salary-cards">
     <div class="salary-card gross" onclick="editField('gross')">
-      <button class="edit-btn" onclick="event.stopPropagation(); editField('gross')" title="Edit">✎</button>
+      <button class="edit-btn" onclick="event.stopPropagation(); editField('gross')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       <div class="label">Gross annual salary (plus super)</div>
-      <div class="display" id="grossDisplay">$90,000</div>
+      <div style="display:flex; align-items:baseline; gap:12px;">
+        <div class="display" id="grossDisplay">$90,000</div>
+        <span id="superDisplay" style="font-size:0.85rem; color:var(--text-muted); font-weight:500;"></span>
+      </div>
       <input type="number" id="grossSalaryTop" value="90000" step="100" class="editing" style="display:none;" onblur="finishEdit('gross')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
     <div class="salary-card" onclick="editField('net')">
-      <button class="edit-btn" onclick="event.stopPropagation(); editField('net')" title="Edit">✎</button>
+      <button class="edit-btn" onclick="event.stopPropagation(); editField('net')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       <div class="label">Net monthly (after tax)</div>
       <div class="display" id="netDisplay">$5,888</div>
       <input type="number" id="income" value="5888" step="0.01" class="editing" style="display:none;" onblur="finishEdit('net')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
     <div class="salary-card" onclick="editField('phone')">
-      <button class="edit-btn" onclick="event.stopPropagation(); editField('phone')" title="Edit">✎</button>
+      <button class="edit-btn" onclick="event.stopPropagation(); editField('phone')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       <div class="label">Phone allowance / month</div>
       <div class="display" id="phoneDisplay">$44</div>
       <input type="number" id="phoneAllowance" value="44" step="1" class="editing" style="display:none;" onblur="finishEdit('phone')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
   </div>
+  <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px;">
+    <button class="income-sources-btn" onclick="openIncomeModal()">+ Additional income sources</button>
+    <div class="source-dropdown" id="sourceDropdown">
+      <button class="btn small" onclick="toggleSourceDropdown()">Include ▾</button>
+      <div class="source-dropdown-menu" id="sourceMenu"></div>
+    </div>
+  </div>
 
   <div class="salary-toggle" onclick="toggleSalary()">
     <span>Salary details — tax, Medicare, super</span>
-    <span id="salaryChevron">▼</span>
+    <span id="salaryChevron" class="collapse-icon">−</span>
   </div>
   <div class="salary-details" id="salaryDetails">
     <div class="salary-inputs">
@@ -468,13 +572,14 @@
     <div class="stat">
       <div class="label">Leftover / month</div>
       <div class="value green" id="sumLeftover">$0</div>
+      <div class="leftover-sub" id="leftoverAfterPurchases"></div>
     </div>
   </div>
 
   <div class="section" id="chartsSection">
     <div class="section-header collapsible-header" onclick="toggleSection('chartsSection')">
       <h3>Charts</h3>
-      <span class="collapse-icon">▼</span>
+      <span class="collapse-icon">−</span>
     </div>
     <div class="collapsible-body">
       <div class="charts" style="padding:12px;">
@@ -491,11 +596,23 @@
   </div>
 
   <div id="expenseSections"></div>
+  <div class="section" id="purchasesSection">
+    <div class="section-header collapsible-header" onclick="toggleSection('purchasesSection')">
+      <h3 style="color:var(--orange);">One-off purchases</h3>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="btn small" onclick="event.stopPropagation(); addPurchase()">+ Add</button>
+        <span class="collapse-icon">−</span>
+      </div>
+    </div>
+    <div class="collapsible-body">
+      <div id="purchasesList"></div>
+    </div>
+  </div>
 
   <div class="section" id="savingsSection">
     <div class="section-header collapsible-header" onclick="toggleSection('savingsSection')">
       <h3>Savings</h3>
-      <span class="collapse-icon">▼</span>
+      <span class="collapse-icon">−</span>
     </div>
     <div class="collapsible-body">
     <div class="savings-panel" style="border:none; margin:0;">
@@ -555,6 +672,118 @@
 const FREQS = ["day", "week", "2week", "4week", "month", "year"];
 const FREQ_DAYS = { day: 1, week: 7, "2week": 14, "4week": 28, month: 365 / 12, year: 365 };
 const FREQ_LABELS = { day: "Daily", week: "Weekly", "2week": "Fortnightly", "4week": "4-Weekly", month: "Monthly", year: "Yearly" };
+
+
+let budgetInterval = "month";
+let periods = {};
+let currentPeriodKey = "";
+
+function getPeriodKey(date, interval) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  if (interval === "day") return `${y}-${m}-${day}`;
+  if (interval === "week") {
+    const start = new Date(d);
+    start.setDate(d.getDate() - d.getDay());
+    return `${start.getFullYear()}-W${String(Math.ceil((start.getDate()) / 7)).padStart(2, "0")}`;
+  }
+  if (interval === "fortnight") {
+    const fn = Math.ceil(d.getDate() / 14);
+    return `${y}-${m}-F${fn}`;
+  }
+  return `${y}-${m}`;
+}
+
+function formatPeriodTitle(key, interval) {
+  if (interval === "month") {
+    const [y, m] = key.split("-");
+    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return `Budget ${months[parseInt(m) - 1]} ${y}`;
+  }
+  if (interval === "week") return `Budget week ${key}`;
+  if (interval === "fortnight") return `Budget fortnight ${key}`;
+  return `Budget ${key}`;
+}
+
+function ensurePeriod(key) {
+  if (!periods[key]) {
+    const prev = Object.keys(periods).sort().reverse().find(k => k < key);
+    const base = prev ? JSON.parse(JSON.stringify(periods[prev])) : null;
+    periods[key] = base || {
+      income: 5888, grossSalary: 90000, phoneAllowance: 44,
+      incomeSources: [{ id: "main", label: "Greg Natale Design", amount: 5888, included: true, isMain: true, hasSuper: true, superRate: 12, empType: "fulltime", incomeType: "wages", nation: "AU", state: "NSW", entryMode: "net", entryPeriod: "month", payFreq: "fortnightly", payDay: 15 }],
+      expenses: JSON.parse(JSON.stringify(DEFAULT_EXPENSES)),
+      purchases: [], savings: 850, savingsGoal: 10000, savingsBalance: 0
+    };
+  }
+  return periods[key];
+}
+
+function loadPeriod(key) {
+  currentPeriodKey = key;
+  const p = ensurePeriod(key);
+  document.getElementById("income").value = p.income ?? 5888;
+  document.getElementById("grossSalaryTop").value = p.grossSalary ?? 90000;
+  document.getElementById("grossSalary").value = p.grossSalary ?? 90000;
+  document.getElementById("phoneAllowance").value = p.phoneAllowance ?? 44;
+  document.getElementById("savingsAmount").value = p.savings ?? 850;
+  document.getElementById("savingsGoal").value = p.savingsGoal ?? 10000;
+  document.getElementById("savingsBalance").value = p.savingsBalance ?? 0;
+  expenses = p.expenses || [];
+  purchases = p.purchases || [];
+  incomeSources = p.incomeSources || [];
+  document.getElementById("periodTitle").textContent = formatPeriodTitle(key, budgetInterval);
+  updateDisplays();
+  updateSuperDisplay();
+  render();
+}
+
+function savePeriod() {
+  if (!currentPeriodKey) return;
+  periods[currentPeriodKey] = {
+    income: parseFloat(document.getElementById("income").value) || 0,
+    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 90000,
+    phoneAllowance: parseFloat(document.getElementById("phoneAllowance").value) || 44,
+    incomeSources, expenses, purchases,
+    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
+    savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
+    savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0
+  };
+}
+
+function prevPeriod() {
+  savePeriod();
+  const keys = Object.keys(periods).sort();
+  const idx = keys.indexOf(currentPeriodKey);
+  if (idx > 0) loadPeriod(keys[idx - 1]);
+  else {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    loadPeriod(getPeriodKey(d, budgetInterval));
+  }
+  scheduleSave();
+}
+function nextPeriod() {
+  savePeriod();
+  const keys = Object.keys(periods).sort();
+  const idx = keys.indexOf(currentPeriodKey);
+  if (idx < keys.length - 1) loadPeriod(keys[idx + 1]);
+  else {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    loadPeriod(getPeriodKey(d, budgetInterval));
+  }
+  scheduleSave();
+}
+function setInterval(val) {
+  budgetInterval = val;
+  localStorage.setItem("budget_interval", val);
+  const key = getPeriodKey(new Date(), val);
+  loadPeriod(key);
+  scheduleSave();
+}
 
 let expenses = [];
 let saveTimer = null;
@@ -671,9 +900,238 @@ function detectCategory(name) {
   return CATEGORIES.other;
 }
 
+
+let purchases = [];
+
+function addPurchase() {
+  purchases.push({ name: "Purchase", amount: 0 });
+  scheduleSave();
+  renderPurchases();
+}
+function updatePurchase(idx, field, value) {
+  purchases[idx][field] = value;
+  scheduleSave();
+  renderPurchases();
+  updatePurchaseSubtext();
+}
+function removePurchase(idx) {
+  purchases.splice(idx, 1);
+  scheduleSave();
+  renderPurchases();
+  updatePurchaseSubtext();
+}
+function renderPurchases() {
+  const el = document.getElementById("purchasesList");
+  if (!el) return;
+  if (purchases.length === 0) {
+    el.innerHTML = '<div style="padding:12px 16px; color:var(--text-muted); font-size:0.85rem;">No one-off purchases</div>';
+    return;
+  }
+  el.innerHTML = purchases.map((p, i) => `
+    <div class="purchase-row">
+      <input type="text" value="${p.name}" onchange="updatePurchase(${i}, 'name', this.value)">
+      <input type="number" step="0.01" value="${p.amount}" class="amt" onchange="updatePurchase(${i}, 'amount', parseFloat(this.value)||0)">
+      <button class="btn small" onclick="removePurchase(${i})" style="padding:4px 8px;">✕</button>
+    </div>
+  `).join("");
+}
+function updatePurchaseSubtext() {
+  const income = getIncludedIncome() || parseFloat(document.getElementById("income").value) || 0;
+  const phone = parseFloat(document.getElementById("phoneAllowance").value) || 0;
+  const spendable = income + phone;
+  const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
+  let totalDaily = 0;
+  expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
+  const expMonth = project(totalDaily, "month");
+  const leftover = spendable - expMonth - savings;
+  const purchaseTotal = purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  const after = leftover - purchaseTotal;
+  const el = document.getElementById("leftoverAfterPurchases");
+  if (!el) return;
+  if (purchaseTotal === 0) { el.textContent = ""; return; }
+  el.textContent = money(after) + " after purchases";
+  el.className = "leftover-sub " + (after >= 100 ? "ok" : after >= 0 ? "warn" : "bad");
+}
+
+
+let incomeSources = [
+  { id: "main", label: "Greg Natale Design", amount: 5888, included: true, isMain: true, hasSuper: true, superRate: 12, empType: "fulltime", incomeType: "wages", nation: "AU", state: "NSW", entryMode: "net", entryPeriod: "month", payFreq: "fortnightly", payDay: 15 }
+];
+
+function openIncomeModal() {
+  renderIncomeSources();
+  document.getElementById("incomeModal").classList.add("active");
+}
+function closeIncomeModal() {
+  document.getElementById("incomeModal").classList.remove("active");
+}
+const SUPER_DEFAULTS = { AU: 12, US: 6, UK: 5, NZ: 3, CA: 5 };
+const NATIONS = ["AU", "US", "UK", "NZ", "CA", "Other"];
+const EMP_TYPES = ["fulltime", "parttime", "contract", "casual", "other"];
+const INCOME_TYPES = ["wages", "salary", "commission", "donations", "freelance", "investment", "other"];
+
+function renderIncomeSources() {
+  const el = document.getElementById("incomeSourcesList");
+  el.innerHTML = incomeSources.map((s, i) => `
+    <div style="background:var(--bg-elevated); border-radius:10px; padding:14px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <input type="checkbox" ${s.included ? "checked" : ""} onchange="toggleSource(${i}, this.checked)">
+        <input type="text" value="${s.label}" onchange="updateSource(${i}, 'label', this.value)" style="flex:1; background:#0d1117; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:6px 10px; font-weight:${s.isMain ? '600' : '400'};">
+        <div style="display:flex; gap:4px;">
+          <select onchange="updateSource(${i}, 'entryMode', this.value)" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px; font-size:0.75rem;">
+            <option value="net" ${s.entryMode === 'net' ? 'selected' : ''}>Net</option>
+            <option value="gross" ${s.entryMode === 'gross' ? 'selected' : ''}>Gross</option>
+          </select>
+          <input type="number" step="0.01" value="${s.amount}" onchange="updateSource(${i}, 'amount', parseFloat(this.value)||0)" style="width:80px; background:#0d1117; border:1px solid var(--border); border-radius:4px; color:var(--text); padding:4px 6px;">
+          <select onchange="updateSource(${i}, 'entryPeriod', this.value)" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px; font-size:0.75rem;">
+            <option value="year" ${s.entryPeriod === 'year' ? 'selected' : ''}>/year</option>
+            <option value="month" ${s.entryPeriod === 'month' ? 'selected' : ''}>/month</option>
+            <option value="fortnight" ${s.entryPeriod === 'fortnight' ? 'selected' : ''}>/fortnight</option>
+            <option value="week" ${s.entryPeriod === 'week' ? 'selected' : ''}>/week</option>
+          </select>
+        </div>
+        ${s.isMain ? '' : `<button class="btn small" onclick="removeSource(${i})">✕</button>`}
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.8rem;">
+        <div>
+          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Employment</label>
+          <select onchange="updateSource(${i}, 'empType', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
+            ${EMP_TYPES.map(t => `<option value="${t}" ${s.empType === t ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Income type</label>
+          <select onchange="updateSource(${i}, 'incomeType', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
+            ${INCOME_TYPES.map(t => `<option value="${t}" ${s.incomeType === t ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Nation</label>
+          <select onchange="updateSourceNation(${i}, this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
+            ${NATIONS.map(n => `<option value="${n}" ${s.nation === n ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">State</label>
+          <input type="text" value="${s.state || ''}" placeholder="Optional" onchange="updateSource(${i}, 'state', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:10px; font-size:0.8rem;">
+        <label style="display:flex; align-items:center; gap:6px; color:var(--text-secondary);">
+          <input type="checkbox" ${s.hasSuper ? 'checked' : ''} onchange="toggleSuper(${i}, this.checked)"> Superannuation
+        </label>
+        ${s.hasSuper ? `<span style="color:var(--text-muted);" ondblclick="editSuperRate(${i})" title="Double-click to edit">${s.superRate || SUPER_DEFAULTS[s.nation] || 12}%</span>` : ''}
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; font-size:0.8rem;">
+        <div>
+          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Pay frequency</label>
+          <select onchange="updateSource(${i}, 'payFreq', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
+            <option value="weekly" ${s.payFreq === 'weekly' ? 'selected' : ''}>Weekly</option>
+            <option value="fortnightly" ${s.payFreq === 'fortnightly' ? 'selected' : ''}>Fortnightly</option>
+            <option value="monthly" ${s.payFreq === 'monthly' ? 'selected' : ''}>Monthly</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Pay day</label>
+          <input type="number" min="1" max="31" value="${s.payDay || 15}" onchange="updateSource(${i}, 'payDay', parseInt(this.value)||1)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;" title="Day of month or week">
+        </div>
+      </div>
+    </div>
+  `).join("");
+  renderSourceMenu();
+  updateSuperDisplay();
+}
+function updateSourceNation(idx, nation) {
+  incomeSources[idx].nation = nation;
+  if (incomeSources[idx].hasSuper && !incomeSources[idx].superRateEdited) {
+    incomeSources[idx].superRate = SUPER_DEFAULTS[nation] || 12;
+  }
+  scheduleSave();
+  renderIncomeSources();
+}
+function toggleSuper(idx, on) {
+  incomeSources[idx].hasSuper = on;
+  if (on && !incomeSources[idx].superRate) {
+    incomeSources[idx].superRate = SUPER_DEFAULTS[incomeSources[idx].nation] || 12;
+  }
+  scheduleSave();
+  renderIncomeSources();
+}
+function editSuperRate(idx) {
+  const rate = prompt("Super rate %", incomeSources[idx].superRate || 12);
+  if (rate !== null) {
+    incomeSources[idx].superRate = parseFloat(rate) || 12;
+    incomeSources[idx].superRateEdited = true;
+    scheduleSave();
+    renderIncomeSources();
+  }
+}
+function updateSuperDisplay() {
+  const annualGross = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
+  let superTotal = 0;
+  incomeSources.forEach(s => {
+    if (s.included && s.hasSuper) {
+      const rate = (s.superRate || SUPER_DEFAULTS[s.nation] || 12) / 100;
+      if (s.isMain) {
+        superTotal += annualGross * rate;
+      } else {
+        superTotal += (s.amount || 0) * 12 * rate;
+      }
+    }
+  });
+  const el = document.getElementById("superDisplay");
+  if (el) el.textContent = superTotal > 0 ? "+ $" + Math.round(superTotal).toLocaleString() + " super" : "";
+}
+function renderSourceMenu() {
+  const menu = document.getElementById("sourceMenu");
+  menu.innerHTML = incomeSources.map((s, i) => `
+    <label><input type="checkbox" ${s.included ? "checked" : ""} onchange="toggleSource(${i}, this.checked)"> ${s.label}</label>
+  `).join("");
+}
+function toggleSourceDropdown() {
+  document.getElementById("sourceDropdown").classList.toggle("open");
+}
+function toggleSource(idx, included) {
+  incomeSources[idx].included = included;
+  scheduleSave();
+  renderIncomeSources();
+  syncMainIncome();
+}
+function updateSource(idx, field, value) {
+  incomeSources[idx][field] = value;
+  if (incomeSources[idx].isMain && field === "amount") {
+    document.getElementById("income").value = value;
+    updateDisplays();
+  updateSuperDisplay();
+  }
+  scheduleSave();
+  renderIncomeSources();
+}
+function addIncomeSource() {
+  incomeSources.push({ id: Date.now().toString(), label: "Other income", amount: 0, included: true, isMain: false });
+  scheduleSave();
+  renderIncomeSources();
+}
+function removeSource(idx) {
+  if (incomeSources[idx].isMain) return;
+  incomeSources.splice(idx, 1);
+  scheduleSave();
+  renderIncomeSources();
+}
+function syncMainIncome() {
+  const main = incomeSources.find(s => s.isMain);
+  if (main) {
+    main.amount = parseFloat(document.getElementById("income").value) || 0;
+  }
+}
+function getIncludedIncome() {
+  return incomeSources.filter(s => s.included).reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+}
+
 function render() {
   updateDisplays();
-  const income = parseFloat(document.getElementById("income").value) || 0;
+  updateSuperDisplay();
+  const income = getIncludedIncome() || parseFloat(document.getElementById("income").value) || 0;
   const phone = parseFloat(document.getElementById("phoneAllowance").value) || 0;
   const spendable = income + phone;
   const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
@@ -706,7 +1164,7 @@ function render() {
         <h3>${FREQ_LABELS[freq]} expenses</h3>
         <div style="display:flex; align-items:center; gap:8px;">
           <button class="btn small" onclick="event.stopPropagation(); addExpense('${freq}')">+ Add</button>
-          <span class="collapse-icon">▼</span>
+          <span class="collapse-icon">−</span>
         </div>
       </div>
       <div class="col-headers">
@@ -723,10 +1181,14 @@ function render() {
       const row = document.createElement("div");
       row.className = "expense-row";
       const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
+      if (e.paid) row.classList.add("paid");
       row.innerHTML = `
-        <div class="exp-icon" title="${cat.label} (double-click to change)" ondblclick="cycleCategory(${globalIdx})" style="cursor:pointer;">${cat.icon}</div>
+        <div class="exp-icon" title="${cat.label} (double-click to change)" ondblclick="openCategoryPicker(${globalIdx})" style="cursor:pointer;">${cat.icon}</div>
         <input type="text" value="${e.name}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
-        <span class="cat-label" ondblclick="cycleCategory(${globalIdx})" style="cursor:pointer;" title="Double-click to change">${cat.label}</span>
+        <div class="paid-check ${e.paid ? 'checked' : ''}" onclick="togglePaid(${globalIdx})" title="Mark as paid">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <span class="cat-label" ondblclick="openCategoryPicker(${globalIdx})" style="cursor:pointer;" title="Double-click to change">${cat.label}</span>
         <input type="number" step="0.01" value="${e.amount}" onchange="updateExpense(${globalIdx}, 'amount', parseFloat(this.value)||0)">
         <span class="proj ${freq === 'day' ? 'base' : ''}">${money(project(daily, 'day'))}</span>
         <span class="proj ${freq === 'week' ? 'base' : ''}">${money(project(daily, 'week'))}</span>
@@ -755,6 +1217,8 @@ function render() {
   `;
 
   updateCharts(expenses, income, savings, leftoverMonth);
+  renderPurchases();
+  updatePurchaseSubtext();
 }
 
 function updateCharts(expenses, income, savings, leftover) {
@@ -807,12 +1271,33 @@ function updateCharts(expenses, income, savings, leftover) {
   });
 }
 
-const CAT_KEYS = Object.keys(CATEGORIES);
-function cycleCategory(idx) {
-  const current = expenses[idx].categoryOverride || detectCategory(expenses[idx].name);
-  const currentKey = typeof current === "string" ? current : Object.keys(CATEGORIES).find(k => CATEGORIES[k].label === current.label) || "other";
-  const nextIdx = (CAT_KEYS.indexOf(currentKey) + 1) % CAT_KEYS.length;
-  expenses[idx].categoryOverride = CAT_KEYS[nextIdx];
+let pickerIdx = -1;
+function openCategoryPicker(idx) {
+  pickerIdx = idx;
+  const modal = document.getElementById("categoryPicker");
+  const grid = document.getElementById("categoryPickerGrid");
+  grid.innerHTML = Object.entries(CATEGORIES).map(([key, cat]) => `
+    <div class="picker-item" onclick="selectCategory('${key}')">
+      <div class="picker-icon">${cat.icon}</div>
+      <span>${cat.label}</span>
+    </div>
+  `).join("");
+  modal.classList.add("active");
+}
+function selectCategory(key) {
+  if (pickerIdx >= 0) {
+    expenses[pickerIdx].categoryOverride = key;
+    scheduleSave();
+    render();
+  }
+  document.getElementById("categoryPicker").classList.remove("active");
+}
+function closeCategoryPicker() {
+  document.getElementById("categoryPicker").classList.remove("active");
+}
+
+function togglePaid(idx) {
+  expenses[idx].paid = !expenses[idx].paid;
   scheduleSave();
   render();
 }
@@ -839,7 +1324,10 @@ function scheduleSave() {
 }
 
 async function saveRemote() {
+  savePeriod();
   const payload = {
+    interval: budgetInterval,
+    periods,
     income: parseFloat(document.getElementById("income").value) || 0,
     grossSalary: parseFloat(document.getElementById("grossSalary").value) || 90000,
     phoneAllowance: parseFloat(document.getElementById("phoneAllowance").value) || 44,
@@ -848,7 +1336,9 @@ async function saveRemote() {
     savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
     savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
     savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
-    expenses
+    expenses,
+    purchases,
+    incomeSources
   };
   document.getElementById("syncStatus").textContent = "Saving…";
   try {
@@ -875,6 +1365,13 @@ async function loadRemote() {
     if (!res.ok) return false;
     const json = await res.json();
     if (json.data) {
+      if (json.data.periods) {
+        periods = json.data.periods;
+        budgetInterval = json.data.interval || "month";
+        const key = getPeriodKey(new Date(), budgetInterval);
+        loadPeriod(key);
+        return true;
+      }
       document.getElementById("income").value = json.data.income ?? 5888;
       if (json.data.grossSalary) {
         document.getElementById("grossSalary").value = json.data.grossSalary;
@@ -887,6 +1384,8 @@ async function loadRemote() {
       document.getElementById("savingsGoal").value = json.data.savingsGoal ?? 10000;
       document.getElementById("savingsBalance").value = json.data.savingsBalance ?? 0;
       expenses = json.data.expenses || DEFAULT_EXPENSES;
+      purchases = json.data.purchases || [];
+      if (json.data.incomeSources) incomeSources = json.data.incomeSources;
       return true;
     }
   } catch (e) { console.warn(e); }
@@ -910,6 +1409,8 @@ function loadLocal() {
       document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
       document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
       expenses = d.expenses || DEFAULT_EXPENSES;
+      purchases = d.purchases || [];
+      if (d.incomeSources) incomeSources = d.incomeSources;
     } else {
       expenses = JSON.parse(JSON.stringify(DEFAULT_EXPENSES));
     }
@@ -933,7 +1434,9 @@ function exportJSON() {
     savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
     savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
     savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
-    expenses
+    expenses,
+    purchases,
+    incomeSources
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
@@ -1025,7 +1528,7 @@ function toggleSalary() {
   const el = document.getElementById("salaryDetails");
   const chev = document.getElementById("salaryChevron");
   el.classList.toggle("open");
-  chev.textContent = el.classList.contains("open") ? "▲" : "▼";
+  chev.textContent = el.classList.contains("open") ? "−" : "+";
 }
 
 function calcTax(income) {
@@ -1147,6 +1650,7 @@ function finishSlim(which) {
   input.style.display = "none";
   if (isGross) syncGross();
   updateDisplays();
+  updateSuperDisplay();
   scheduleSave();
   render();
 }
@@ -1316,6 +1820,13 @@ function setDensity(mode) {
   localStorage.setItem("budget_density", mode);
 }
 
+
+document.querySelectorAll(".modal-overlay").forEach(overlay => {
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.classList.remove("active");
+  });
+});
+
 (async function init() {
   document.getElementById("syncStatus").textContent = "Loading…";
   const ok = await loadRemote();
@@ -1327,6 +1838,14 @@ function setDensity(mode) {
   }
   const savedDensity = localStorage.getItem("budget_density") || "medium";
   setDensity(savedDensity);
+  const interval = localStorage.getItem("budget_interval") || "month";
+  budgetInterval = interval;
+  const sel = document.getElementById("budgetInterval");
+  if (sel) sel.value = interval;
+  if (Object.keys(periods).length === 0) {
+    loadPeriod(getPeriodKey(new Date(), budgetInterval));
+  }
+  renderIncomeSources();
   render();
   calcSalary();
   initSticky();
@@ -1353,6 +1872,13 @@ function setDensity(mode) {
       <button class="btn" onclick="closeSettings()" style="padding:4px 8px;">&times;</button>
     </div>
     <div class="modal-body" style="max-height:60vh; overflow-y:auto;">
+      <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Budget interval</h4>
+      <select id="budgetInterval" onchange="setInterval(this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:8px; border-radius:6px; margin-bottom:16px;">
+        <option value="month">Calendar month</option>
+        <option value="fortnight">Fortnight</option>
+        <option value="week">Week</option>
+        <option value="day">Day</option>
+      </select>
       <h4 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Add category</h4>
       <div style="display:flex; gap:8px; margin-bottom:16px;">
         <input type="text" id="newCatLabel" placeholder="Category name" style="flex:1; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:6px;">
@@ -1382,6 +1908,36 @@ function setDensity(mode) {
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeSettings()">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="incomeModal">
+  <div class="modal" style="width:min(680px,94vw); max-height:85vh;">
+    <div class="modal-header">
+      <h2>Income sources</h2>
+      <button class="btn" onclick="closeIncomeModal()" style="padding:4px 8px;">&times;</button>
+    </div>
+    <div class="modal-body" style="max-height:65vh; overflow-y:auto; padding:16px 20px;">
+      <div id="incomeSourcesList"></div>
+      <button class="btn" onclick="addIncomeSource()" style="margin-top:12px;">+ Add source</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeIncomeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="categoryPicker">
+  <div class="modal" style="width:min(480px,92vw);">
+    <div class="modal-header">
+      <h2>Select category</h2>
+      <button class="btn" onclick="closeCategoryPicker()" style="padding:4px 8px;">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="categoryPickerGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px;"></div>
     </div>
   </div>
 </div>

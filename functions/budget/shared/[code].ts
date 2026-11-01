@@ -84,6 +84,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   .density-toggle button{background:transparent;border:none;color:#7d8590;padding:5px 9px;border-radius:14px;cursor:pointer;font-size:0.7rem}
   .density-toggle button.active{background:#5b9cf5;color:#fff}
 
+
+  tr:hover{background:rgba(255,255,255,0.03)}
+  tr.paid{background:rgba(63,185,80,0.06)}
+  tr.paid td{color:#7d8590}
+  .paid-mark{width:16px;height:16px;border-radius:3px;background:#3fb950;display:inline-flex;align-items:center;justify-content:center}
+  .paid-mark svg{width:10px;height:10px;stroke:#fff}
+
 </style></head>
 <body>
   <form method="GET">
@@ -110,6 +117,19 @@ function setD(m){
   const data = JSON.parse(row.data);
   const income = data.income || 0;
   const gross = data.grossSalary || 90000;
+  const sources = data.incomeSources || [];
+  const SUPER_DEFAULTS: Record<string, number> = { AU: 12, US: 6, UK: 5, NZ: 3, CA: 5 };
+  let superTotal = 0;
+  sources.forEach((s: any) => {
+    if (s.included && s.hasSuper) {
+      const rate = (s.superRate || SUPER_DEFAULTS[s.nation] || 12) / 100;
+      if (s.isMain) {
+        superTotal += gross * rate;
+      } else {
+        superTotal += (s.amount || 0) * 12 * rate;
+      }
+    }
+  });
   const phone = data.phoneAllowance || 0;
   const expenses = data.expenses || [];
   const savings = data.savings || 0;
@@ -125,13 +145,18 @@ function setD(m){
   const spendableDaily = incomeDaily + toDaily(phone, "month");
   const leftoverDaily = spendableDaily - totalDaily - savingsDaily;
   const leftoverMonth = project(leftoverDaily, "month");
+  const purchases = data.purchases || [];
+  const purchaseTotal = purchases.reduce((s: number, p: any) => s + (Number(p.amount) || 0), 0);
+  const afterPurchases = leftoverMonth - purchaseTotal;
 
   const rows = expenses.map((e: any) => {
     const daily = toDaily(Number(e.amount) || 0, e.frequency);
     const cat = detectCategory(e.name, e.categoryOverride);
-    return `<tr>
+    const paidMark = e.paid ? '<div class="paid-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>' : '';
+    return `<tr class="${e.paid ? 'paid' : ''}">
       <td><div class="icon">${cat.icon}</div></td>
       <td>${e.name || ""}</td>
+      <td>${paidMark}</td>
       <td class="cat">${cat.label}</td>
       <td>${e.frequency}</td>
       <td>$${(Number(e.amount) || 0).toFixed(2)}</td>
@@ -152,7 +177,7 @@ function setD(m){
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:#07090d;color:#f0f3f6;font-family:Blinker,sans-serif;padding:0}
-  header{position:sticky;top:0;z-index:200;background:rgba(16,21,28,0.96);backdrop-filter:blur(16px);border-bottom:1px solid #2a3038;padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+  header{position:sticky;top:0;z-index:200;background:rgba(16,21,28,0.96);backdrop-filter:blur(16px);border-bottom:1px solid #2a3038;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:relative}
   header.slim{padding:8px 24px}
   .brand{display:flex;align-items:center;gap:12px}
   .logo{width:40px;height:40px;border-radius:8px;overflow:hidden}
@@ -200,6 +225,13 @@ function setD(m){
   .density-toggle button{background:transparent;border:none;color:#7d8590;padding:5px 9px;border-radius:14px;cursor:pointer;font-size:0.7rem}
   .density-toggle button.active{background:#5b9cf5;color:#fff}
 
+
+  tr:hover{background:rgba(255,255,255,0.03)}
+  tr.paid{background:rgba(63,185,80,0.06)}
+  tr.paid td{color:#7d8590}
+  .paid-mark{width:16px;height:16px;border-radius:3px;background:#3fb950;display:inline-flex;align-items:center;justify-content:center}
+  .paid-mark svg{width:10px;height:10px;stroke:#fff}
+
 </style>
 </head>
 <body>
@@ -211,8 +243,9 @@ function setD(m){
       <div class="role">Budget</div>
     </div>
   </div>
+  <span style="position:absolute; left:50%; transform:translateX(-50%); font-family:'Source Sans 3',sans-serif; font-size:0.9rem; font-weight:600; color:#b0b8c4;">Budget</span>
   <div class="slim-cards">
-    <div class="slim-card gross"><span class="lbl">Gross</span><span class="val">$${Number(gross).toLocaleString()}</span></div>
+    <div class="slim-card gross"><span class="lbl">Gross</span><span class="val">$${Number(gross).toLocaleString()}</span>${superTotal > 0 ? `<span style="font-size:0.75rem; color:#7d8590; margin-left:6px;">+$${Math.round(superTotal).toLocaleString()} super</span>` : ""}</div>
     <div class="slim-card"><span class="lbl">Net</span><span class="val">$${Number(income).toFixed(2)}</span></div>
     <div class="slim-card"><span class="lbl">Phone</span><span class="val">$${Number(phone).toFixed(2)}</span></div>
   </div>
@@ -222,10 +255,10 @@ function setD(m){
     <div class="card"><div class="label">Spendable / month</div><div class="value">$${(Number(income) + Number(phone)).toFixed(2)}</div></div>
     <div class="card"><div class="label">Total expenses / month</div><div class="value">$${project(totalDaily, "month").toFixed(2)}</div></div>
     <div class="card"><div class="label">Savings / month</div><div class="value">$${Number(savings).toFixed(2)}</div></div>
-    <div class="card"><div class="label">Leftover / month</div><div class="value green">$${leftoverMonth.toFixed(2)}</div></div>
+    <div class="card"><div class="label">Leftover / month</div><div class="value green">$${leftoverMonth.toFixed(2)}</div>${purchaseTotal > 0 ? `<div style="font-size:0.75rem; margin-top:4px; color:${afterPurchases >= 0 ? '#3fb950' : '#f85149'};">$${afterPurchases.toFixed(2)} after purchases</div>` : ''}</div>
   </div>
   <table>
-    <thead><tr><th></th><th>Expense</th><th>Category</th><th>Frequency</th><th>Amount</th><th>Day</th><th>Week</th><th>Month</th><th>Year</th></tr></thead>
+    <thead><tr><th></th><th>Expense</th><th></th><th>Category</th><th>Frequency</th><th>Amount</th><th>Day</th><th>Week</th><th>Month</th><th>Year</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
   <div class="note">Shared budget · View only</div>
