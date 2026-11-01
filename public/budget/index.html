@@ -975,11 +975,11 @@ function renderPurchases() {
     return;
   }
   el.innerHTML = purchases.map((p, i) => {
-    const cat = detectCategory(p.name);
+    const cat = p.categoryOverride ? (CATEGORIES[p.categoryOverride] || detectCategory(p.name)) : detectCategory(p.name);
     return `<div class="purchase-row">
-      <div class="exp-icon" style="width:24px; height:24px;">${cat.icon}</div>
+      <div class="exp-icon" style="width:24px; height:24px; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.icon}</div>
       <input type="text" value="${p.name}" class="name-input" onchange="updatePurchase(${i}, 'name', this.value)">
-      <span class="cat-label" style="color:#a78bfa;">${cat.label}</span>
+      <span class="cat-label" style="color:#a78bfa; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.label}</span>
       <input type="number" step="0.01" value="${p.amount}" class="amt" onchange="updatePurchase(${i}, 'amount', parseFloat(this.value)||0)">
       <button class="btn small" onclick="removePurchase(${i})" style="padding:4px 8px;">✕</button>
     </div>`;
@@ -1388,6 +1388,29 @@ function updateCharts(expenses, income, savings, leftover) {
 }
 
 let pickerIdx = -1;
+
+let purchasePickerIdx = -1;
+function openPurchaseCategoryPicker(idx) {
+  purchasePickerIdx = idx;
+  const modal = document.getElementById("categoryPicker");
+  const grid = document.getElementById("categoryPickerGrid");
+  grid.innerHTML = Object.entries(CATEGORIES).map(([key, cat]) => `
+    <div class="picker-item" onclick="selectPurchaseCategory('${key}')">
+      <div class="picker-icon">${cat.icon}</div>
+      <span>${cat.label}</span>
+    </div>
+  `).join("");
+  modal.classList.add("active");
+}
+function selectPurchaseCategory(key) {
+  if (purchasePickerIdx >= 0) {
+    purchases[purchasePickerIdx].categoryOverride = key;
+    scheduleSave();
+    renderPurchases();
+  }
+  document.getElementById("categoryPicker").classList.remove("active");
+}
+
 function openCategoryPicker(idx) {
   pickerIdx = idx;
   const modal = document.getElementById("categoryPicker");
