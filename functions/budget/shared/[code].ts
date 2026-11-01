@@ -245,7 +245,7 @@ function setD(m){
   </div>
   <span style="position:absolute; left:50%; transform:translateX(-50%); font-family:'Source Sans 3',sans-serif; font-size:0.9rem; font-weight:600; color:#b0b8c4;">Budget</span>
   <div class="slim-cards">
-    <div class="slim-card gross"><span class="lbl">Gross</span><span class="val">$${Number(gross).toLocaleString()}</span>${superTotal > 0 ? `<span style="font-size:0.75rem; color:#7d8590; margin-left:6px;">+$${Math.round(superTotal).toLocaleString()} super</span>` : ""}</div>
+    <div class="slim-card gross"><span class="lbl">Gross</span><span class="val">$${Number(gross).toLocaleString()}</span>${superTotal > 0 ? `<div style="display:flex; flex-direction:column; line-height:1.15; margin-left:6px; justify-content:center;"><span style="font-size:0.65rem; color:#7d8590;">+$${Math.round(superTotal).toLocaleString()} super</span><span style="font-size:0.65rem; color:#7d8590;">($${Math.round(Number(gross) + superTotal).toLocaleString()} total remuneration)</span></div>` : ""}</div>
     <div class="slim-card"><span class="lbl">Net</span><span class="val">$${Number(income).toFixed(2)}</span></div>
     <div class="slim-card"><span class="lbl">Phone</span><span class="val">$${Number(phone).toFixed(2)}</span></div>
   </div>
@@ -261,6 +261,15 @@ function setD(m){
     <thead><tr><th></th><th>Expense</th><th></th><th>Category</th><th>Frequency</th><th>Amount</th><th>Day</th><th>Week</th><th>Month</th><th>Year</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
+  <div style="margin-top:24px; padding:16px; background:#161b22; border-radius:10px; border:1px solid #2a3038;">
+    <h3 style="font-size:0.9rem; margin-bottom:12px;">Year to date</h3>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
+      <div><div style="font-size:0.7rem; color:#7d8590;">INCOME</div><div style="font-size:1.1rem; font-weight:600;">$${(Number(income) + Number(phone)).toFixed(2)}</div></div>
+      <div><div style="font-size:0.7rem; color:#7d8590;">EXPENSES</div><div style="font-size:1.1rem; font-weight:600;">$${project(totalDaily, "month").toFixed(2)}</div></div>
+      <div><div style="font-size:0.7rem; color:#7d8590;">SAVINGS</div><div style="font-size:1.1rem; font-weight:600;">$${Number(savings).toFixed(2)}</div></div>
+      <div><div style="font-size:0.7rem; color:#7d8590;">LEFTOVER</div><div style="font-size:1.1rem; font-weight:600; color:#3fb950;">$${leftoverMonth.toFixed(2)}</div></div>
+    </div>
+  </div>
   <div class="note">Shared budget · View only</div>
 </div>
 <script>

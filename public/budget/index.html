@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Blinker:wght@300;400;500;600;700&family=Source+Sans+3:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --bg: #07090d;
@@ -431,6 +432,19 @@
   .picker-icon svg { width: 20px; height: 20px; }
   .picker-item span { font-size: 0.75rem; color: var(--text-secondary); }
 
+
+  .insight-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+  .insight-card {
+    background: var(--bg-elevated); border-radius: 10px; padding: 14px;
+    display: flex; align-items: flex-start; gap: 12px; border: 1px solid var(--border);
+  }
+  .insight-card .icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .insight-card .icon svg { width: 16px; height: 16px; }
+  .insight-card .text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; }
+  .insight-card.green .icon { background: rgba(63,185,80,0.15); color: var(--green); }
+  .insight-card.blue .icon { background: rgba(91,156,245,0.15); color: var(--accent); }
+  .insight-card.orange .icon { background: rgba(210,153,34,0.15); color: var(--orange); }
+
 </style>
 </head>
 <body>
@@ -479,7 +493,13 @@
       <button class="btn" onclick="exportJSON()">Export JSON</button>
       <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
-      <button class="btn" onclick="openShareModal()">Share</button>
+      <button class="btn" onclick="openShareModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>
+      <button class="btn" onclick="exportPDF()" style="background:var(--accent); color:#fff; border-color:var(--accent);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        PDF
+      </button>
+      <button class="btn" onclick="document.getElementById('savingsSection').scrollIntoView({behavior:'smooth'})">Savings</button>
+      <button class="btn" onclick="document.getElementById('ytdSection').scrollIntoView({behavior:'smooth'})">YTD</button>
     </div>
     <div style="display:flex; gap:8px;">
       <button class="btn small" onclick="forceRefresh()">Refresh</button>
@@ -491,9 +511,12 @@
     <div class="salary-card gross" onclick="editField('gross')">
       <button class="edit-btn" onclick="event.stopPropagation(); editField('gross')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
       <div class="label">Gross annual salary (plus super)</div>
-      <div style="display:flex; align-items:baseline; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
         <div class="display" id="grossDisplay">$90,000</div>
-        <span id="superDisplay" style="font-size:0.85rem; color:var(--text-muted); font-weight:500;"></span>
+        <div style="display:flex; flex-direction:column; line-height:1.15; justify-content:center;">
+          <span id="superDisplay" style="font-size:0.72rem; color:var(--text-muted); font-weight:500;"></span>
+          <span id="totalRemDisplay" style="font-size:0.68rem; color:var(--text-muted);"></span>
+        </div>
       </div>
       <input type="number" id="grossSalaryTop" value="90000" step="100" class="editing" style="display:none;" onblur="finishEdit('gross')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
@@ -595,6 +618,10 @@
     </div>
   </div>
 
+  
+  
+  </div>
+
   <div id="expenseSections"></div>
   <div class="section" id="purchasesSection">
     <div class="section-header collapsible-header" onclick="toggleSection('purchasesSection')">
@@ -615,7 +642,7 @@
       <span class="collapse-icon">−</span>
     </div>
     <div class="collapsible-body">
-    <div class="savings-panel" style="border:none; margin:0;">
+    <div class="section" id="savingsSection"><div class="savings-panel" style="border:none; margin:0;">
     <div class="savings-grid">
       <div class="savings-item">
         <label>Monthly savings target</label>
@@ -635,6 +662,20 @@
 </div>
 
 <!-- Share Modal -->
+
+  <div class="section" id="ytdSection">
+    <div class="section-header collapsible-header" onclick="toggleSection('ytdSection')">
+      <h3>Year to date</h3>
+      <span class="collapse-icon">−</span>
+    </div>
+    <div class="collapsible-body">
+      <div class="section-body" id="ytdContent" style="padding:16px;">
+        <div class="summary" id="ytdSummary"></div>
+        <div id="ytdInsights"></div>
+      </div>
+    </div>
+  </div>
+
 <div class="modal-overlay" id="shareModal">
   <div class="modal">
     <div class="modal-header">
@@ -913,12 +954,14 @@ function updatePurchase(idx, field, value) {
   scheduleSave();
   renderPurchases();
   updatePurchaseSubtext();
+  renderYTD();
 }
 function removePurchase(idx) {
   purchases.splice(idx, 1);
   scheduleSave();
   renderPurchases();
   updatePurchaseSubtext();
+  renderYTD();
 }
 function renderPurchases() {
   const el = document.getElementById("purchasesList");
@@ -1080,7 +1123,9 @@ function updateSuperDisplay() {
     }
   });
   const el = document.getElementById("superDisplay");
+  const remEl = document.getElementById("totalRemDisplay");
   if (el) el.textContent = superTotal > 0 ? "+ $" + Math.round(superTotal).toLocaleString() + " super" : "";
+  if (remEl) remEl.textContent = superTotal > 0 ? "($" + Math.round(annualGross + superTotal).toLocaleString() + " total remuneration)" : "";
 }
 function renderSourceMenu() {
   const menu = document.getElementById("sourceMenu");
@@ -1126,6 +1171,69 @@ function syncMainIncome() {
 }
 function getIncludedIncome() {
   return incomeSources.filter(s => s.included).reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+}
+
+
+function renderYTD() {
+  const keys = Object.keys(periods).sort();
+  if (keys.length === 0) return;
+  
+  let totalIncome = 0, totalExpenses = 0, totalSavings = 0, totalPurchases = 0;
+  const monthlyData = [];
+  
+  keys.forEach(key => {
+    const p = periods[key];
+    if (!p) return;
+    const income = p.income || 0;
+    const phone = p.phoneAllowance || 0;
+    const spendable = income + phone;
+    let expDaily = 0;
+    (p.expenses || []).forEach(e => { expDaily += toDaily(e.amount, e.frequency); });
+    const expMonth = project(expDaily, "month");
+    const savings = p.savings || 0;
+    const purchases = (p.purchases || []).reduce((s, x) => s + (x.amount || 0), 0);
+    
+    totalIncome += spendable;
+    totalExpenses += expMonth;
+    totalSavings += savings;
+    totalPurchases += purchases;
+    monthlyData.push({ key, income: spendable, expenses: expMonth, savings, leftover: spendable - expMonth - savings });
+  });
+  
+  const leftover = totalIncome - totalExpenses - totalSavings - totalPurchases;
+  const avgIncome = totalIncome / keys.length;
+  const avgExpenses = totalExpenses / keys.length;
+  
+  document.getElementById("ytdSummary").innerHTML = `
+    <div class="stat"><div class="label">YTD Income</div><div class="value">${money(totalIncome)}</div></div>
+    <div class="stat"><div class="label">YTD Expenses</div><div class="value">${money(totalExpenses)}</div></div>
+    <div class="stat"><div class="label">YTD Savings</div><div class="value">${money(totalSavings)}</div></div>
+    <div class="stat"><div class="label">YTD Leftover</div><div class="value ${leftover >= 0 ? 'green' : 'red'}">${money(leftover)}</div></div>
+  `;
+  
+  const insights = [];
+  if (keys.length > 1) {
+    const last = monthlyData[monthlyData.length - 1];
+    const prev = monthlyData[monthlyData.length - 2];
+    if (last && prev) {
+      const expChange = ((last.expenses - prev.expenses) / prev.expenses * 100).toFixed(1);
+      insights.push(`Expenses ${expChange > 0 ? 'up' : 'down'} ${Math.abs(expChange)}% from last period`);
+    }
+  }
+  insights.push(`Average monthly income: ${money(avgIncome)}`);
+  insights.push(`Average monthly expenses: ${money(avgExpenses)}`);
+  if (totalSavings > 0) insights.push(`Savings rate: ${((totalSavings / totalIncome) * 100).toFixed(1)}%`);
+  
+  const insightCards = [
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>', text: `Average monthly income: ${money(avgIncome)}`, color: "green" },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>', text: `Average monthly expenses: ${money(avgExpenses)}`, color: "orange" },
+    { icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>', text: totalSavings > 0 ? `Savings rate: ${((totalSavings / totalIncome) * 100).toFixed(1)}%` : "No savings recorded", color: "blue" }
+  ];
+  document.getElementById("ytdInsights").innerHTML = `
+    <div class="insight-cards">
+      ${insightCards.map(c => `<div class="insight-card ${c.color}"><div class="icon">${c.icon}</div><div class="text">${c.text}</div></div>`).join('')}
+    </div>
+  `;
 }
 
 function render() {
@@ -1219,6 +1327,7 @@ function render() {
   updateCharts(expenses, income, savings, leftoverMonth);
   renderPurchases();
   updatePurchaseSubtext();
+  renderYTD();
 }
 
 function updateCharts(expenses, income, savings, leftover) {
@@ -1471,6 +1580,93 @@ function importJSON(e) {
     e.target.value = "";
   };
   reader.readAsText(file);
+}
+
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  
+  const income = parseFloat(document.getElementById("income").value) || 0;
+  const phone = parseFloat(document.getElementById("phoneAllowance").value) || 0;
+  const gross = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
+  const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
+  let totalDaily = 0;
+  expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
+  const expMonth = project(totalDaily, "month");
+  const leftover = income + phone - expMonth - savings;
+  const period = document.getElementById("periodTitle").textContent;
+
+  // Header
+  doc.setFillColor(16, 21, 28);
+  doc.rect(0, 0, 210, 28, "F");
+  doc.setTextColor(240, 243, 246);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("Budget Ledger", 14, 14);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(176, 184, 196);
+  doc.text("Daniel Clancy  ·  " + period, 14, 22);
+
+  // Summary cards
+  doc.setTextColor(26, 26, 26);
+  const cards = [
+    { label: "Gross annual", value: "$" + gross.toLocaleString() },
+    { label: "Net monthly", value: "$" + income.toFixed(2) },
+    { label: "Expenses / month", value: "$" + expMonth.toFixed(2) },
+    { label: "Leftover / month", value: "$" + leftover.toFixed(2) }
+  ];
+  cards.forEach((c, i) => {
+    const x = 14 + i * 48;
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(x, 36, 44, 18, 2, 2, "F");
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text(c.label.toUpperCase(), x + 3, 42);
+    doc.setFontSize(11);
+    doc.setTextColor(26, 26, 26);
+    doc.setFont("helvetica", "bold");
+    doc.text(c.value, x + 3, 50);
+    doc.setFont("helvetica", "normal");
+  });
+
+  // Table header
+  let y = 64;
+  doc.setFillColor(245, 245, 245);
+  doc.rect(14, y, 182, 8, "F");
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text("EXPENSE", 16, y + 5.5);
+  doc.text("CATEGORY", 60, y + 5.5);
+  doc.text("FREQ", 100, y + 5.5);
+  doc.text("AMOUNT", 130, y + 5.5);
+  doc.text("MONTHLY", 165, y + 5.5);
+
+  // Table rows
+  y += 10;
+  doc.setTextColor(26, 26, 26);
+  doc.setFontSize(9);
+  expenses.forEach(e => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    const daily = toDaily(e.amount, e.frequency);
+    const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
+    doc.text(e.name.substring(0, 24), 16, y);
+    doc.setTextColor(120, 120, 120);
+    doc.text(cat.label, 60, y);
+    doc.text(e.frequency, 100, y);
+    doc.setTextColor(26, 26, 26);
+    doc.text("$" + e.amount.toFixed(2), 130, y);
+    doc.text("$" + project(daily, "month").toFixed(2), 165, y);
+    y += 7;
+  });
+
+  // Footer
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text("Generated " + new Date().toLocaleDateString(), 14, 285);
+
+  doc.save("budget-" + period.replace(/\s+/g, "-").toLowerCase() + ".pdf");
 }
 
 function openShareModal() { document.getElementById("shareModal").classList.add("active"); }
