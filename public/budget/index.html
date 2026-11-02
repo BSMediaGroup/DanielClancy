@@ -1900,9 +1900,47 @@ function finishEdit(which) {
   display.textContent = which === "gross" ? "$" + val.toLocaleString() : money(val);
   display.style.display = "block";
   input.style.display = "none";
-  if (which === "gross") syncGross();
+  
+  if (which === "gross") {
+    syncGross();
+    // Calculate net from gross and update income
+    const netAnnual = calcNetFromGross(val);
+    const netMonthly = Math.round(netAnnual / 12 * 100) / 100;
+    document.getElementById("income").value = netMonthly;
+    // Update main income source
+    const main = incomeSources.find(s => s.isMain);
+    if (main) main.amount = netMonthly;
+    updateDisplays();
+  }
+  if (which === "net") {
+    // Update main income source amount
+    const main = incomeSources.find(s => s.isMain);
+    if (main) main.amount = val;
+  }
   scheduleSave();
   render();
+}
+
+function calcNetFromGross(gross) {
+  // Australian tax calculation
+  const brackets = [
+    { min: 0, max: 18200, rate: 0 },
+    { min: 18200, max: 45000, rate: 0.16 },
+    { min: 45000, max: 135000, rate: 0.30 },
+    { min: 135000, max: 190000, rate: 0.37 },
+    { min: 190000, max: Infinity, rate: 0.45 }
+  ];
+  let tax = 0;
+  for (const b of brackets) {
+    if (gross > b.min) {
+      const taxable = Math.min(gross, b.max) - b.min;
+      tax += taxable * b.rate;
+    }
+  }
+  const medicare = gross * 0.02;
+  const superRate = (parseFloat(document.getElementById("superRate").value) || 12) / 100;
+  const superAmt = gross * superRate;
+  return gross - tax - medicare;
 }
 function updateDisplays() {
   const g = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
