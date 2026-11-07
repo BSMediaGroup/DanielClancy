@@ -138,6 +138,9 @@
   }
   .standard-control input:focus { outline: none; }
   .standard-control span { color: var(--text-secondary); font-size: 0.85rem; }
+  .standard-control .clock-hint,
+  .slim-metrics .clock-hint { font-size: 0.68rem; color: var(--text-muted); font-weight: 500; }
+  .slim-metrics .metric-unit { font-size: 0.68rem; }
 
   .day-select {
     background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
@@ -169,7 +172,15 @@
     cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
   }
   .spin-btn:hover { background: #252b33; color: var(--text); }
-  .spin-pair { display: inline-flex; gap: 2px; }
+  .spin-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .spin-pair { display: inline-flex; gap: 2px; flex: 0 0 auto; }
+  .hours-cell { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .value-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 4px; }
+  .value-line .value { margin-top: 0; }
+  .metric-unit { font-size: 0.72rem; font-weight: 650; color: var(--text-secondary); margin-right: 2px; }
+  .stat .value.positive + .metric-unit { color: var(--green); }
+  .stat .value.negative + .metric-unit { color: var(--red); }
+  .clock-hint { font-size: 0.68rem; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
 
 
   .title-row {
@@ -193,7 +204,7 @@
     flex-shrink: 0;
   }
   .summary {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 18px;
   }
   .stat {
     background: var(--bg-card); border: 1px solid var(--border);
@@ -201,7 +212,7 @@
   }
   .stat:hover { border-color: var(--border-light); transform: translateY(-1px); }
   .stat .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
-  .stat .value { font-size: 1.45rem; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+  .stat .value { font-size: 1.2rem; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
   .stat .value.positive { color: var(--green); }
   .stat .value.negative { color: var(--red); }
   .stat .value.neutral { color: var(--text-secondary); }
@@ -221,15 +232,19 @@
   .btn:disabled, .btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
   .btn.small { padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; }
   .btn.icon {
-    width: 32px; height: 32px; padding: 0; display: inline-flex;
-    align-items: center; justify-content: center; border-radius: 6px; font-size: 1rem;
+    width: 32px; height: 32px; min-width: 32px; min-height: 32px; max-width: 32px;
+    padding: 0; margin: 0; flex: 0 0 32px; aspect-ratio: 1 / 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px; font-size: 14px; line-height: 1;
   }
   .btn.icon.clear { color: var(--text-muted); }
   .btn.icon.clear:hover { color: var(--red); border-color: var(--red); }
+  .btn.icon svg { width: 14px; height: 14px; display: block; flex: none; }
 
   .btn.lock { color: var(--text-muted); }
   .btn.lock.locked { color: var(--orange); }
-  .btn.lock svg { width: 14px; height: 14px; }
+
+  .row-actions { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
 
 
   .table-wrap {
@@ -294,7 +309,7 @@
     margin-right: 10px; vertical-align: middle; box-shadow: 0 0 0 2px rgba(0,0,0,0.3);
   }
 
-  .row-actions { display: flex; gap: 6px; align-items: center; }
+  .row-actions { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
 
   .add-week-row {
     background: transparent; border: none; width: 100%;
@@ -358,6 +373,30 @@
     .actions, footer, .standard-control, .row-actions, .modal-overlay, .add-week-row, .sync-status { display: none !important; }
     header, .stat, .table-wrap { box-shadow: none; border-color: #ccc; position: static; }
   }
+
+  .til-card { border: 1px solid #a78bfa; }
+  .til-card .value { color: #a78bfa; }
+  .til-card .value + .metric-unit { color: #a78bfa; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .tabs button { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+  .tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .gross-var { font-size: 0.72rem; color: var(--text-muted); flex-basis: 100%; margin: 1px 0 0; }
+
+
+  #tilBody input[type="date"],
+  #tilBody input[type="text"],
+  #tilModalList input[type="date"],
+  #tilModalList input[type="text"] {
+    background: #0d1117; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 10px; font-family: inherit; font-size: 0.95rem;
+  }
+  #tilBody input[type="text"] { width: 100%; }
+  #tilBody input:focus, #tilModalList input:focus { outline: none; border-color: var(--accent); }
+
+  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.75; }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -372,8 +411,8 @@
       </div>
     </div>
     <div class="slim-metrics" id="slimMetrics">
-      <span>Avg <strong id="slimAvg">—</strong></span>
-      <span>Var <strong id="slimVar">0.00</strong></span>
+      <span>Avg <strong id="slimAvg">—</strong><span class="metric-unit" id="slimAvgUnit" style="display:none">hrs</span> <span class="clock-hint" id="slimAvgClock"></span></span>
+      <span>Var <strong id="slimVar">0.00</strong><span class="metric-unit">hrs</span> <span class="clock-hint" id="slimVarClock"></span></span>
     </div>
     <div class="header-meta">
       <button class="btn small signout-slim" onclick="logout()" title="Sign out">Sign out</button>
@@ -385,6 +424,7 @@
           <button class="spin-btn" type="button" onclick="adjustStandard(0.5)">+</button>
         </div>
         <span>hrs</span>
+        <span class="clock-hint" id="standardClock"></span>
       </div>
       <div class="standard-control">
         <label for="weekEndDay">Week ends</label>
@@ -431,32 +471,66 @@
     </div>
     <div class="stat">
       <div class="label">Total hours</div>
-      <div class="value" id="totalHours">0.00</div>
+      <div class="value-line">
+        <div class="value" id="totalHours">0.00</div><span class="metric-unit">hrs</span>
+        <span class="clock-hint" id="totalHoursClock"></span>
+      </div>
     </div>
     <div class="stat">
       <div class="label">Average / week</div>
-      <div class="value" id="avgHours">—</div>
+      <div class="value-line">
+        <div class="value" id="avgHours">—</div><span class="metric-unit" id="avgHoursUnit" style="display:none">hrs</span>
+        <span class="clock-hint" id="avgHoursClock"></span>
+      </div>
     </div>
     <div class="stat">
       <div class="label">Net variance</div>
-      <div class="value" id="netVariance">0.00</div>
+      <div class="value-line">
+        <div class="value" id="netVariance">0.00</div><span class="metric-unit">hrs</span>
+        <span class="clock-hint" id="netVarianceClock"></span>
+        <span class="gross-var" id="grossVariance"></span>
+      </div>
+    </div>
+    <div class="stat til-card" onclick="openTILManager()" style="cursor:pointer; position:relative;">
+      <button style="position:absolute; top:8px; right:8px; background:transparent; border:none; color:var(--text-muted); cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      <div class="label">Time in lieu</div>
+      <div class="value-line">
+        <div class="value" id="tilTotal">0.00</div><span class="metric-unit">hrs</span>
+        <span class="clock-hint" id="tilTotalClock"></span>
+      </div>
     </div>
   </div>
 
+  <div class="tabs">
+    <button class="active" onclick="switchTab('weeks')">Weeks</button>
+    <button onclick="switchTab('til')">Time taken</button>
+  </div>
+  <div class="tab-content active" id="tabWeeks">
   <div class="table-wrap">
     <table id="timesheetTable">
       <thead>
         <tr>
-          <th style="width:14%">Week <span class="resize-handle"></span></th>
-          <th style="width:16%">Ending <span class="resize-handle"></span></th>
-          <th style="width:22%">Hours <span class="resize-handle"></span></th>
-          <th style="width:16%">Variance <span class="resize-handle"></span></th>
-          <th style="width:32%">Actions <span class="resize-handle"></span></th>
+          <th style="width:11%">Week <span class="resize-handle"></span></th>
+          <th style="width:13%">Ending <span class="resize-handle"></span></th>
+          <th style="width:30%">Hours <span class="resize-handle"></span></th>
+          <th style="width:22%">Variance <span class="resize-handle"></span></th>
+          <th style="width:24%">Actions <span class="resize-handle"></span></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
     </table>
     <button class="add-week-row" onclick="addWeek()">+ Add Week</button>
+    <button class="add-week-row" onclick="deleteLastWeek()" style="color:var(--red);">− Delete last week</button>
+  </div>
+  </div>
+  <div class="tab-content" id="tabTIL">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th style="width:150px">Date</th><th style="width:340px">Hours</th><th>Note</th><th style="width:92px">Actions</th></tr></thead>
+        <tbody id="tilBody"></tbody>
+      </table>
+      <button class="add-week-row" onclick="addTILEntry()">+ Add entry</button>
+    </div>
   </div>
 
   <footer>
@@ -566,6 +640,7 @@ function loadLocal() {
     if (raw) {
       const parsed = JSON.parse(raw);
       WEEKS = parsed.weeks || DEFAULT_WEEKS;
+      tilEntries = Array.isArray(parsed.tilEntries) ? parsed.tilEntries : [];
       weekEndDay = parsed.weekEndDay ?? 0;
       document.getElementById("standard").value = parsed.standard ?? 38;
       document.getElementById("weekEndDay").value = weekEndDay;
@@ -581,7 +656,8 @@ function saveLocal() {
   const payload = {
     standard: parseFloat(document.getElementById("standard").value) || 38,
     weekEndDay,
-    weeks: WEEKS
+    weeks: WEEKS,
+    tilEntries
   };
   localStorage.setItem("timesheet_local_v2", JSON.stringify(payload));
 }
@@ -601,6 +677,7 @@ async function loadRemote() {
     const json = await res.json();
     if (json.data && Array.isArray(json.data.weeks)) {
       WEEKS = json.data.weeks;
+      tilEntries = Array.isArray(json.data.tilEntries) ? json.data.tilEntries : [];
       weekEndDay = json.data.weekEndDay ?? 0;
       document.getElementById("standard").value = json.data.standard ?? 38;
       document.getElementById("weekEndDay").value = weekEndDay;
@@ -619,7 +696,8 @@ async function saveRemote() {
   const payload = {
     standard: parseFloat(document.getElementById("standard").value) || 38,
     weekEndDay,
-    weeks: WEEKS
+    weeks: WEEKS,
+    tilEntries
   };
   document.getElementById("syncStatus").textContent = "Saving…";
   try {
@@ -688,6 +766,165 @@ function formatVariance(v) {
   return "0.00";
 }
 
+function formatClock(v) {
+  if (v == null || v === "" || isNaN(parseFloat(v))) return "";
+  let n = parseFloat(v);
+  const neg = n < 0;
+  n = Math.abs(n);
+  let hrs = Math.floor(n + 1e-9);
+  let mins = Math.round((n - hrs) * 60);
+  if (mins === 60) { hrs += 1; mins = 0; }
+  return (neg ? "-" : "") + hrs + "hrs, " + mins + "min";
+}
+
+function clockParen(v, signed) {
+  const c = formatClock(v);
+  if (!c) return "";
+  if (signed && parseFloat(v) > 0) return "(+" + c + ")";
+  return "(" + c + ")";
+}
+
+function setClock(id, v, signed) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = (v == null || v === "" || isNaN(parseFloat(v))) ? "" : clockParen(v, signed);
+}
+
+
+let tilEntries = [];
+
+function switchTab(tab) {
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  document.querySelector(`.tabs button[onclick*="${tab}"]`).classList.add("active");
+  document.getElementById(tab === "weeks" ? "tabWeeks" : "tabTIL").classList.add("active");
+  if (tab === "til") renderTIL();
+}
+
+function openTILManager() {
+  document.getElementById("tilModal").classList.add("active");
+  renderTILModal();
+}
+function closeTILManager() {
+  document.getElementById("tilModal").classList.remove("active");
+  renderTIL();
+}
+function addTILEntry() {
+  tilEntries.push({ date: new Date().toISOString().slice(0, 10), hours: 0, note: "", locked: false });
+  scheduleSave();
+  renderTIL();
+  updateSummary();
+}
+function updateTIL(idx, field, value) {
+  if (tilEntries[idx].locked) return;
+  tilEntries[idx][field] = value;
+  scheduleSave();
+  updateSummary();
+}
+function removeTIL(idx) {
+  if (tilEntries[idx].locked) return;
+  tilEntries.splice(idx, 1);
+  scheduleSave();
+  renderTIL();
+  updateSummary();
+}
+function toggleTILLock(idx) {
+  tilEntries[idx].locked = !tilEntries[idx].locked;
+  scheduleSave();
+  renderTIL();
+}
+function renderTIL() {
+  const el = document.getElementById("tilBody");
+  if (!el) return;
+  el.innerHTML = tilEntries.map((t, i) => `
+    <tr>
+      <td><input type="date" value="${t.date || ""}" ${t.locked ? "disabled" : ""} onchange="updateTIL(${i}, 'date', this.value)"></td>
+      <td>
+        <div class="hours-cell">
+          <input type="number" step="0.25" min="0" max="80" value="${t.hours ?? 0}" data-index="${i}" data-til-hours="1" ${t.locked ? "disabled" : ""} style="width:72px;">
+          <div class="spin-pair">
+            <button class="spin-btn" type="button" ${t.locked ? "disabled" : ""} onclick="adjustTIL(${i}, -0.25)">−</button>
+            <button class="spin-btn" type="button" ${t.locked ? "disabled" : ""} onclick="adjustTIL(${i}, 0.25)">+</button>
+          </div>
+          <span class="metric-unit">hrs</span>
+          <span class="clock-hint">${clockParen(t.hours)}</span>
+        </div>
+      </td>
+      <td><input type="text" value="${String(t.note || "").replace(/"/g, "&" + "quot;")}" ${t.locked ? "disabled" : ""} onchange="updateTIL(${i}, 'note', this.value)"></td>
+      <td>
+        <div class="row-actions">
+          <button class="btn icon lock ${t.locked ? "locked" : ""}" title="${t.locked ? "Unlock" : "Lock"}" onclick="toggleTILLock(${i})">
+            ${t.locked
+              ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+              : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>'}
+          </button>
+          <button class="btn icon clear" title="Remove" ${t.locked ? "disabled" : ""} onclick="removeTIL(${i})">✕</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+  el.querySelectorAll("input[data-til-hours]").forEach(input => {
+    input.addEventListener("input", e => {
+      const idx = parseInt(e.target.dataset.index);
+      if (!tilEntries[idx] || tilEntries[idx].locked) return;
+      const val = e.target.value.trim();
+      tilEntries[idx].hours = val === "" ? 0 : parseFloat(val);
+      const hint = e.target.closest(".hours-cell").querySelector(".clock-hint");
+      if (hint) hint.textContent = clockParen(tilEntries[idx].hours);
+      updateSummary();
+      scheduleSave();
+    });
+  });
+}
+function adjustTIL(idx, delta) {
+  if (!tilEntries[idx] || tilEntries[idx].locked) return;
+  let v = parseFloat(tilEntries[idx].hours) || 0;
+  v = Math.max(0, +(v + delta).toFixed(2));
+  tilEntries[idx].hours = v;
+  scheduleSave();
+  renderTIL();
+  updateSummary();
+  if (document.getElementById("tilModal").classList.contains("active")) renderTILModal();
+}
+function renderTILModal() {
+  const el = document.getElementById("tilModalList");
+  el.innerHTML = tilEntries.map((t, i) => `
+    <div class="hours-cell" style="padding:8px 0; border-bottom:1px solid var(--border); width:100%;">
+      <input type="date" value="${t.date || ""}" ${t.locked ? "disabled" : ""} onchange="updateTIL(${i}, 'date', this.value)" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:8px;">
+      <input type="number" step="0.25" min="0" max="80" value="${t.hours ?? 0}" data-modal-til="${i}" ${t.locked ? "disabled" : ""} style="width:72px;">
+      <div class="spin-pair">
+        <button class="spin-btn" type="button" ${t.locked ? "disabled" : ""} onclick="adjustTIL(${i}, -0.25)">−</button>
+        <button class="spin-btn" type="button" ${t.locked ? "disabled" : ""} onclick="adjustTIL(${i}, 0.25)">+</button>
+      </div>
+      <span class="metric-unit">hrs</span>
+      <span class="clock-hint">${clockParen(t.hours)}</span>
+      <input type="text" value="${String(t.note || "").replace(/"/g, "&" + "quot;")}" placeholder="Note" ${t.locked ? "disabled" : ""} onchange="updateTIL(${i}, 'note', this.value)" style="flex:1; min-width:120px; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:8px;">
+      <button class="btn icon clear" title="Remove" ${t.locked ? "disabled" : ""} onclick="removeTIL(${i}); renderTILModal();">✕</button>
+    </div>
+  `).join("") || '<div style="color:var(--text-muted);">No entries</div>';
+  el.querySelectorAll("input[data-modal-til]").forEach(input => {
+    input.addEventListener("input", e => {
+      const idx = parseInt(e.target.dataset.modalTil);
+      if (!tilEntries[idx] || tilEntries[idx].locked) return;
+      const val = e.target.value.trim();
+      tilEntries[idx].hours = val === "" ? 0 : parseFloat(val);
+      const hint = e.target.closest(".hours-cell").querySelector(".clock-hint");
+      if (hint) hint.textContent = clockParen(tilEntries[idx].hours);
+      updateSummary();
+      scheduleSave();
+      if (document.getElementById("tabTIL").classList.contains("active")) renderTIL();
+    });
+  });
+}
+function deleteLastWeek() {
+  if (!WEEKS.length) return;
+  const last = WEEKS[WEEKS.length - 1];
+  const hasData = (last.hours != null && last.hours !== "") || (last.url && String(last.url).trim());
+  if (hasData && !confirm("This week has data. Delete the last week anyway?")) return;
+  WEEKS.pop();
+  scheduleSave();
+  render();
+}
+
 function addWeek() {
   WEEKS.push({ week: `WEEK ${WEEKS.length + 1}`, hours: null, url: "" });
   scheduleSave();
@@ -753,6 +990,14 @@ function updateRowDisplay(i) {
     varEl.style.background = varColor;
     varEl.style.color = varTextColor;
   }
+  const hoursClock = tr.querySelector(".hours-clock");
+  if (hoursClock) hoursClock.textContent = (hoursVal != null && hoursVal !== "") ? clockParen(hoursVal) : "";
+  const hoursUnit = tr.querySelector(".hours-unit");
+  if (hoursUnit) hoursUnit.style.display = (hoursVal != null && hoursVal !== "") ? "" : "none";
+  const varClock = tr.querySelector(".var-clock");
+  if (varClock) varClock.textContent = variance != null ? clockParen(variance, true) : "";
+  const varUnit = tr.querySelector(".var-unit");
+  if (varUnit) varUnit.style.display = variance != null ? "" : "none";
 }
 
 function updateSummary() {
@@ -765,16 +1010,42 @@ function updateSummary() {
       netVar += parseFloat(w.hours) - standard;
     }
   });
+  const tilTotal = tilEntries.reduce((s, t) => s + (parseFloat(t.hours) || 0), 0);
+  const netAfterTIL = netVar - tilTotal;
+  
   document.getElementById("weeksEntered").textContent = weeksWithHours;
   document.getElementById("totalHours").textContent = totalHours.toFixed(2);
   document.getElementById("avgHours").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
+  
   const netEl = document.getElementById("netVariance");
-  netEl.textContent = formatVariance(netVar);
-  netEl.className = "value " + (netVar > 0.05 ? "positive" : netVar < -0.05 ? "negative" : "neutral");
+  netEl.textContent = formatVariance(netAfterTIL);
+  netEl.className = "value " + (netAfterTIL > 0.05 ? "positive" : netAfterTIL < -0.05 ? "negative" : "neutral");
+  
+  const grossEl = document.getElementById("grossVariance");
+  if (grossEl) {
+    grossEl.textContent = tilTotal > 0 ? `(${formatVariance(netVar)}hrs gross · ${formatClock(netVar)})` : "";
+  }
+
+  const tilEl = document.getElementById("tilTotal");
+  if (tilEl) tilEl.textContent = tilTotal.toFixed(2);
+
+  const avg = weeksWithHours ? (totalHours / weeksWithHours) : null;
+  setClock("totalHoursClock", totalHours);
+  setClock("avgHoursClock", avg);
+  setClock("netVarianceClock", netAfterTIL, true);
+  setClock("tilTotalClock", tilTotal);
+  setClock("slimAvgClock", avg);
+  setClock("slimVarClock", netAfterTIL, true);
+  setClock("standardClock", standard);
+  const avgUnit = document.getElementById("avgHoursUnit");
+  if (avgUnit) avgUnit.style.display = avg != null ? "" : "none";
+  const slimAvgUnit = document.getElementById("slimAvgUnit");
+  if (slimAvgUnit) slimAvgUnit.style.display = avg != null ? "" : "none";
+  
   document.getElementById("slimAvg").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
   const slimVarEl = document.getElementById("slimVar");
-  slimVarEl.textContent = formatVariance(netVar);
-  slimVarEl.style.color = netVar > 0.05 ? "var(--green)" : netVar < -0.05 ? "var(--red)" : "var(--text)";
+  slimVarEl.textContent = formatVariance(netAfterTIL);
+  slimVarEl.style.color = netAfterTIL > 0.05 ? "var(--green)" : netAfterTIL < -0.05 ? "var(--red)" : "var(--text)";
 }
 
 function render() {
@@ -814,16 +1085,22 @@ function render() {
       <td class="date">${ending}</td>
       <td>
         <span class="hours-indicator" style="background:${hoursColor === "transparent" ? "transparent" : hoursColor}"></span>
-        <div style="display:inline-flex; align-items:center; gap:4px;">
+        <div class="hours-cell">
           <input type="number" step="0.25" min="0" max="80" value="${hoursVal ?? ""}" data-index="${i}" placeholder="—" ${w.locked ? "disabled" : ""} style="width:72px;">
           <div class="spin-pair">
             <button class="spin-btn" type="button" ${w.locked ? "disabled" : ""} onclick="event.stopPropagation(); adjustHours(${i}, -0.25)">−</button>
             <button class="spin-btn" type="button" ${w.locked ? "disabled" : ""} onclick="event.stopPropagation(); adjustHours(${i}, 0.25)">+</button>
           </div>
+          <span class="metric-unit hours-unit" style="${(hoursVal != null && hoursVal !== "") ? "" : "display:none"}">hrs</span>
+          <span class="clock-hint hours-clock" data-index="${i}">${(hoursVal != null && hoursVal !== "") ? clockParen(hoursVal) : ""}</span>
         </div>
       </td>
       <td>
-        <span class="variance" style="background:${varColor}; color:${varTextColor}">${formatVariance(variance)}</span>
+        <div class="value-line">
+          <span class="variance" style="background:${varColor}; color:${varTextColor}">${formatVariance(variance)}</span>
+          <span class="metric-unit var-unit" style="${variance != null ? "" : "display:none"}">hrs</span>
+          <span class="clock-hint var-clock" data-index="${i}">${variance != null ? clockParen(variance, true) : ""}</span>
+        </div>
       </td>
       <td>
         <div class="row-actions">
@@ -844,17 +1121,7 @@ function render() {
     tbody.appendChild(tr);
   });
 
-  document.getElementById("weeksEntered").textContent = weeksWithHours;
-  document.getElementById("totalHours").textContent = totalHours.toFixed(2);
-  document.getElementById("avgHours").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
-
-  const netEl = document.getElementById("netVariance");
-  netEl.textContent = formatVariance(netVar);
-  netEl.className = "value " + (netVar > 0.05 ? "positive" : netVar < -0.05 ? "negative" : "neutral");
-  document.getElementById("slimAvg").textContent = weeksWithHours ? (totalHours / weeksWithHours).toFixed(2) : "—";
-  const slimVarEl = document.getElementById("slimVar");
-  slimVarEl.textContent = formatVariance(netVar);
-  slimVarEl.style.color = netVar > 0.05 ? "var(--green)" : netVar < -0.05 ? "var(--red)" : "var(--text)";
+  updateSummary();
 
   // Bind inputs — update in place, do not rebuild the row
   document.querySelectorAll("#tbody input[type=number]").forEach(input => {
@@ -894,7 +1161,8 @@ function exportJSON() {
     exported: new Date().toISOString(),
     standardHours: parseFloat(document.getElementById("standard").value) || 38,
     weekEndDay,
-    weeks: WEEKS.map((w, i) => ({ week: w.week, hours: w.hours, url: w.url || "", locked: !!w.locked, ending: computeEnding(i) }))
+    weeks: WEEKS.map((w, i) => ({ week: w.week, hours: w.hours, url: w.url || "", locked: !!w.locked, ending: computeEnding(i) })),
+    tilEntries
   };
   downloadFile(JSON.stringify(data, null, 2), "timesheet-daniel-clancy.json", "application/json");
 }
@@ -930,9 +1198,18 @@ function exportPDF() {
       net += parseFloat(w.hours) - standard;
     }
   });
+  const tilTotal = tilEntries.reduce((s, t) => s + (parseFloat(t.hours) || 0), 0);
+  const netAfter = net - tilTotal;
+  const avg = count ? total / count : null;
   doc.setFontSize(10);
-  doc.text(`Weeks entered: ${count}    Total hours: ${total.toFixed(2)}    Average: ${count ? (total/count).toFixed(2) : "—"}    Net variance: ${net >= 0 ? "+" : ""}${net.toFixed(2)}`, 14, y);
-  y += 10;
+  doc.text(`Weeks entered: ${count}`, 14, y);
+  y += 5;
+  doc.text(`Total: ${total.toFixed(2)}hrs ${clockParen(total)}     Average: ${avg != null ? avg.toFixed(2) + "hrs " + clockParen(avg) : "—"}`, 14, y);
+  y += 5;
+  doc.text(`Net variance: ${formatVariance(netAfter)}hrs ${clockParen(netAfter, true)}     Gross variance: ${formatVariance(net)}hrs ${clockParen(net, true)}`, 14, y);
+  y += 5;
+  doc.text(`Time in lieu: ${tilTotal.toFixed(2)}hrs ${clockParen(tilTotal)}     Standard: ${standard}hrs ${clockParen(standard)}`, 14, y);
+  y += 8;
 
   // Table header
   doc.setFillColor(26, 31, 38);
@@ -942,8 +1219,8 @@ function exportPDF() {
   doc.text("Week", 16, y + 5);
   doc.text("Ending", 42, y + 5);
   doc.text("Hours", 72, y + 5);
-  doc.text("Variance", 98, y + 5);
-  doc.text("Timesheet", 130, y + 5);
+  doc.text("Variance", 108, y + 5);
+  doc.text("Timesheet", 148, y + 5);
   y += 12;
 
   doc.setTextColor(30, 30, 30);
@@ -956,17 +1233,42 @@ function exportPDF() {
     const variance = hours != null ? hours - standard : null;
     doc.text(w.week, 16, y);
     doc.text(computeEnding(i), 42, y);
-    doc.text(hours != null ? hours.toFixed(2) : "—", 72, y);
-    doc.text(variance != null ? (variance >= 0 ? "+" : "") + variance.toFixed(2) : "—", 98, y);
+    doc.text(hours != null ? hours.toFixed(2) + "hrs" : "—", 72, y);
+    doc.text(variance != null ? formatVariance(variance) + "hrs" : "—", 108, y);
+    if (hours != null) {
+      doc.setFontSize(7);
+      doc.setTextColor(110, 110, 110);
+      doc.text(clockParen(hours), 72, y + 3.4);
+      if (variance != null) doc.text(clockParen(variance, true), 108, y + 3.4);
+      doc.setFontSize(9);
+      doc.setTextColor(30, 30, 30);
+    }
     if (w.url && w.url.trim()) {
       doc.setTextColor(91, 156, 245);
-      doc.textWithLink("Open", 130, y, { url: w.url });
+      doc.textWithLink("Open", 148, y, { url: w.url });
       doc.setTextColor(30, 30, 30);
     } else {
-      doc.text("—", 130, y);
+      doc.text("—", 148, y);
     }
-    y += 7;
+    y += 10;
   });
+
+  if (tilEntries.length) {
+    y += 4;
+    if (y > 250) { doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setTextColor(20, 20, 20);
+    doc.text("Time taken", 14, y);
+    y += 6;
+    doc.setFontSize(9);
+    tilEntries.forEach(t => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      const h = parseFloat(t.hours) || 0;
+      doc.setTextColor(30, 30, 30);
+      doc.text(`${t.date || "—"}    ${h.toFixed(2)}hrs ${clockParen(h)}    ${t.note || ""}`, 14, y);
+      y += 6;
+    });
+  }
 
   doc.save("timesheet-daniel-clancy.pdf");
 }
@@ -1078,6 +1380,7 @@ function importJSON(e) {
           url: w.url || "",
           locked: !!w.locked
         }));
+        tilEntries = Array.isArray(data.tilEntries) ? data.tilEntries : [];
         if (data.standardHours != null) document.getElementById("standard").value = data.standardHours;
         if (data.weekEndDay != null) {
           weekEndDay = data.weekEndDay;
@@ -1112,6 +1415,7 @@ async function generateShare() {
     standard: parseFloat(document.getElementById("standard").value) || 38,
     weekEndDay,
     weeks: WEEKS.map((w, i) => ({ week: w.week, ending: computeEnding(i), hours: w.hours, variance: w.hours != null ? +(w.hours - (parseFloat(document.getElementById("standard").value)||38)).toFixed(2) : null, url: w.url || "" })),
+    tilEntries,
     expiry,
     password
   };
@@ -1202,5 +1506,22 @@ async function forceRefresh() {
   initSticky();
 })();
 </script>
+
+<div class="modal-overlay" id="tilModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Time in lieu</h2>
+      <button class="modal-close" onclick="closeTILManager()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="tilModalList"></div>
+      <button class="btn" onclick="addTILEntry(); renderTILModal();" style="margin-top:12px;">+ Add entry</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeTILManager()">Close</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
