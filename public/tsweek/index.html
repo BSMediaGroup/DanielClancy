@@ -686,7 +686,7 @@
       <div id="shareResult" style="display:none; margin-top:12px;">
         <div style="display:flex; gap:8px; align-items:center;">
           <input id="shareLink" readonly style="flex:1; background:#0d1117; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:8px 10px; font-size:0.85rem;">
-          <button class="btn icon" onclick="copyShareLink()" title="Copy">
+          <button class="btn icon" onclick="copyShareLink(this)" title="Copy">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           </button>
         </div>
@@ -774,7 +774,7 @@ function loadLocal() {
 
 function saveLocal() {
   const payload = {
-    standard: parseFloat(document.getElementById("standard").value) || 38,
+    standard: readStandard(),
     weekEndDay,
     weeks: WEEKS,
     tilEntries
@@ -786,9 +786,8 @@ async function loadRemote() {
   try {
     const res = await fetch("/api/timesheet", { credentials: "same-origin", cache: "no-store" });
     if (res.status === 401) {
-      // Session missing or expired — force login gate
       window.location.href = "/tsweek?login=1";
-      return false;
+      return "auth";
     }
     if (!res.ok) {
       console.warn("Timesheet API error", res.status);
@@ -814,7 +813,7 @@ async function loadRemote() {
 
 async function saveRemote() {
   const payload = {
-    standard: parseFloat(document.getElementById("standard").value) || 38,
+    standard: readStandard(),
     weekEndDay,
     weeks: WEEKS,
     tilEntries
@@ -827,6 +826,10 @@ async function saveRemote() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    if (res.status === 401) {
+      window.location.href = "/tsweek?login=1";
+      return;
+    }
     if (res.ok) {
       document.getElementById("syncStatus").textContent = "Synced";
     } else {
@@ -878,9 +881,40 @@ function getVarianceColor(variance) {
   }
 }
 
-function formatVariance(v) {
-  if (v == null || isNaN(v)) return "";
+function round2(n) {
+  const r = Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+  return Object.is(r, -0) ? 0 : r;
+}
+function readStandard() {
+  const n = parseFloat(document.getElementById("standard").value);
+  if (!isFinite(n) || n < 0) return STANDARD_DEFAULT;
+  return round2(n);
+}
+function readHours(v) {
+  if (v == null || v === "") return null;
   const n = parseFloat(v);
+  if (!isFinite(n) || n < 0) return null;
+  return round2(n);
+}
+function readTil(v) {
+  const n = parseFloat(v);
+  if (!isFinite(n) || n < 0) return 0;
+  return round2(n);
+}
+function safeUrl(url) {
+  const s = String(url || "").trim();
+  return /^https?:\/\//i.test(s) ? s : "";
+}
+function escHtml(s) {
+  return String(s ?? "")
+    .split("&").join("&" + "amp;")
+    .split("<").join("&" + "lt;")
+    .split(">").join("&" + "gt;")
+    .split('"').join("&" + "quot;");
+}
+function formatVariance(v) {
+  if (v == null || !isFinite(parseFloat(v))) return "";
+  const n = round2(v);
   if (n > 0) return "+" + n.toFixed(2);
   if (n < 0) return n.toFixed(2);
   return "0.00";
@@ -935,8 +969,13 @@ function addTILEntry() {
   updateSummary();
 }
 function updateTIL(idx, field, value) {
-  if (tilEntries[idx].locked) return;
-  tilEntries[idx][field] = value;
+  if (!tilEntries[idx] || tilEntries[idx].locked) return;
+  if (field === "hours") {
+    const n = parseFloat(value);
+    tilEntries[idx].hours = isFinite(n) && n > 0 ? n : 0;
+  } else {
+    tilEntries[idx][field] = value;
+  }
   scheduleSave();
   updateSummary();
 }
@@ -948,9 +987,11 @@ function removeTIL(idx) {
   updateSummary();
 }
 function toggleTILLock(idx) {
+  if (!tilEntries[idx]) return;
   tilEntries[idx].locked = !tilEntries[idx].locked;
   scheduleSave();
   renderTIL();
+  if (document.getElementById("tilModal").classList.contains("active")) renderTILModal();
 }
 function renderTIL() {
   const el = document.getElementById("tilBody");
@@ -987,9 +1028,15 @@ function renderTIL() {
       const idx = parseInt(e.target.dataset.index);
       if (!tilEntries[idx] || tilEntries[idx].locked) return;
       const val = e.target.value.trim();
-      tilEntries[idx].hours = val === "" ? 0 : parseFloat(val);
+      if (val === "") tilEntries[idx].hours = 0;
+      else {
+        const n = parseFloat(val);
+        if (!isFinite(n)) return;
+        tilEntries[idx].hours = n < 0 ? 0 : n;
+        if (n < 0) e.target.value = "0";
+      }
       const hint = e.target.closest(".hours-cell").querySelector(".clock-hint");
-      if (hint) hint.textContent = clockParen(tilEntries[idx].hours);
+      if (hint) hint.textContent = clockParen(readTil(tilEntries[idx].hours));
       updateSummary();
       scheduleSave();
     });
@@ -997,9 +1044,11 @@ function renderTIL() {
 }
 function adjustTIL(idx, delta) {
   if (!tilEntries[idx] || tilEntries[idx].locked) return;
-  let v = parseFloat(tilEntries[idx].hours) || 0;
-  v = Math.max(0, +(v + delta).toFixed(2));
-  tilEntries[idx].hours = v;
+  const v = readTil(tilEntries[idx].hours);
+  let next = round2(v + delta);
+  if (next < 0) next = 0;
+  if (delta > 0 && next > 80) next = v >= 80 ? v : 80;
+  tilEntries[idx].hours = next;
   scheduleSave();
   renderTIL();
   updateSummary();
@@ -1018,6 +1067,11 @@ function renderTILModal() {
       <span class="metric-unit">hrs</span>
       <span class="clock-hint">${clockParen(t.hours)}</span>
       <input type="text" value="${String(t.note || "").replace(/"/g, "&" + "quot;")}" placeholder="Note" ${t.locked ? "disabled" : ""} onchange="updateTIL(${i}, 'note', this.value)" style="flex:1; min-width:120px; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:8px;">
+      <button class="btn icon lock ${t.locked ? "locked" : ""}" title="${t.locked ? "Unlock" : "Lock"}" onclick="toggleTILLock(${i})">
+        ${t.locked
+          ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>'}
+      </button>
       <button class="btn icon clear" title="Remove" ${t.locked ? "disabled" : ""} onclick="removeTIL(${i}); renderTILModal();">✕</button>
     </div>
   `).join("") || '<div style="color:var(--text-muted);">No entries</div>';
@@ -1026,9 +1080,15 @@ function renderTILModal() {
       const idx = parseInt(e.target.dataset.modalTil);
       if (!tilEntries[idx] || tilEntries[idx].locked) return;
       const val = e.target.value.trim();
-      tilEntries[idx].hours = val === "" ? 0 : parseFloat(val);
+      if (val === "") tilEntries[idx].hours = 0;
+      else {
+        const n = parseFloat(val);
+        if (!isFinite(n)) return;
+        tilEntries[idx].hours = n < 0 ? 0 : n;
+        if (n < 0) e.target.value = "0";
+      }
       const hint = e.target.closest(".hours-cell").querySelector(".clock-hint");
-      if (hint) hint.textContent = clockParen(tilEntries[idx].hours);
+      if (hint) hint.textContent = clockParen(readTil(tilEntries[idx].hours));
       updateSummary();
       scheduleSave();
       if (document.getElementById("tabTIL").classList.contains("active")) renderTIL();
@@ -1038,7 +1098,11 @@ function renderTILModal() {
 function deleteLastWeek() {
   if (!WEEKS.length) return;
   const last = WEEKS[WEEKS.length - 1];
-  const hasData = (last.hours != null && last.hours !== "") || (last.url && String(last.url).trim());
+  if (last.locked) {
+    alert("The last week is locked. Unlock it before deleting.");
+    return;
+  }
+  const hasData = readHours(last.hours) != null || (last.url && String(last.url).trim());
   if (hasData && !confirm("This week has data. Delete the last week anyway?")) return;
   WEEKS.pop();
   scheduleSave();
@@ -1052,6 +1116,7 @@ function addWeek() {
 }
 
 function clearWeek(index) {
+  if (!WEEKS[index] || WEEKS[index].locked) return;
   if (confirm(`Clear hours and timesheet URL for ${WEEKS[index].week}?`)) {
     WEEKS[index].hours = null;
     WEEKS[index].url = "";
@@ -1061,7 +1126,8 @@ function clearWeek(index) {
 }
 
 function openTimesheet(url) {
-  if (url && url.trim()) window.open(url, "_blank", "noopener");
+  const safe = safeUrl(url);
+  if (safe) window.open(safe, "_blank", "noopener,noreferrer");
 }
 
 function openUrlModal() {
@@ -1070,7 +1136,7 @@ function openUrlModal() {
   WEEKS.forEach((w, i) => {
     const row = document.createElement("div");
     row.className = "url-row";
-    row.innerHTML = `<label>${w.week}</label><input type="url" data-index="${i}" value="${w.url || ""}" placeholder="https://...">`;
+    row.innerHTML = `<label>${escHtml(w.week)}${w.locked ? " (locked)" : ""}</label><input type="url" data-index="${i}" value="${escHtml(w.url || "")}" placeholder="https://..." ${w.locked ? "disabled" : ""}>`;
     body.appendChild(row);
   });
   document.getElementById("urlModal").classList.add("active");
@@ -1083,6 +1149,7 @@ function closeUrlModal() {
 function saveUrls() {
   document.querySelectorAll("#urlModalBody input[data-index]").forEach(input => {
     const idx = parseInt(input.dataset.index);
+    if (!WEEKS[idx] || WEEKS[idx].locked) return;
     WEEKS[idx].url = input.value.trim();
   });
   scheduleSave();
@@ -1092,11 +1159,12 @@ function saveUrls() {
 
 
 function updateRowDisplay(i) {
-  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
+  const standard = readStandard();
   const w = WEEKS[i];
   const hoursVal = w.hours;
-  const variance = (hoursVal != null && hoursVal !== "") ? (parseFloat(hoursVal) - standard) : null;
-  const hoursColor = getHoursColor(hoursVal, standard);
+  const hoursNum = readHours(hoursVal);
+  const variance = hoursNum != null ? round2(hoursNum - standard) : null;
+  const hoursColor = getHoursColor(hoursNum, standard);
   const varColor = getVarianceColor(variance);
   const varTextColor = (varColor === "transparent" || varColor === "#4a515a") ? "var(--text-secondary)" : "#fff";
 
@@ -1111,9 +1179,9 @@ function updateRowDisplay(i) {
     varEl.style.color = varTextColor;
   }
   const hoursClock = tr.querySelector(".hours-clock");
-  if (hoursClock) hoursClock.textContent = (hoursVal != null && hoursVal !== "") ? clockParen(hoursVal) : "";
+  if (hoursClock) hoursClock.textContent = hoursNum != null ? clockParen(hoursNum) : "";
   const hoursUnit = tr.querySelector(".hours-unit");
-  if (hoursUnit) hoursUnit.style.display = (hoursVal != null && hoursVal !== "") ? "" : "none";
+  if (hoursUnit) hoursUnit.style.display = hoursNum != null ? "" : "none";
   const varClock = tr.querySelector(".var-clock");
   if (varClock) varClock.textContent = variance != null ? clockParen(variance, true) : "";
   const varUnit = tr.querySelector(".var-unit");
@@ -1121,17 +1189,19 @@ function updateRowDisplay(i) {
 }
 
 function updateSummary() {
-  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
+  const standard = readStandard();
   let totalHours = 0, weeksWithHours = 0, netVar = 0;
   WEEKS.forEach(w => {
-    if (w.hours != null && w.hours !== "" && !isNaN(parseFloat(w.hours))) {
-      totalHours += parseFloat(w.hours);
-      weeksWithHours++;
-      netVar += parseFloat(w.hours) - standard;
-    }
+    const h = readHours(w.hours);
+    if (h == null) return;
+    totalHours += h;
+    weeksWithHours++;
+    netVar += h - standard;
   });
-  const tilTotal = tilEntries.reduce((s, t) => s + (parseFloat(t.hours) || 0), 0);
-  const netAfterTIL = netVar - tilTotal;
+  totalHours = round2(totalHours);
+  netVar = round2(netVar);
+  const tilTotal = round2(tilEntries.reduce((s, t) => s + readTil(t.hours), 0));
+  const netAfterTIL = round2(netVar - tilTotal);
   
   document.getElementById("weeksEntered").textContent = weeksWithHours;
   document.getElementById("totalHours").textContent = totalHours.toFixed(2);
@@ -1143,7 +1213,7 @@ function updateSummary() {
   
   const grossEl = document.getElementById("grossVariance");
   if (grossEl) {
-    grossEl.textContent = tilTotal > 0 ? `(${formatVariance(netVar)}hrs gross · ${formatClock(netVar)})` : "";
+    grossEl.textContent = tilTotal > 0 ? "(" + formatVariance(netVar) + "hrs gross · " + clockParen(netVar, true).replace(/^\(/, "").replace(/\)$/, "") + ")" : "";
   }
 
   const tilEl = document.getElementById("tilTotal");
@@ -1178,30 +1248,23 @@ function render() {
 
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
-  const standard = parseFloat(document.getElementById("standard").value) || STANDARD_DEFAULT;
-
-  let totalHours = 0, weeksWithHours = 0, netVar = 0;
+  const standard = readStandard();
 
   WEEKS.forEach((w, i) => {
     const hoursVal = w.hours;
-    const variance = (hoursVal != null && hoursVal !== "") ? (parseFloat(hoursVal) - standard) : null;
+    const hoursNum = readHours(hoursVal);
+    const variance = hoursNum != null ? round2(hoursNum - standard) : null;
     const ending = computeEnding(i);
-
-    if (hoursVal != null && hoursVal !== "" && !isNaN(parseFloat(hoursVal))) {
-      totalHours += parseFloat(hoursVal);
-      weeksWithHours++;
-      netVar += variance;
-    }
-
-    const hoursColor = getHoursColor(hoursVal, standard);
+    const hoursColor = getHoursColor(hoursNum, standard);
     const varColor = getVarianceColor(variance);
     const varTextColor = (varColor === "transparent" || varColor === "#4a515a") ? "var(--text-secondary)" : "#fff";
-    const hasUrl = w.url && w.url.trim();
+    const openable = !!safeUrl(w.url);
+    const hasUrl = openable;
 
     const tr = document.createElement("tr");
     tr.dataset.index = i;
     tr.innerHTML = `
-      <td class="week-num">${w.week}</td>
+      <td class="week-num">${escHtml(w.week)}</td>
       <td class="date">${ending}</td>
       <td>
         <span class="hours-indicator" style="background:${hoursColor === "transparent" ? "transparent" : hoursColor}"></span>
@@ -1211,8 +1274,8 @@ function render() {
             <button class="spin-btn" type="button" ${w.locked ? "disabled" : ""} onclick="event.stopPropagation(); adjustHours(${i}, -0.25)">−</button>
             <button class="spin-btn" type="button" ${w.locked ? "disabled" : ""} onclick="event.stopPropagation(); adjustHours(${i}, 0.25)">+</button>
           </div>
-          <span class="metric-unit hours-unit" style="${(hoursVal != null && hoursVal !== "") ? "" : "display:none"}">hrs</span>
-          <span class="clock-hint hours-clock" data-index="${i}">${(hoursVal != null && hoursVal !== "") ? clockParen(hoursVal) : ""}</span>
+          <span class="metric-unit hours-unit" style="${hoursNum != null ? "" : "display:none"}">hrs</span>
+          <span class="clock-hint hours-clock" data-index="${i}">${hoursNum != null ? clockParen(hoursNum) : ""}</span>
         </div>
       </td>
       <td>
@@ -1224,8 +1287,8 @@ function render() {
       </td>
       <td>
         <div class="row-actions">
-          <button class="btn small ${hasUrl ? "" : "disabled"}" ${hasUrl ? "" : "disabled"}
-                  onclick="event.stopPropagation(); openTimesheet('${(w.url || "").replace(/'/g, "\\'")}')">
+          <button class="btn small ${hasUrl ? "" : "disabled"}" ${hasUrl ? "" : "disabled"} data-url="${escHtml(w.url || "")}"
+                  onclick="event.stopPropagation(); openTimesheet(this.dataset.url)">
             OPEN TIMESHEET
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </button>
@@ -1248,8 +1311,16 @@ function render() {
     input.addEventListener("input", e => {
       e.stopPropagation();
       const idx = parseInt(e.target.dataset.index);
+      if (!WEEKS[idx] || WEEKS[idx].locked) return;
       const val = e.target.value.trim();
-      WEEKS[idx].hours = val === "" ? null : parseFloat(val);
+      if (val === "") {
+        WEEKS[idx].hours = null;
+      } else {
+        const n = parseFloat(val);
+        if (!isFinite(n)) return;
+        if (n < 0) { e.target.value = "0"; WEEKS[idx].hours = 0; }
+        else WEEKS[idx].hours = n;
+      }
       updateRowDisplay(idx);
       updateSummary();
       scheduleSave();
@@ -1264,12 +1335,12 @@ function render() {
 }
 
 function exportCSV() {
-  const standard = parseFloat(document.getElementById("standard").value) || 38;
+  const standard = readStandard();
   const headers = ["Week", "Ending", "Hours", "Variance", "Standard", "Timesheet URL"];
   const rows = WEEKS.map((w, i) => {
-    const hours = (w.hours != null && w.hours !== "") ? parseFloat(w.hours) : "";
-    const variance = hours !== "" ? +(hours - standard).toFixed(2) : "";
-    return [w.week, computeEnding(i), hours, variance, standard, w.url || ""];
+    const hours = readHours(w.hours);
+    const variance = hours != null ? round2(hours - standard) : "";
+    return [w.week, computeEnding(i), hours == null ? "" : hours, variance, standard, w.url || ""];
   });
   const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
   downloadFile(csv, "timesheet-daniel-clancy.csv", "text/csv");
@@ -1279,7 +1350,7 @@ function exportJSON() {
   const data = {
     employee: EMPLOYEE,
     exported: new Date().toISOString(),
-    standardHours: parseFloat(document.getElementById("standard").value) || 38,
+    standardHours: readStandard(),
     weekEndDay,
     weeks: WEEKS.map((w, i) => ({ week: w.week, hours: w.hours, url: w.url || "", locked: !!w.locked, ending: computeEnding(i) })),
     tilEntries
@@ -1290,7 +1361,7 @@ function exportJSON() {
 function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const standard = parseFloat(document.getElementById("standard").value) || 38;
+  const standard = readStandard();
 
   doc.setFillColor(16, 21, 28);
   doc.rect(0, 0, 210, 40, "F");
@@ -1312,14 +1383,16 @@ function exportPDF() {
   // Summary
   let total = 0, count = 0, net = 0;
   WEEKS.forEach(w => {
-    if (w.hours != null && w.hours !== "") {
-      total += parseFloat(w.hours);
-      count++;
-      net += parseFloat(w.hours) - standard;
-    }
+    const h = readHours(w.hours);
+    if (h == null) return;
+    total += h;
+    count++;
+    net += h - standard;
   });
-  const tilTotal = tilEntries.reduce((s, t) => s + (parseFloat(t.hours) || 0), 0);
-  const netAfter = net - tilTotal;
+  total = round2(total);
+  net = round2(net);
+  const tilTotal = round2(tilEntries.reduce((s, t) => s + readTil(t.hours), 0));
+  const netAfter = round2(net - tilTotal);
   const avg = count ? total / count : null;
   doc.setFontSize(10);
   doc.text(`Weeks entered: ${count}`, 14, y);
@@ -1349,8 +1422,8 @@ function exportPDF() {
       doc.addPage();
       y = 20;
     }
-    const hours = (w.hours != null && w.hours !== "") ? parseFloat(w.hours) : null;
-    const variance = hours != null ? hours - standard : null;
+    const hours = readHours(w.hours);
+    const variance = hours != null ? round2(hours - standard) : null;
     doc.text(w.week, 16, y);
     doc.text(computeEnding(i), 42, y);
     doc.text(hours != null ? hours.toFixed(2) + "hrs" : "—", 72, y);
@@ -1363,9 +1436,9 @@ function exportPDF() {
       doc.setFontSize(9);
       doc.setTextColor(30, 30, 30);
     }
-    if (w.url && w.url.trim()) {
+    if (safeUrl(w.url)) {
       doc.setTextColor(91, 156, 245);
-      doc.textWithLink("Open", 148, y, { url: w.url });
+      doc.textWithLink("Open", 148, y, { url: safeUrl(w.url) });
       doc.setTextColor(30, 30, 30);
     } else {
       doc.text("—", 148, y);
@@ -1383,7 +1456,7 @@ function exportPDF() {
     doc.setFontSize(9);
     tilEntries.forEach(t => {
       if (y > 275) { doc.addPage(); y = 20; }
-      const h = parseFloat(t.hours) || 0;
+      const h = readTil(t.hours);
       doc.setTextColor(30, 30, 30);
       doc.text(`${t.date || "—"}    ${h.toFixed(2)}hrs ${clockParen(h)}    ${t.note || ""}`, 14, y);
       y += 6;
@@ -1455,18 +1528,27 @@ document.getElementById("weekEndDay").addEventListener("change", e => {
 });
 
 function adjustHours(index, delta) {
-  if (WEEKS[index].locked) return;
-  let v = parseFloat(WEEKS[index].hours) || 0;
-  v = Math.max(0, v + delta);
-  WEEKS[index].hours = v;
+  if (!WEEKS[index] || WEEKS[index].locked) return;
+  const current = readHours(WEEKS[index].hours);
+  if (current == null) {
+    if (delta < 0) return;
+    WEEKS[index].hours = round2(Math.max(0, delta));
+  } else {
+    let next = round2(current + delta);
+    if (next < 0) next = 0;
+    if (delta > 0 && next > 80) next = current >= 80 ? current : 80;
+    if (delta > 0 && next === current) return;
+    WEEKS[index].hours = next;
+  }
   scheduleSave();
   render();
 }
 
 function adjustStandard(delta) {
   const el = document.getElementById("standard");
-  let v = parseFloat(el.value) || 38;
-  v = Math.max(0, v + delta);
+  let v = parseFloat(el.value);
+  if (!isFinite(v)) v = STANDARD_DEFAULT;
+  v = round2(Math.max(0, v + delta));
   el.value = v;
   scheduleSave();
   render();
@@ -1494,15 +1576,21 @@ function importJSON(e) {
     try {
       const data = JSON.parse(reader.result);
       if (data.weeks && Array.isArray(data.weeks)) {
-        WEEKS = data.weeks.map(w => ({
-          week: w.week,
-          hours: w.hours ?? null,
+        WEEKS = data.weeks.map((w, i) => ({
+          week: w.week || ("WEEK " + (i + 1)),
+          hours: (w.hours == null || w.hours === "" || !isFinite(parseFloat(w.hours))) ? null : parseFloat(w.hours),
           url: w.url || "",
           locked: !!w.locked
         }));
-        tilEntries = Array.isArray(data.tilEntries) ? data.tilEntries : [];
-        if (data.standardHours != null) document.getElementById("standard").value = data.standardHours;
-        if (data.weekEndDay != null) {
+        tilEntries = Array.isArray(data.tilEntries) ? data.tilEntries.map(t => ({
+          date: t.date || "",
+          hours: Math.max(0, parseFloat(t.hours) || 0),
+          note: t.note || "",
+          locked: !!t.locked
+        })) : [];
+        const std = data.standardHours != null ? data.standardHours : data.standard;
+        if (std != null && isFinite(parseFloat(std))) document.getElementById("standard").value = Math.max(0, parseFloat(std));
+        if (data.weekEndDay != null && data.weekEndDay >= 0 && data.weekEndDay <= 6) {
           weekEndDay = data.weekEndDay;
           document.getElementById("weekEndDay").value = weekEndDay;
         }
@@ -1531,11 +1619,15 @@ function closeShareModal() {
 async function generateShare() {
   const expiry = document.getElementById("shareExpiry").value;
   const password = document.getElementById("sharePassword").checked;
+  const standard = readStandard();
   const payload = {
-    standard: parseFloat(document.getElementById("standard").value) || 38,
+    standard,
     weekEndDay,
-    weeks: WEEKS.map((w, i) => ({ week: w.week, ending: computeEnding(i), hours: w.hours, variance: w.hours != null ? +(w.hours - (parseFloat(document.getElementById("standard").value)||38)).toFixed(2) : null, url: w.url || "" })),
-    tilEntries,
+    weeks: WEEKS.map((w, i) => {
+      const hours = readHours(w.hours);
+      return { week: w.week, ending: computeEnding(i), hours, variance: hours != null ? round2(hours - standard) : null, url: w.url || "" };
+    }),
+    tilEntries: tilEntries.map(t => ({ date: t.date || "", hours: readTil(t.hours), note: t.note || "", locked: !!t.locked })),
     expiry,
     password
   };
@@ -1555,17 +1647,19 @@ async function generateShare() {
     alert("Could not generate share link. Check that the share function is deployed.");
   }
 }
-function copyShareLink() {
+function copyShareLink(btn) {
   const el = document.getElementById("shareLink");
+  if (!el.value) return;
   navigator.clipboard.writeText(el.value).then(() => {
-    const btn = event.currentTarget;
+    if (!btn) return;
     const orig = btn.innerHTML;
     btn.innerHTML = "✓";
-    setTimeout(() => btn.innerHTML = orig, 1200);
+    setTimeout(() => { btn.innerHTML = orig; }, 1200);
   });
 }
 function mailtoShare() {
   const link = document.getElementById("shareLink").value;
+  if (!link) { alert("Generate a link first."); return; }
   const expirySel = document.getElementById("shareExpiry");
   const expiryText = expirySel.options[expirySel.selectedIndex].text;
   const subject = encodeURIComponent("Daniel Clancy has shared a timesheet report");
@@ -1594,6 +1688,7 @@ async function forceRefresh() {
   statusEl.textContent = "Refreshing…";
   statusEl.style.color = "";
   const ok = await loadRemote();
+  if (ok === "auth") return;
   if (ok) {
     saveLocal();
     const when = serverUpdatedAt ? new Date(serverUpdatedAt).toLocaleString() : "unknown time";
@@ -1611,6 +1706,7 @@ async function forceRefresh() {
   statusEl.textContent = "Loading…";
 
   const remoteOk = await loadRemote();
+  if (remoteOk === "auth") return;
   if (remoteOk) {
     saveLocal(); // keep local in sync with remote
     const when = serverUpdatedAt ? new Date(serverUpdatedAt).toLocaleString() : "unknown time";

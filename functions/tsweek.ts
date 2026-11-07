@@ -1,13 +1,39 @@
 // functions/tsweek.ts
+async function signAuth(secret: string) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const buf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode("tsweek-auth-v1"));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function readCookie(header: string, name: string) {
+  for (const part of header.split(/; */)) {
+    const i = part.indexOf("=");
+    if (i > 0 && part.slice(0, i) === name) return part.slice(i + 1);
+  }
+  return "";
+}
+function sameToken(a: string, b: string) {
+  if (!a || a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return out === 0;
+}
+
 export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (context) => {
   const { request, env } = context;
 
   if (request.method === "POST") {
     const form = await request.formData();
     const password = form.get("password")?.toString() || "";
-    if (password === env.TSWEEK_PASSWORD) {
+    if (env.TSWEEK_PASSWORD && password === env.TSWEEK_PASSWORD) {
+      const token = await signAuth(env.TSWEEK_PASSWORD);
       const headers = new Headers();
-      headers.set("Set-Cookie", `tsweek_auth=1; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`);
+      headers.set("Set-Cookie", `tsweek_auth=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`);
       headers.set("Location", "/tsweek");
       return new Response(null, { status: 302, headers });
     }
@@ -20,7 +46,9 @@ export const onRequest: PagesFunction<{ TSWEEK_PASSWORD: string }> = async (cont
   const forceLogin = url.searchParams.get("login") === "1";
   const wrong = url.searchParams.get("e") === "1";
   const cookie = request.headers.get("Cookie") || "";
-  if (forceLogin || !cookie.includes("tsweek_auth=1")) {
+  const token = env.TSWEEK_PASSWORD ? await signAuth(env.TSWEEK_PASSWORD) : "";
+  const authed = !!token && sameToken(readCookie(cookie, "tsweek_auth"), token);
+  if (forceLogin || !authed) {
     return new Response(`<!DOCTYPE html>
 <html lang="en">
 <head>
