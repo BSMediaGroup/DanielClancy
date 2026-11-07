@@ -30,21 +30,39 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (row.password_required) {
     if (provided !== env.TSWEEK_GUEST_SECRET) {
       return new Response(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Password required</title>
-<link href="https://fonts.googleapis.com/css2?family=Blinker:wght@400;600&display=swap" rel="stylesheet">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared ledger</title>
+<link href="https://fonts.googleapis.com/css2?family=Blinker:wght@400;600&family=Source+Sans+3:wght@650;800&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box}
-  body{background:#07090d;color:#f0f3f6;font-family:Blinker,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-  form{background:#161b22;padding:32px;border-radius:12px;border:1px solid #2a3038;text-align:center}
-  h3{font-weight:600;margin:0 0 14px}
-  input{background:#0d1117;border:1px solid #2a3038;color:#fff;padding:10px 12px;border-radius:6px;width:220px;font-family:inherit}
-  button{background:#5b9cf5;color:#fff;border:none;padding:10px 16px;border-radius:6px;margin-top:12px;width:100%;cursor:pointer;font-family:inherit;font-weight:600}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    color:#f4f7fb; font-family:Blinker,sans-serif;
+    background:
+      radial-gradient(900px 420px at 15% -10%, rgba(90,140,220,.2), transparent 60%),
+      radial-gradient(700px 380px at 100% 0%, rgba(124,92,196,.12), transparent 55%),
+      #07090d;
+  }
+  form{
+    width:min(380px, 92vw); text-align:left; padding:28px 26px 24px;
+    border-radius:18px; border:1px solid rgba(186,206,230,.16);
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.012) 40%, transparent), #121820;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 24px 60px rgba(0,0,0,.5);
+  }
+  .kicker{font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:#8b97a6; margin-bottom:8px}
+  h3{font-family:"Source Sans 3",sans-serif; font-weight:750; font-size:1.35rem; margin:0 0 6px; letter-spacing:-.3px}
+  p{margin:0 0 16px; color:#8b97a6; font-size:.9rem}
+  input{background:#0c1016; border:1px solid rgba(176,196,220,.16); color:#f4f7fb; padding:12px 14px; border-radius:10px; width:100%; font-family:inherit; font-size:1rem}
+  input:focus{outline:none; border-color:#7eb0ff; box-shadow:0 0 0 3px rgba(126,176,255,.22)}
+  button{background:linear-gradient(180deg,#9ec2ff,#4f86ee); color:#fff; border:1px solid rgba(190,214,255,.7); padding:12px 16px; border-radius:10px; margin-top:14px; width:100%; cursor:pointer; font-family:inherit; font-weight:650; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 8px 20px rgba(79,134,238,.28)}
 </style></head>
 <body>
   <form method="GET">
-    <h3>Password required</h3>
+    <div class="kicker">Daniel Clancy</div>
+    <h3>Shared timesheet</h3>
+    <p>This link is password protected.</p>
     <input type="password" name="p" placeholder="Password" autofocus required>
-    <button type="submit">View</button>
+    <button type="submit">View ledger</button>
   </form>
 </body></html>`, { headers: { "Content-Type": "text/html" } });
     }
@@ -122,60 +140,115 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Global Timesheet Ledger — Daniel Clancy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Blinker:wght@400;500;600&family=Source+Sans+3:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Blinker:wght@300;400;500;600;700&family=Source+Sans+3:wght@600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  :root {
-    --bg:#07090d; --bg-card:#161b22; --border:#2a3038; --text:#f0f3f6;
-    --text-muted:#7d8590; --accent:#5b9cf5; --green:#3fb950; --red:#f85149;
+  :root{
+    --bg:#07090d; --border:rgba(176,196,220,.14); --text:#f4f7fb;
+    --muted:#8b97a6; --accent:#7eb0ff; --green:#3dcc6e; --red:#ff6b63; --violet:#c4b5fd;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:Blinker,sans-serif;padding:28px 16px;min-height:100vh}
-  .container{max-width:1040px;margin:0 auto}
-  header{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px 28px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
-  .logo{width:48px;height:48px;background:linear-gradient(135deg,#5b9cf5,#3d7dd4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
-  .identity h1{font-family:"Source Sans 3",sans-serif;font-size:1.4rem;font-weight:800;margin:0;line-height:1.1}
-  .identity .role{color:var(--accent);font-size:0.9rem}
-  .identity .company{color:var(--text-muted);font-size:0.8rem}
-  .page-title{font-family:"Source Sans 3",sans-serif;font-size:1.15rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#b0b8c4;margin:0 0 12px}
-  .summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
-  .stat{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
-  .stat .label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
-  .stat .value{font-family:"Source Sans 3",sans-serif;font-size:1.35rem;font-weight:650;margin-top:2px}
+  body{
+    color:var(--text); font-family:Blinker,sans-serif; min-height:100vh; padding:0 16px 48px;
+    background:
+      radial-gradient(1100px 480px at 8% -8%, rgba(90,140,220,.18), transparent 62%),
+      radial-gradient(820px 420px at 100% -4%, rgba(124,92,196,.1), transparent 58%),
+      radial-gradient(900px 520px at 50% 115%, rgba(36,64,108,.22), transparent 55%),
+      var(--bg);
+  }
+  .container{max-width:1100px;margin:0 auto}
+  header{
+    margin:16px 0 20px; padding:18px 24px; display:flex; align-items:center; gap:14px;
+    border-radius:18px; border:1px solid rgba(186,206,230,.16);
+    background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.015)), rgba(14,18,26,.78);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 18px 48px rgba(0,0,0,.42);
+    backdrop-filter:blur(22px);
+  }
+  .logo-mark{
+    width:52px; height:52px; border-radius:16px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 30% 20%, rgba(126,176,255,.28), rgba(126,176,255,.04) 70%);
+    box-shadow:0 0 0 1px rgba(126,176,255,.22), 0 10px 24px rgba(0,0,0,.35);
+  }
+  .logo-mark img{width:52px; height:52px; object-fit:contain}
+  .identity h1{font-family:"Source Sans 3",sans-serif; font-size:1.4rem; font-weight:800; margin:0; line-height:1.1; letter-spacing:-.3px}
+  .identity .role{color:var(--accent); font-size:.9rem}
+  .identity .company{color:var(--muted); font-size:.8rem}
+  .badge{
+    margin-left:auto; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:#c5ced8;
+    border:1px solid var(--border); border-radius:999px; padding:6px 10px;
+    background:rgba(255,255,255,.03);
+  }
+  .page-title{
+    font-family:"Source Sans 3",sans-serif; font-size:1.15rem; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; margin:0 0 12px; display:flex; align-items:center; gap:10px;
+    background:linear-gradient(90deg,#f7f9fc,#b7c8dc); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .page-title::before{content:""; width:3px; height:16px; border-radius:3px; background:linear-gradient(180deg,#c5d9ff,#5b8def)}
+  .summary{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:18px}
+  .stat{
+    position:relative; overflow:hidden; border-radius:14px; padding:13px 16px;
+    border:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.012) 42%, transparent), #121820;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.22);
+  }
+  .stat::before{content:""; position:absolute; left:12px; right:12px; top:0; height:1px; background:linear-gradient(90deg, transparent, rgba(158,190,240,.85), transparent)}
+  .stat .label{font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; font-weight:600}
+  .stat .value{font-family:"Source Sans 3",sans-serif; font-size:1.28rem; font-weight:700; margin-top:3px}
   .stat .value.positive{color:var(--green)}
   .stat .value.negative{color:var(--red)}
-  .stat .value.neutral{color:#b0b8c4}
-  .stat.til{border-color:#a78bfa}
-  .stat.til .value{color:#a78bfa}
-  .unit{font-size:0.72rem;font-weight:650;color:#b0b8c4;margin-left:2px}
-  .clock{font-size:0.68rem;color:#7d8590;font-weight:500;margin-left:4px;white-space:nowrap}
-  .stat .value.positive + .unit, .positive .unit{color:var(--green)}
+  .stat .value.neutral{color:#c5ced8}
+  .stat.til{border-color:rgba(196,181,253,.45)}
+  .stat.til::before{background:linear-gradient(90deg, transparent, rgba(196,181,253,.95), transparent)}
+  .stat.til .value{color:var(--violet)}
+  .unit{font-size:.72rem; font-weight:650; color:#c5ced8; margin-left:2px}
+  .clock{font-size:.68rem; color:var(--muted); font-weight:500; margin-left:4px; white-space:nowrap}
+  .positive .unit{color:var(--green)}
   .negative .unit{color:var(--red)}
-  .til .unit{color:#a78bfa}
+  .til .unit{color:var(--violet)}
   .actions{margin-bottom:16px}
-  .btn{background:var(--bg-card);border:1px solid var(--border);color:#b0b8c4;padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;font-family:Blinker,sans-serif}
-  .btn:hover{background:#1c2129;color:var(--text)}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  .table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-  table{width:100%;border-collapse:collapse}
-  th{background:#1a1f26;text-align:left;padding:12px 16px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
-  td{padding:11px 16px;border-bottom:1px solid var(--border)}
+  .btn{
+    background:linear-gradient(180deg,#9ec2ff,#4f86ee); border:1px solid rgba(190,214,255,.7); color:#fff;
+    padding:9px 16px; border-radius:10px; font-size:.85rem; font-weight:650; cursor:pointer; font-family:Blinker,sans-serif;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 8px 20px rgba(79,134,238,.28);
+  }
+  .btn:hover{filter:brightness(1.06)}
+  .section-label{
+    margin:18px 0 10px; font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; color:var(--violet); font-weight:650;
+  }
+  .table-wrap{
+    border-radius:16px; overflow:hidden; border:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(255,255,255,.035), transparent 90px), #10161e;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 16px 40px rgba(0,0,0,.28);
+  }
+  table{width:100%; border-collapse:collapse}
+  th{
+    background:linear-gradient(180deg,#1c2532,#151c26); text-align:left; padding:13px 16px;
+    font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:650;
+  }
+  td{padding:11px 16px; border-bottom:1px solid rgba(176,196,220,.08)}
+  tbody tr:hover td{background:rgba(126,176,255,.07)}
   tr:last-child td{border-bottom:none}
-  a{color:var(--accent);text-decoration:none}
+  a{color:var(--accent); text-decoration:none; font-weight:600}
   a:hover{text-decoration:underline}
-  footer{margin-top:24px;text-align:center;font-size:0.8rem;color:var(--text-muted)}
-  @media(max-width:720px){.summary{grid-template-columns:1fr 1fr}}
+  footer{margin-top:24px; text-align:center; font-size:.78rem; color:var(--muted)}
+  ::-webkit-scrollbar{width:8px; height:6px}
+  ::-webkit-scrollbar-track{background:#0b0f14}
+  ::-webkit-scrollbar-thumb{background:#343c48; border-radius:4px}
+  *{scrollbar-width:thin; scrollbar-color:#343c48 #0b0f14}
+  @media(max-width:720px){.summary{grid-template-columns:1fr 1fr} .badge{display:none}}
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <div class="logo">DC</div>
+    <div class="logo-mark"><img src="https://raw.githubusercontent.com/BSMediaGroup/DanielClancy/refs/heads/main/assets/logos/logomatteblue.webp" alt="DC"></div>
     <div class="identity">
       <h1>Daniel Clancy</h1>
       <div class="role">Architectural Technician</div>
       <div class="company">Greg Natale Design</div>
     </div>
+    <div class="badge">Shared view</div>
   </header>
 
   <div class="page-title">Global Timesheet Ledger</div>
@@ -199,7 +272,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     </table>
   </div>
 
-  ${tilEntries.length ? `<h3 style="margin:18px 0 10px; font-size:0.9rem; color:#a78bfa;">Time taken</h3>
+  ${tilEntries.length ? `<div class="section-label">Time taken</div>
   <div class="table-wrap">
     <table>
       <thead><tr><th>Date</th><th>Hours</th><th>Note</th></tr></thead>
