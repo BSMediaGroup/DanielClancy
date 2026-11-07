@@ -462,7 +462,7 @@
       <button class="btn small" onclick="prevPeriod()" title="Previous" style="padding:6px 8px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <span id="periodTitle" style="font-family:'Source Sans 3',sans-serif; font-size:0.95rem; font-weight:600; min-width:140px; text-align:center;">Budget</span>
+      <span id="periodTitle" style="font-family:'Source Sans 3',sans-serif; font-size:0.95rem; font-weight:600; min-width:140px; text-align:center; cursor:pointer;" onclick="openPeriodManager()" title="Manage periods">Budget</span>
       <button class="btn small" onclick="nextPeriod()" title="Next" style="padding:6px 8px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
@@ -1905,28 +1905,39 @@ function finishEdit(which) {
   const display = document.getElementById(dId);
   const input = document.getElementById(iId);
   const val = parseFloat(input.value) || 0;
-  display.textContent = which === "gross" ? "$" + val.toLocaleString() : money(val);
   display.style.display = "block";
   input.style.display = "none";
   
   if (which === "gross") {
-    syncGross();
-    // Calculate net from gross and update income
+    // Gross changed → calculate net
+    document.getElementById("grossSalary").value = val;
     const netAnnual = calcNetFromGross(val);
     const netMonthly = Math.round(netAnnual / 12 * 100) / 100;
     document.getElementById("income").value = netMonthly;
-    // Update main income source
-    const main = incomeSources.find(s => s.isMain);
-    if (main) main.amount = netMonthly;
-    updateDisplays();
   }
   if (which === "net") {
-    // Update main income source amount
-    const main = incomeSources.find(s => s.isMain);
-    if (main) main.amount = val;
+    // Net changed → back-calculate gross
+    const grossAnnual = calcGrossFromNet(val * 12);
+    document.getElementById("grossSalaryTop").value = Math.round(grossAnnual);
+    document.getElementById("grossSalary").value = Math.round(grossAnnual);
   }
-  scheduleSave();
+  
+  updateDisplays();
+  calcSalary();
+  updateSuperDisplay();
   render();
+}
+
+function calcGrossFromNet(netAnnual) {
+  // Approximate reverse calculation
+  let gross = netAnnual / 0.7;
+  for (let i = 0; i < 10; i++) {
+    const calcNet = calcNetFromGross(gross);
+    const diff = netAnnual - calcNet;
+    if (Math.abs(diff) < 1) break;
+    gross += diff * 1.3;
+  }
+  return gross;
 }
 
 function calcNetFromGross(gross) {
@@ -2027,6 +2038,72 @@ function addCategory() {
   document.getElementById("newCatLabel").value = "";
   renderIconEditor();
   render();
+}
+
+
+function openPeriodManager() {
+  renderPeriodList();
+  document.getElementById("periodManager").classList.add("active");
+}
+function closePeriodManager() {
+  document.getElementById("periodManager").classList.remove("active");
+}
+function renderPeriodList() {
+  const el = document.getElementById("periodList");
+  const keys = Object.keys(periods).sort().reverse();
+  if (keys.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted); padding:12px;">No periods saved</div>';
+    return;
+  }
+  el.innerHTML = keys.map(key => {
+    const p = periods[key];
+    const isCurrent = key === currentPeriodKey;
+    return `<div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg-elevated); border-radius:8px; margin-bottom:6px; ${isCurrent ? 'border:1px solid var(--accent);' : ''}">
+      <div style="flex:1;">
+        <div style="font-weight:600;">${formatPeriodTitle(key, budgetInterval)}</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Income: $${(p.income || 0).toFixed(2)} · ${(p.expenses || []).length} expenses</div>
+      </div>
+      <button class="btn small" onclick="loadPeriodFromManager('${key}')">Open</button>
+      <button class="btn small" onclick="duplicatePeriod('${key}')" title="Duplicate">⧉</button>
+      <button class="btn small" onclick="deletePeriod('${key}')" style="color:var(--red);" ${isCurrent ? 'disabled' : ''}>✕</button>
+    </div>`;
+  }).join("");
+}
+function loadPeriodFromManager(key) {
+  savePeriod();
+  loadPeriod(key);
+  closePeriodManager();
+}
+function duplicatePeriod(key) {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  const newKey = getPeriodKey(d, budgetInterval);
+  if (periods[newKey]) {
+    alert("Period already exists");
+    return;
+  }
+  periods[newKey] = JSON.parse(JSON.stringify(periods[key]));
+  scheduleSave();
+  renderPeriodList();
+}
+function deletePeriod(key) {
+  if (key === currentPeriodKey) return;
+  if (!confirm("Delete " + formatPeriodTitle(key, budgetInterval) + "?")) return;
+  delete periods[key];
+  scheduleSave();
+  renderPeriodList();
+}
+function addPeriod() {
+  const dateInput = document.getElementById("newPeriodDate").value;
+  if (!dateInput) return;
+  const key = getPeriodKey(new Date(dateInput + "-01"), budgetInterval);
+  if (periods[key]) {
+    alert("Period already exists");
+    return;
+  }
+  ensurePeriod(key);
+  scheduleSave();
+  renderPeriodList();
 }
 
 function openSettings() {
@@ -2210,6 +2287,26 @@ document.querySelectorAll(".modal-overlay").forEach(overlay => {
     </div>
     <div class="modal-body">
       <div id="categoryPickerGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="periodManager">
+  <div class="modal" style="width:min(560px,94vw);">
+    <div class="modal-header">
+      <h2>Manage periods</h2>
+      <button class="btn" onclick="closePeriodManager()" style="padding:4px 8px;">&times;</button>
+    </div>
+    <div class="modal-body" style="max-height:60vh; overflow-y:auto;">
+      <div id="periodList"></div>
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <input type="month" id="newPeriodDate" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:6px;">
+        <button class="btn" onclick="addPeriod()">+ Add period</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closePeriodManager()">Close</button>
     </div>
   </div>
 </div>
