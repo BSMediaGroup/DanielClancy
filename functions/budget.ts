@@ -98,7 +98,7 @@ export const onRequest: PagesFunction<{ BUDGET_SECRET: string }> = async (contex
 <body>
   <form method="POST">
     <img src="https://raw.githubusercontent.com/BSMediaGroup/DanielClancy/refs/heads/main/assets/logos/logomatteblue.webp" alt="">
-    <div class="kicker">Greg Natale Design</div>
+    <div class="kicker">Daniel Clancy</div>
     <h2>Budget</h2>
     <p>Sign in to the ledger.</p>
     ${wrong ? '<div class="err">Incorrect password.</div>' : ""}

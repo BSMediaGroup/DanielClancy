@@ -26,11 +26,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   `).run();
 
   if (request.method === "POST") {
-    const body = await request.json() as any;
-    const code = Array.from(crypto.getRandomValues(new Uint8Array(9)))
-      .map(b => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36])
-      .join("")
-      .slice(0, 12);
+    let body: any;
+    try { body = await request.json(); }
+    catch { return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { "Content-Type": "application/json" } }); }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return new Response(JSON.stringify({ error: "Invalid budget" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    }
+    const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+    const code = Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => alphabet[b % 36]).join("");
 
     let expires: string | null = null;
     const now = Date.now();

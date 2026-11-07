@@ -877,7 +877,10 @@ function getPeriodKey(date, interval) {
   if (interval === "week") {
     const start = new Date(d);
     start.setDate(d.getDate() - d.getDay());
-    return `${start.getFullYear()}-W${String(Math.ceil((start.getDate()) / 7)).padStart(2, "0")}`;
+    const y = start.getFullYear();
+    const m = String(start.getMonth() + 1).padStart(2, "0");
+    const n = Math.ceil(start.getDate() / 7);
+    return `${y}-${m}-W${n}`;
   }
   if (interval === "fortnight") {
     const fn = Math.ceil(d.getDate() / 14);
@@ -886,6 +889,27 @@ function getPeriodKey(date, interval) {
   return `${y}-${m}`;
 }
 
+function keyToDate(key) {
+  let m = String(key || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  m = String(key || "").match(/^(\d{4})-(\d{2})-W(\d+)$/);
+  if (m) return new Date(+m[1], +m[2] - 1, (+m[3] - 1) * 7 + 1);
+  m = String(key || "").match(/^(\d{4})-(\d{2})-F(\d+)$/);
+  if (m) return new Date(+m[1], +m[2] - 1, (+m[3] - 1) * 14 + 1);
+  m = String(key || "").match(/^(\d{4})-(\d{2})$/);
+  if (m) return new Date(+m[1], +m[2] - 1, 1);
+  m = String(key || "").match(/^(\d{4})-W(\d+)$/);
+  if (m) return new Date(+m[1], 0, (+m[2] - 1) * 7 + 1);
+  return new Date();
+}
+function stepPeriod(key, interval, dir) {
+  const d = keyToDate(key);
+  if (interval === "month") d.setMonth(d.getMonth() + dir);
+  else if (interval === "week") d.setDate(d.getDate() + 7 * dir);
+  else if (interval === "fortnight") d.setDate(d.getDate() + 14 * dir);
+  else d.setDate(d.getDate() + dir);
+  return getPeriodKey(d, interval);
+}
 function formatPeriodTitle(key, interval) {
   if (interval === "month") {
     const [y, m] = key.split("-");
@@ -933,13 +957,13 @@ function loadPeriod(key) {
 function savePeriod() {
   if (!currentPeriodKey) return;
   periods[currentPeriodKey] = {
-    income: parseFloat(document.getElementById("income").value) || 0,
-    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 90000,
-    phoneAllowance: parseFloat(document.getElementById("phoneAllowance").value) || 44,
+    income: num(document.getElementById("income").value),
+    grossSalary: num(document.getElementById("grossSalary").value),
+    phoneAllowance: num(document.getElementById("phoneAllowance").value),
     incomeSources, expenses, purchases,
-    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
-    savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
-    savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0
+    savings: num(document.getElementById("savingsAmount").value),
+    savingsGoal: num(document.getElementById("savingsGoal").value),
+    savingsBalance: num(document.getElementById("savingsBalance").value)
   };
 }
 
@@ -947,38 +971,24 @@ function prevPeriod() {
   savePeriod();
   const keys = Object.keys(periods).sort();
   const idx = keys.indexOf(currentPeriodKey);
-  if (idx > 0) {
-    loadPeriod(keys[idx - 1]);
-    scheduleSave();
-  }
+  if (idx > 0) loadPeriod(keys[idx - 1]);
+  else loadPeriod(stepPeriod(currentPeriodKey || getPeriodKey(new Date(), budgetInterval), budgetInterval, -1));
+  scheduleSave();
   updatePeriodButtons();
 }
 function updatePeriodButtons() {
-  const keys = Object.keys(periods).sort();
-  const idx = keys.indexOf(currentPeriodKey);
   const prevBtn = document.getElementById("prevPeriodBtn");
   if (prevBtn) {
-    prevBtn.disabled = idx <= 0;
-    prevBtn.style.opacity = idx <= 0 ? "0.4" : "1";
+    prevBtn.disabled = false;
+    prevBtn.style.opacity = "1";
   }
 }
 function nextPeriod() {
   savePeriod();
   const keys = Object.keys(periods).sort();
   const idx = keys.indexOf(currentPeriodKey);
-  if (idx < keys.length - 1) {
-    loadPeriod(keys[idx + 1]);
-  } else {
-    // Auto-create next period based on current
-    const d = new Date();
-    if (budgetInterval === "month") d.setMonth(d.getMonth() + 1);
-    else if (budgetInterval === "week") d.setDate(d.getDate() + 7);
-    else if (budgetInterval === "fortnight") d.setDate(d.getDate() + 14);
-    else d.setDate(d.getDate() + 1);
-    const newKey = getPeriodKey(d, budgetInterval);
-    ensurePeriod(newKey);
-    loadPeriod(newKey);
-  }
+  if (idx >= 0 && idx < keys.length - 1) loadPeriod(keys[idx + 1]);
+  else loadPeriod(stepPeriod(currentPeriodKey || getPeriodKey(new Date(), budgetInterval), budgetInterval, 1));
   scheduleSave();
   updatePeriodButtons();
 }
@@ -1018,13 +1028,54 @@ const DEFAULT_EXPENSES = [
 ];
 
 function toDaily(amount, freq) {
-  return (Number(amount) || 0) / (FREQ_DAYS[freq] || 1);
+  return num(amount) / (FREQ_DAYS[freq] || 1);
 }
 function project(daily, freq) {
   return daily * (FREQ_DAYS[freq] || 1);
 }
+function num(v, fallback = 0) {
+  const n = typeof v === "number" ? v : parseFloat(v);
+  return isFinite(n) ? n : fallback;
+}
+function round2(n) {
+  const r = Math.round((num(n) + Number.EPSILON) * 100) / 100;
+  return Object.is(r, -0) ? 0 : r;
+}
+function toMonthly(amount, period) {
+  const n = num(amount);
+  if (period === "year") return n / 12;
+  if (period === "fortnight") return n * 26 / 12;
+  if (period === "week") return n * 52 / 12;
+  return n;
+}
+function toAnnual(amount, period) {
+  const n = num(amount);
+  if (period === "year") return n;
+  if (period === "fortnight") return n * 26;
+  if (period === "week") return n * 52;
+  return n * 12;
+}
+function periodSpan(interval) {
+  if (interval === "week") return 12 / 52;
+  if (interval === "fortnight") return 12 / 26;
+  if (interval === "day") return 12 / 365;
+  return 1;
+}
+function escHtml(s) {
+  return String(s ?? "")
+    .split("&").join("&" + "amp;")
+    .split("<").join("&" + "lt;")
+    .split(">").join("&" + "gt;")
+    .split('"').join("&" + "quot;");
+}
+function hasWord(name, kw) {
+  const safe = String(kw || "").toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!safe) return false;
+  return new RegExp("(^|[^a-z0-9])" + safe + "([^a-z0-9]|$)").test(name);
+}
 function money(n) {
-  return "$" + (Number(n) || 0).toFixed(2);
+  const v = num(n);
+  return (v < 0 ? "-$" : "$") + Math.abs(v).toFixed(2);
 }
 
 
@@ -1097,14 +1148,14 @@ function detectCategory(name) {
   const n = (name || "").toLowerCase().trim();
   // Check custom rules first
   for (const [cat, words] of Object.entries(customRules)) {
-    if (words.some(w => n.includes(w.toLowerCase()))) {
+    if (words.some(w => hasWord(n, w))) {
       return CATEGORIES[cat] || CATEGORIES.other;
     }
   }
   // Default matching
   for (const [key, cat] of Object.entries(CATEGORIES)) {
     if (key === "other") continue;
-    if (cat.keywords.some(kw => n.includes(kw))) return cat;
+    if (cat.keywords.some(kw => hasWord(n, kw))) return cat;
   }
   return CATEGORIES.other;
 }
@@ -1142,7 +1193,7 @@ function renderPurchases() {
     const cat = p.categoryOverride ? (CATEGORIES[p.categoryOverride] || detectCategory(p.name)) : detectCategory(p.name);
     return `<div class="purchase-row">
       <div class="exp-icon" style="width:24px; height:24px; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.icon}</div>
-      <input type="text" value="${p.name}" class="name-input" onchange="updatePurchase(${i}, 'name', this.value)">
+      <input type="text" value="${escHtml(p.name)}" class="name-input" onchange="updatePurchase(${i}, 'name', this.value)">
       <span class="cat-label" style="color:#a78bfa; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.label}</span>
       <input type="number" step="0.01" value="${p.amount}" class="amt" onchange="updatePurchase(${i}, 'amount', parseFloat(this.value)||0)">
       <button class="btn small" onclick="removePurchase(${i})" style="padding:4px 8px;">✕</button>
@@ -1150,10 +1201,10 @@ function renderPurchases() {
   }).join("");
 }
 function updatePurchaseSubtext() {
-  const income = getIncludedIncome() || parseFloat(document.getElementById("income").value) || 0;
-  const phone = parseFloat(document.getElementById("phoneAllowance").value) || 0;
+  const income = spendableIncome();
+  const phone = num(document.getElementById("phoneAllowance").value);
   const spendable = income + phone;
-  const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
+  const savings = num(document.getElementById("savingsAmount").value);
   let totalDaily = 0;
   expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
   const expMonth = project(totalDaily, "month");
@@ -1190,7 +1241,7 @@ function renderIncomeSources() {
     <div style="background:var(--bg-elevated); border-radius:10px; padding:14px; margin-bottom:10px;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
         <input type="checkbox" ${s.included ? "checked" : ""} onchange="toggleSource(${i}, this.checked)">
-        <input type="text" value="${s.label}" onchange="updateSource(${i}, 'label', this.value)" style="flex:1; background:#0d1117; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:6px 10px; font-weight:${s.isMain ? '600' : '400'};">
+        <input type="text" value="${escHtml(s.label)}" onchange="updateSource(${i}, 'label', this.value)" style="flex:1; background:#0d1117; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:6px 10px; font-weight:${s.isMain ? '600' : '400'};">
         <div style="display:flex; gap:4px;">
           <select onchange="updateSource(${i}, 'entryMode', this.value)" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px; font-size:0.75rem;">
             <option value="net" ${s.entryMode === 'net' ? 'selected' : ''}>Net</option>
@@ -1227,7 +1278,7 @@ function renderIncomeSources() {
         </div>
         <div>
           <label style="color:var(--text-muted); display:block; margin-bottom:2px;">State</label>
-          <input type="text" value="${s.state || ''}" placeholder="Optional" onchange="updateSource(${i}, 'state', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
+          <input type="text" value="${escHtml(s.state || "")}" placeholder="Optional" onchange="updateSource(${i}, 'state', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
         </div>
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; font-size:0.8rem;">
@@ -1289,7 +1340,7 @@ function updateSuperDisplay() {
       if (s.isMain) {
         superTotal += annualGross * rate;
       } else {
-        superTotal += (s.amount || 0) * 12 * rate;
+        superTotal += toAnnual(s.amount, s.entryPeriod || "month") * rate;
       }
     }
   });
@@ -1301,7 +1352,7 @@ function updateSuperDisplay() {
 function renderSourceMenu() {
   const menu = document.getElementById("sourceMenu");
   menu.innerHTML = incomeSources.map((s, i) => `
-    <label><input type="checkbox" ${s.included ? "checked" : ""} onchange="toggleSource(${i}, this.checked)"> ${s.label}</label>
+    <label><input type="checkbox" ${s.included ? "checked" : ""} onchange="toggleSource(${i}, this.checked)"> ${escHtml(s.label)}</label>
   `).join("");
 }
 function toggleSourceDropdown() {
@@ -1341,7 +1392,17 @@ function syncMainIncome() {
   }
 }
 function getIncludedIncome() {
-  return incomeSources.filter(s => s.included).reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+  return incomeSources.filter(s => s.included).reduce((sum, s) => sum + toMonthly(s.amount, s.entryPeriod || "month"), 0);
+}
+function spendableIncome() {
+  if (incomeSources.length) return getIncludedIncome();
+  return num(document.getElementById("income").value);
+}
+function periodMonthlyIncome(p) {
+  if (p && Array.isArray(p.incomeSources) && p.incomeSources.length) {
+    return p.incomeSources.filter(s => s.included).reduce((sum, s) => sum + toMonthly(s.amount, s.entryPeriod || "month"), 0);
+  }
+  return num(p && p.income);
 }
 
 
@@ -1352,17 +1413,16 @@ function renderYTD() {
   let totalIncome = 0, totalExpenses = 0, totalSavings = 0, totalPurchases = 0;
   const monthlyData = [];
   
+  const span = periodSpan(budgetInterval);
   keys.forEach(key => {
     const p = periods[key];
     if (!p) return;
-    const income = p.income || 0;
-    const phone = p.phoneAllowance || 0;
-    const spendable = income + phone;
+    const spendable = (periodMonthlyIncome(p) + num(p.phoneAllowance)) * span;
     let expDaily = 0;
     (p.expenses || []).forEach(e => { expDaily += toDaily(e.amount, e.frequency); });
-    const expMonth = project(expDaily, "month");
-    const savings = p.savings || 0;
-    const purchases = (p.purchases || []).reduce((s, x) => s + (x.amount || 0), 0);
+    const expMonth = project(expDaily, "month") * span;
+    const savings = num(p.savings) * span;
+    const purchases = (p.purchases || []).reduce((s, x) => s + num(x.amount), 0);
     
     totalIncome += spendable;
     totalExpenses += expMonth;
@@ -1371,9 +1431,10 @@ function renderYTD() {
     monthlyData.push({ key, income: spendable, expenses: expMonth, savings, leftover: spendable - expMonth - savings });
   });
   
+  const monthsCovered = keys.length * span || 1;
   const leftover = totalIncome - totalExpenses - totalSavings - totalPurchases;
-  const avgIncome = totalIncome / keys.length;
-  const avgExpenses = totalExpenses / keys.length;
+  const avgIncome = totalIncome / monthsCovered;
+  const avgExpenses = totalExpenses / monthsCovered;
   
   document.getElementById("ytdSummary").innerHTML = `
     <div class="stat"><div class="label">YTD Income</div><div class="value">${money(totalIncome)}</div></div>
@@ -1387,8 +1448,10 @@ function renderYTD() {
     const last = monthlyData[monthlyData.length - 1];
     const prev = monthlyData[monthlyData.length - 2];
     if (last && prev) {
-      const expChange = ((last.expenses - prev.expenses) / prev.expenses * 100).toFixed(1);
-      insights.push(`Expenses ${expChange > 0 ? 'up' : 'down'} ${Math.abs(expChange)}% from last period`);
+      if (prev.expenses) {
+        const expChange = ((last.expenses - prev.expenses) / prev.expenses * 100);
+        insights.push(`Expenses ${expChange > 0 ? "up" : "down"} ${Math.abs(expChange).toFixed(1)}% from last period`);
+      }
     }
   }
   insights.push(`Average monthly income: ${money(avgIncome)}`);
@@ -1440,10 +1503,10 @@ function renderYTD() {
 function render() {
   updateDisplays();
   updateSuperDisplay();
-  const income = getIncludedIncome() || parseFloat(document.getElementById("income").value) || 0;
-  const phone = parseFloat(document.getElementById("phoneAllowance").value) || 0;
+  const income = spendableIncome();
+  const phone = num(document.getElementById("phoneAllowance").value);
   const spendable = income + phone;
-  const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
+  const savings = num(document.getElementById("savingsAmount").value);
   const incomeDaily = toDaily(income, "month");
   const savingsDaily = toDaily(savings, "month");
 
@@ -1493,7 +1556,7 @@ function render() {
       if (e.paid) row.classList.add("paid");
       row.innerHTML = `
         <div class="exp-icon" title="${cat.label} (double-click to change)" ondblclick="openCategoryPicker(${globalIdx})" style="cursor:pointer;">${cat.icon}</div>
-        <input type="text" value="${e.name}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
+        <input type="text" value="${escHtml(e.name)}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
         <div class="paid-check ${e.paid ? 'checked' : ''}" onclick="togglePaid(${globalIdx})" title="Mark as paid">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
@@ -1911,17 +1974,18 @@ async function saveRemote() {
   const payload = {
     interval: budgetInterval,
     periods,
-    income: parseFloat(document.getElementById("income").value) || 0,
-    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 90000,
-    phoneAllowance: parseFloat(document.getElementById("phoneAllowance").value) || 44,
-    superRate: parseFloat(document.getElementById("superRate").value) || 12,
+    income: num(document.getElementById("income").value),
+    grossSalary: num(document.getElementById("grossSalary").value),
+    phoneAllowance: num(document.getElementById("phoneAllowance").value),
+    superRate: num(document.getElementById("superRate").value, 12),
     hasHelp: document.getElementById("hasHelp").value === "1",
-    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
-    savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
-    savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
+    savings: num(document.getElementById("savingsAmount").value),
+    savingsGoal: num(document.getElementById("savingsGoal").value),
+    savingsBalance: num(document.getElementById("savingsBalance").value),
     expenses,
     purchases,
-    incomeSources
+    incomeSources,
+    currentPeriodKey
   };
   document.getElementById("syncStatus").textContent = "Saving…";
   try {
@@ -1931,6 +1995,10 @@ async function saveRemote() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    if (res.status === 401) {
+      window.location.href = "/budget?login=1";
+      return;
+    }
     document.getElementById("syncStatus").textContent = res.ok ? "Synced" : "Local only";
   } catch {
     document.getElementById("syncStatus").textContent = "Local only";
@@ -1943,7 +2011,7 @@ async function loadRemote() {
     const res = await fetch("/api/budget", { credentials: "same-origin", cache: "no-store" });
     if (res.status === 401) {
       window.location.href = "/budget?login=1";
-      return false;
+      return "auth";
     }
     if (!res.ok) return false;
     const json = await res.json();
@@ -1956,11 +2024,11 @@ async function loadRemote() {
         return true;
       }
       document.getElementById("income").value = json.data.income ?? 5888;
-      if (json.data.grossSalary) {
+      if (json.data.grossSalary != null) {
         document.getElementById("grossSalary").value = json.data.grossSalary;
         document.getElementById("grossSalaryTop").value = json.data.grossSalary;
       }
-      if (json.data.phoneAllowance) document.getElementById("phoneAllowance").value = json.data.phoneAllowance;
+      if (json.data.phoneAllowance != null) document.getElementById("phoneAllowance").value = json.data.phoneAllowance;
       if (json.data.superRate) document.getElementById("superRate").value = json.data.superRate;
       if (json.data.hasHelp) document.getElementById("hasHelp").value = "1";
       document.getElementById("savingsAmount").value = json.data.savings ?? 850;
@@ -1978,45 +2046,62 @@ async function loadRemote() {
 function loadLocal() {
   try {
     const raw = localStorage.getItem("budget_local");
-    if (raw) {
-      const d = JSON.parse(raw);
-      document.getElementById("income").value = d.income ?? 5888;
-      if (d.grossSalary) {
-        document.getElementById("grossSalary").value = d.grossSalary;
-        document.getElementById("grossSalaryTop").value = d.grossSalary;
-      }
-      if (d.phoneAllowance) document.getElementById("phoneAllowance").value = d.phoneAllowance;
-      if (d.superRate) document.getElementById("superRate").value = d.superRate;
-      if (d.hasHelp) document.getElementById("hasHelp").value = "1";
-      document.getElementById("savingsAmount").value = d.savings ?? 850;
-      document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
-      document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
-      expenses = d.expenses || DEFAULT_EXPENSES;
-      purchases = d.purchases || [];
-      if (d.incomeSources) incomeSources = d.incomeSources;
-    } else {
-      expenses = JSON.parse(JSON.stringify(DEFAULT_EXPENSES));
-    }
+    if (raw) applySnapshot(JSON.parse(raw));
+    else expenses = JSON.parse(JSON.stringify(DEFAULT_EXPENSES));
   } catch {
     expenses = JSON.parse(JSON.stringify(DEFAULT_EXPENSES));
   }
 }
 
+function applySnapshot(d) {
+  if (!d || typeof d !== "object") return;
+  document.getElementById("income").value = d.income ?? 5888;
+  if (d.grossSalary != null) {
+    document.getElementById("grossSalary").value = d.grossSalary;
+    document.getElementById("grossSalaryTop").value = d.grossSalary;
+  }
+  if (d.phoneAllowance != null) document.getElementById("phoneAllowance").value = d.phoneAllowance;
+  if (d.superRate != null) document.getElementById("superRate").value = d.superRate;
+  if (d.hasHelp) document.getElementById("hasHelp").value = "1";
+  else if (d.hasHelp === false) document.getElementById("hasHelp").value = "0";
+  document.getElementById("savingsAmount").value = d.savings ?? 850;
+  document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
+  document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
+  if (Array.isArray(d.expenses)) expenses = d.expenses;
+  if (Array.isArray(d.purchases)) purchases = d.purchases;
+  if (Array.isArray(d.incomeSources) && d.incomeSources.length) incomeSources = d.incomeSources;
+  if (d.periods && typeof d.periods === "object") {
+    periods = d.periods;
+    if (d.interval) budgetInterval = d.interval;
+    const key = d.currentPeriodKey && periods[d.currentPeriodKey] ? d.currentPeriodKey : getPeriodKey(new Date(), budgetInterval);
+    if (periods[key]) loadPeriod(key);
+  }
+}
+
 async function forceRefresh() {
   const ok = await loadRemote();
+  if (ok === "auth") return;
   document.getElementById("syncStatus").textContent = ok ? "Synced from server" : "Could not reach server";
-  render();
+  if (!ok) render();
 }
 async function forcePush() {
   await saveRemote();
 }
 
 function exportJSON() {
+  savePeriod();
   const data = {
-    income: parseFloat(document.getElementById("income").value) || 0,
-    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
-    savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
-    savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
+    interval: budgetInterval,
+    currentPeriodKey,
+    periods,
+    income: num(document.getElementById("income").value),
+    grossSalary: num(document.getElementById("grossSalary").value),
+    phoneAllowance: num(document.getElementById("phoneAllowance").value),
+    superRate: num(document.getElementById("superRate").value, 12),
+    hasHelp: document.getElementById("hasHelp").value === "1",
+    savings: num(document.getElementById("savingsAmount").value),
+    savingsGoal: num(document.getElementById("savingsGoal").value),
+    savingsBalance: num(document.getElementById("savingsBalance").value),
     expenses,
     purchases,
     incomeSources
@@ -2036,19 +2121,10 @@ function importJSON(e) {
   reader.onload = () => {
     try {
       const d = JSON.parse(reader.result);
-      document.getElementById("income").value = d.income ?? 5888;
-      if (d.grossSalary) {
-        document.getElementById("grossSalary").value = d.grossSalary;
-        document.getElementById("grossSalaryTop").value = d.grossSalary;
-      }
-      if (d.phoneAllowance) document.getElementById("phoneAllowance").value = d.phoneAllowance;
-      if (d.superRate) document.getElementById("superRate").value = d.superRate;
-      if (d.hasHelp) document.getElementById("hasHelp").value = "1";
-      document.getElementById("savingsAmount").value = d.savings ?? 850;
-      document.getElementById("savingsGoal").value = d.savingsGoal ?? 10000;
-      document.getElementById("savingsBalance").value = d.savingsBalance ?? 0;
-      expenses = d.expenses || [];
+      applySnapshot(d);
+      if (!Array.isArray(d.expenses)) expenses = [];
       scheduleSave();
+      renderIncomeSources();
       render();
     } catch { alert("Invalid JSON"); }
     e.target.value = "";
@@ -2061,10 +2137,10 @@ function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   
-  const income = parseFloat(document.getElementById("income").value) || 0;
-  const phone = parseFloat(document.getElementById("phoneAllowance").value) || 0;
-  const gross = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
-  const savings = parseFloat(document.getElementById("savingsAmount").value) || 0;
+  const income = spendableIncome();
+  const phone = num(document.getElementById("phoneAllowance").value);
+  const gross = num(document.getElementById("grossSalaryTop").value);
+  const savings = num(document.getElementById("savingsAmount").value);
   let totalDaily = 0;
   expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
   const expMonth = project(totalDaily, "month");
@@ -2123,14 +2199,15 @@ function exportPDF() {
   doc.setFontSize(9);
   expenses.forEach(e => {
     if (y > 270) { doc.addPage(); y = 20; }
-    const daily = toDaily(e.amount, e.frequency);
+    const amt = num(e.amount);
+    const daily = toDaily(amt, e.frequency);
     const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
-    doc.text(e.name.substring(0, 24), 16, y);
+    doc.text(String(e.name || "").substring(0, 24), 16, y);
     doc.setTextColor(120, 120, 120);
     doc.text(cat.label, 60, y);
-    doc.text(e.frequency, 100, y);
+    doc.text(e.frequency || "", 100, y);
     doc.setTextColor(26, 26, 26);
-    doc.text("$" + e.amount.toFixed(2), 130, y);
+    doc.text("$" + amt.toFixed(2), 130, y);
     doc.text("$" + project(daily, "month").toFixed(2), 165, y);
     y += 7;
   });
@@ -2148,18 +2225,19 @@ function closeShareModal() { document.getElementById("shareModal").classList.rem
 
 async function generateShare() {
   const payload = {
-    income: parseFloat(document.getElementById("income").value) || 0,
-    grossSalary: parseFloat(document.getElementById("grossSalary").value) || 90000,
-    phoneAllowance: parseFloat(document.getElementById("phoneAllowance").value) || 44,
-    superRate: parseFloat(document.getElementById("superRate").value) || 12,
+    income: num(document.getElementById("income").value),
+    grossSalary: num(document.getElementById("grossSalary").value),
+    phoneAllowance: num(document.getElementById("phoneAllowance").value),
+    superRate: num(document.getElementById("superRate").value, 12),
     hasHelp: document.getElementById("hasHelp").value === "1",
-    savings: parseFloat(document.getElementById("savingsAmount").value) || 0,
-    savingsGoal: parseFloat(document.getElementById("savingsGoal").value) || 0,
-    savingsBalance: parseFloat(document.getElementById("savingsBalance").value) || 0,
+    savings: num(document.getElementById("savingsAmount").value),
+    savingsGoal: num(document.getElementById("savingsGoal").value),
+    savingsBalance: num(document.getElementById("savingsBalance").value),
     expenses,
     purchases,
     incomeSources,
     periods,
+    interval: budgetInterval,
     expiry: document.getElementById("shareExpiry").value,
     password: document.getElementById("sharePassword").checked
   };
@@ -2178,7 +2256,9 @@ async function generateShare() {
 }
 
 function copyShareLink() {
-  navigator.clipboard.writeText(document.getElementById("shareLink").value);
+  const link = document.getElementById("shareLink").value;
+  if (!link) return;
+  navigator.clipboard.writeText(link);
   const icon = document.getElementById("copyIcon");
   const text = document.getElementById("copyText");
   icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
@@ -2190,6 +2270,7 @@ function copyShareLink() {
 }
 function mailtoShare() {
   const link = document.getElementById("shareLink").value;
+  if (!link) return;
   const expiry = document.getElementById("shareExpiry").options[document.getElementById("shareExpiry").selectedIndex].text;
   const subject = encodeURIComponent("Daniel Clancy has shared a budget report");
   const body = encodeURIComponent(`Please find the budget report here:\n\n${link}\n\nThis link expires: ${expiry}.`);
@@ -2630,21 +2711,19 @@ document.querySelectorAll(".modal-overlay").forEach(overlay => {
 (async function init() {
   document.getElementById("syncStatus").textContent = "Loading…";
   const ok = await loadRemote();
+  if (ok === "auth") return;
   if (!ok) {
     loadLocal();
     document.getElementById("syncStatus").textContent = "Using local data";
+    if (!Object.keys(periods).length) budgetInterval = localStorage.getItem("budget_interval") || "month";
   } else {
     document.getElementById("syncStatus").textContent = "Synced from server";
   }
   const savedDensity = localStorage.getItem("budget_density") || "medium";
   setDensity(savedDensity);
-  const interval = localStorage.getItem("budget_interval") || "month";
-  budgetInterval = interval;
   const sel = document.getElementById("budgetInterval");
-  if (sel) sel.value = interval;
-  if (Object.keys(periods).length === 0) {
-    loadPeriod(getPeriodKey(new Date(), budgetInterval));
-  }
+  if (sel) sel.value = budgetInterval;
+  if (!currentPeriodKey) loadPeriod(getPeriodKey(new Date(), budgetInterval));
   renderIncomeSources();
   render();
   calcSalary();

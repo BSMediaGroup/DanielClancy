@@ -31,7 +31,7 @@ function detectCategory(name: string, override?: string) {
   const n = (name || "").toLowerCase().trim();
   for (const [key, cat] of Object.entries(CATEGORIES)) {
     if (key === "other") continue;
-    if (cat.keywords.some(kw => n.includes(kw))) return cat;
+    if (cat.keywords.some(kw => hasWord(n, kw))) return cat;
   }
   return CATEGORIES.other;
 }
@@ -42,8 +42,43 @@ const FREQ_LABELS: Record<string, string> = {
   day: "Daily", week: "Weekly", "2week": "Fortnightly", "4week": "4-Weekly", month: "Monthly", year: "Yearly"
 };
 const DAYS: Record<string, number> = { day: 1, week: 7, "2week": 14, "4week": 28, month: 365 / 12, year: 365 };
-const toDaily = (amt: number, freq: string) => amt / (DAYS[freq] || 1);
+const toDaily = (amt: number, freq: string) => num(amt) / (DAYS[freq] || 1);
 const project = (daily: number, freq: string) => daily * (DAYS[freq] || 1);
+function num(v: unknown) {
+  const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
+  return Number.isFinite(n) ? n : 0;
+}
+function toMonthly(amount: unknown, period?: string) {
+  const n = num(amount);
+  if (period === "year") return n / 12;
+  if (period === "fortnight") return n * 26 / 12;
+  if (period === "week") return n * 52 / 12;
+  return n;
+}
+function toAnnual(amount: unknown, period?: string) {
+  const n = num(amount);
+  if (period === "year") return n;
+  if (period === "fortnight") return n * 26;
+  if (period === "week") return n * 52;
+  return n * 12;
+}
+function periodSpan(interval?: string) {
+  if (interval === "week") return 12 / 52;
+  if (interval === "fortnight") return 12 / 26;
+  if (interval === "day") return 12 / 365;
+  return 1;
+}
+function hasWord(name: string, kw: string) {
+  const safe = String(kw || "").toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!safe) return false;
+  return new RegExp("(^|[^a-z0-9])" + safe + "([^a-z0-9]|$)").test(name);
+}
+function sourceMonthly(sources: any[] | undefined, fallback: unknown) {
+  if (Array.isArray(sources) && sources.length) {
+    return sources.filter((s) => s && s.included).reduce((sum, s) => sum + toMonthly(s.amount, s.entryPeriod || "month"), 0);
+  }
+  return num(fallback);
+}
 
 function esc(s: unknown) {
   const amp = "&" + "amp;";
@@ -410,29 +445,31 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return passwordPage(provided.length > 0);
   }
 
-  const data = JSON.parse(row.data);
-  const income = Number(data.income) || 0;
-  const gross = Number(data.grossSalary) || 0;
-  const sources = data.incomeSources || [];
+  let data: any;
+  try { data = JSON.parse(row.data); }
+  catch { return new Response("Share data is damaged", { status: 500 }); }
+  const sources = Array.isArray(data.incomeSources) ? data.incomeSources : [];
+  const income = sourceMonthly(sources, data.income);
+  const gross = num(data.grossSalary);
   const SUPER_DEFAULTS: Record<string, number> = { AU: 12, US: 6, UK: 5, NZ: 3, CA: 5 };
   let superTotal = 0;
   sources.forEach((s: any) => {
     if (s.included && s.hasSuper) {
       const rate = (s.superRate || SUPER_DEFAULTS[s.nation] || 12) / 100;
-      superTotal += s.isMain ? gross * rate : (Number(s.amount) || 0) * 12 * rate;
+      superTotal += s.isMain ? gross * rate : toAnnual(s.amount, s.entryPeriod || "month") * rate;
     }
   });
-  const phone = Number(data.phoneAllowance) || 0;
-  const expenses = data.expenses || [];
-  const savings = Number(data.savings) || 0;
-  const purchases = data.purchases || [];
+  const phone = num(data.phoneAllowance);
+  const expenses = Array.isArray(data.expenses) ? data.expenses : [];
+  const savings = num(data.savings);
+  const purchases = Array.isArray(data.purchases) ? data.purchases : [];
 
   let totalDaily = 0;
   const byFreq: Record<string, number> = {};
   FREQ_ORDER.forEach((f) => { byFreq[f] = 0; });
   const byCat: Record<string, number> = {};
   expenses.forEach((e: any) => {
-    const daily = toDaily(Number(e.amount) || 0, e.frequency);
+    const daily = toDaily(num(e.amount), e.frequency);
     totalDaily += daily;
     const month = project(daily, "month");
     byFreq[e.frequency] = (byFreq[e.frequency] || 0) + month;
@@ -449,14 +486,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const periodKeys = Object.keys(periods).sort();
   let ytdIncome = 0, ytdExpenses = 0, ytdSavings = 0, ytdPurchases = 0;
   const history: { label: string; income: number; expenses: number }[] = [];
+  const span = periodSpan(data.interval);
+  const monthsCovered = periodKeys.length * span || 1;
   periodKeys.forEach((key) => {
     const p = periods[key] || {};
-    const inc = (Number(p.income) || 0) + (Number(p.phoneAllowance) || 0);
+    const inc = (sourceMonthly(p.incomeSources, p.income) + num(p.phoneAllowance)) * span;
     let expDaily = 0;
-    (p.expenses || []).forEach((e: any) => { expDaily += toDaily(Number(e.amount) || 0, e.frequency); });
-    const expM = project(expDaily, "month");
-    const sav = Number(p.savings) || 0;
-    const purch = (p.purchases || []).reduce((s: number, x: any) => s + (Number(x.amount) || 0), 0);
+    (p.expenses || []).forEach((e: any) => { expDaily += toDaily(num(e.amount), e.frequency); });
+    const expM = project(expDaily, "month") * span;
+    const sav = num(p.savings) * span;
+    const purch = (p.purchases || []).reduce((s: number, x: any) => s + num(x.amount), 0);
     ytdIncome += inc; ytdExpenses += expM; ytdSavings += sav; ytdPurchases += purch;
     history.push({ label: key, income: Math.round(inc * 100) / 100, expenses: Math.round(expM * 100) / 100 });
   });
@@ -465,8 +504,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const rateIncome = periodKeys.length > 1 ? ytdIncome : spendable;
   const rateSave = periodKeys.length > 1 ? ytdSavings : savings;
   const rate = rateIncome > 0 ? (rateSave / rateIncome) * 100 : 0;
-  const burnInc = periodKeys.length > 1 ? ytdIncome / periodKeys.length : spendable;
-  const burnExp = periodKeys.length > 1 ? ytdExpenses / periodKeys.length : expMonth;
+  const burnInc = periodKeys.length > 1 ? ytdIncome / monthsCovered : spendable;
+  const burnExp = periodKeys.length > 1 ? ytdExpenses / monthsCovered : expMonth;
   const burn = burnInc > 0 ? (burnExp / burnInc) * 100 : 0;
   let changeFig = "—";
   let changeText = periodKeys.length > 1 ? "Not enough to compare" : "One snapshot — no prior period in this share";
@@ -530,7 +569,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }).replace(/</g, "\\u003c");
 
   const rows = expenses.map((e: any) => {
-    const daily = toDaily(Number(e.amount) || 0, e.frequency);
+    const daily = toDaily(num(e.amount), e.frequency);
     const cat = detectCategory(e.name, e.categoryOverride);
     const paidMark = e.paid ? '<div class="paid-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>' : "";
     return `<tr class="${e.paid ? "paid" : ""}">

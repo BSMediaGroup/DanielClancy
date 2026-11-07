@@ -34,14 +34,24 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       });
     }
 
+    let stored: unknown = null;
+    try { stored = JSON.parse(row.data); }
+    catch { return new Response(JSON.stringify({ error: "Stored budget is damaged" }), { status: 500, headers: { "Content-Type": "application/json" } }); }
     return new Response(JSON.stringify({
-      data: JSON.parse(row.data),
+      data: stored,
       updated_at: row.updated_at
     }), { headers: { "Content-Type": "application/json" } });
   }
 
   if (request.method === "POST") {
-    const body = await request.json();
+    let body: unknown;
+    try { body = await request.json(); }
+    catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return new Response(JSON.stringify({ error: "Invalid budget" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    }
     const json = JSON.stringify(body);
     const now = new Date().toISOString();
 
