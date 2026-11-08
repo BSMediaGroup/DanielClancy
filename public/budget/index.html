@@ -274,6 +274,26 @@
   .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
   .modal-body { padding: 16px 20px; }
   .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+  .modal.wide { width: min(1080px, 96vw); }
+  .imp-tabs { display: flex; gap: 6px; }
+  .imp-tabs button { background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-family: inherit; font-weight: 650; }
+  .imp-tabs button.active { background: rgba(126,176,255,.16); color: #dbe7ff; border-color: rgba(126,176,255,.35); }
+  .imp-drop { display: block; border: 1px dashed rgba(176,196,220,.35); border-radius: 14px; padding: 22px; text-align: center; color: var(--text-secondary); cursor: pointer; background: rgba(255,255,255,.02); }
+  .imp-drop input { display: none; }
+  .imp-drop:hover { border-color: var(--accent); color: var(--text); }
+  .imp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .imp-chips button { background: #121820; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 999px; padding: 5px 10px; cursor: pointer; font-family: inherit; }
+  .imp-chips button.on { color: #fff; border-color: rgba(126,176,255,.6); background: rgba(126,176,255,.18); }
+  .imp-card { border: 1px solid rgba(176,196,220,.14); border-left: 3px solid #7eb0ff; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; background: rgba(255,255,255,.02); }
+  .imp-card.once { border-left-color: #3dcc6e; }
+  .imp-card.attention { border-left-color: #f0a05a; background: rgba(240,160,90,.08); }
+  .imp-card.ignore { border-left-color: #5c6770; opacity: .72; }
+  .imp-card.head { display: grid; grid-template-columns: 22px 1.4fr .9fr .7fr .7fr auto; gap: 8px; align-items: center; }
+  .imp-card select, .imp-card input[type="text"], .imp-card input[type="number"] { width: 100%; background: #0c1016; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 6px 8px; font-family: inherit; }
+  .imp-meta { color: var(--text-muted); font-size: .78rem; margin-top: 6px; }
+  .rule-card { border: 1px solid rgba(176,196,220,.14); border-radius: 12px; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,.02); }
+  .rule-grid { display: grid; grid-template-columns: 1.2fr .8fr .8fr 1.2fr .7fr .9fr .8fr auto; gap: 6px; align-items: end; }
+  .rule-grid label, .imp-card label { display: flex; flex-direction: column; gap: 3px; font-size: .68rem; color: var(--text-muted); letter-spacing: .04em; text-transform: uppercase; }
   @media (max-width: 900px) {
     .summary, .charts, .savings-grid, .savings-projections { grid-template-columns: 1fr 1fr; }
     .freq-scroll { overflow-x: auto; }
@@ -676,6 +696,7 @@
       <button class="btn" onclick="exportJSON()">Export JSON</button>
       <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+      <button class="btn" onclick="openImporter()">Import bank CSV</button>
       <button class="btn" onclick="openShareModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>
       <button class="btn" onclick="exportPDF()" style="background:var(--accent); color:#fff; border-color:var(--accent);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -922,6 +943,21 @@
   </div>
 </div>
 
+
+<div class="modal-overlay" id="importModal">
+  <div class="modal wide" style="display:flex; flex-direction:column; max-height:92vh;">
+    <div class="modal-header" style="gap:12px;">
+      <h2 style="margin:0;">Bank import</h2>
+      <div class="imp-tabs">
+        <button type="button" data-tab="draft" onclick="importTab='draft'; renderImporter()">Draft</button>
+        <button type="button" data-tab="rules" onclick="importTab='rules'; renderImporter()">Match rules</button>
+        <button type="button" data-tab="history" onclick="importTab='history'; renderImporter()">Import history</button>
+      </div>
+      <button class="btn" onclick="closeImporter()" style="margin-left:auto;">&times;</button>
+    </div>
+    <div class="modal-body" id="importPane" style="overflow:auto; flex:1;"></div>
+  </div>
+</div>
 <script>
 const FREQS = ["day", "week", "2week", "4week", "month", "year"];
 const FREQ_DAYS = { day: 1, week: 7, "2week": 14, "4week": 28, month: 365 / 12, year: 365 };
@@ -2325,7 +2361,10 @@ async function saveRemote() {
     expenses,
     purchases,
     incomeSources,
-    currentPeriodKey
+    currentPeriodKey,
+    matchRules,
+    matchRulesSeeded,
+    importLog
   };
   document.getElementById("syncStatus").textContent = "Saving…";
   try {
@@ -2359,6 +2398,9 @@ async function loadRemote() {
       if (json.data.periods) {
         periods = json.data.periods;
         budgetInterval = json.data.interval || "month";
+        if (Array.isArray(json.data.matchRules)) matchRules = json.data.matchRules;
+        if (json.data.matchRulesSeeded) matchRulesSeeded = true;
+        if (Array.isArray(json.data.importLog)) importLog = json.data.importLog;
         const key = getPeriodKey(new Date(), budgetInterval);
         loadPeriod(key);
         return true;
@@ -2377,6 +2419,9 @@ async function loadRemote() {
       expenses = json.data.expenses || DEFAULT_EXPENSES;
       purchases = json.data.purchases || [];
       if (json.data.incomeSources) incomeSources = json.data.incomeSources;
+      if (Array.isArray(json.data.matchRules)) matchRules = json.data.matchRules;
+      if (json.data.matchRulesSeeded) matchRulesSeeded = true;
+      if (Array.isArray(json.data.importLog)) importLog = json.data.importLog;
       savingsGoals = goalsFromPeriod(json.data);
       return true;
     }
@@ -2411,6 +2456,9 @@ function applySnapshot(d) {
   if (Array.isArray(d.expenses)) expenses = d.expenses;
   if (Array.isArray(d.purchases)) purchases = d.purchases;
   if (Array.isArray(d.incomeSources) && d.incomeSources.length) incomeSources = d.incomeSources;
+  if (Array.isArray(d.matchRules)) matchRules = d.matchRules;
+  if (d.matchRulesSeeded) matchRulesSeeded = true;
+  if (Array.isArray(d.importLog)) importLog = d.importLog;
   if (d.periods && typeof d.periods === "object") {
     periods = d.periods;
     if (d.interval) budgetInterval = d.interval;
@@ -2447,7 +2495,10 @@ function exportJSON() {
     savingsBalance: num(document.getElementById("savingsBalance").value),
     expenses,
     purchases,
-    incomeSources
+    incomeSources,
+    matchRules,
+    matchRulesSeeded,
+    importLog
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
@@ -3214,6 +3265,548 @@ document.addEventListener("dblclick", (e) => {
   fitColumn(handle.dataset.col);
 });
 
+let matchRules = [];
+let matchRulesSeeded = false;
+let importLog = [];
+let importDraft = null;
+let importTab = "draft";
+let importFilter = "all";
+
+function defaultMatchRules() {
+  const R = (name, pattern, category, treatment, frequency, extra) => Object.assign({
+    id: "r" + Math.random().toString(36).slice(2, 8),
+    name, enabled: true, mode: "contains", field: "any", pattern,
+    min: "", max: "", direction: "out", category, treatment, frequency: frequency || "month", builtin: true
+  }, extra || {});
+  return [
+    R("Own-account transfer", "quick zone", "other", "ignore", "month", { direction: "any" }),
+    R("Linked account transfer", "linked acc", "other", "ignore", "month", { direction: "any" }),
+    R("Internal transfer", "internal transfer", "other", "ignore", "month", { direction: "any", field: "bank" }),
+    R("Funds transfer", "funds transfer", "other", "ignore", "month", { direction: "any" }),
+    R("NPP / transfer debit", "transfer debit", "other", "ignore", "month", { field: "description" }),
+    R("Jobseeker", "jobseeker", "other", "ignore", "month", { direction: "in" }),
+    R("Rent", "rent", "housing", "recurring", "month"),
+    R("Mortgage", "mortgage", "housing", "recurring", "month"),
+    R("Strata or rates", "strata", "housing", "recurring", "month"),
+    R("AGL power", "agl", "power", "recurring", "month"),
+    R("Sydney Water", "sydney water", "water", "recurring", "month"),
+    R("Telstra", "telstra", "phone", "recurring", "month"),
+    R("GoDaddy", "godaddy", "internet", "recurring", "year"),
+    R("Google Workspace", "google workspace", "google", "recurring", "month"),
+    R("YouTube", "youtube", "google", "recurring", "month"),
+    R("Microsoft", "microsoft", "microsoft", "recurring", "month"),
+    R("Apple", "apple", "apple", "recurring", "month"),
+    R("Amazon Prime", "amznprim", "subscriptions", "recurring", "month"),
+    R("Opal", "opal", "transport", "recurring", "week"),
+    R("Transport for NSW", "transportfornsw", "transport", "recurring", "week"),
+    R("Coffee — Froth", "froth", "coffee", "recurring", "day"),
+    R("Cafe", "cafe", "coffee", "recurring", "day"),
+    R("Coles", "coles", "groceries", "recurring", "week"),
+    R("Woolworths", "woolworth", "groceries", "recurring", "week"),
+    R("Woolworths Metro", "ww metro", "groceries", "recurring", "week"),
+    R("McDonald's", "mcdonald", "fastfood", "recurring", "week"),
+    R("KFC", "kfc", "fastfood", "recurring", "week"),
+    R("Uber Eats", "uber", "dining", "recurring", "week"),
+    R("Dining", "sandwich", "dining", "once", "week"),
+    R("Tobacco station", "potts point hub", "cigarettes", "recurring", "day"),
+    R("Tobacco", "tobacco", "cigarettes", "recurring", "week", { field: "bank" }),
+    R("Cignall", "cignall", "cigarettes", "once", "week"),
+    R("Tatts / lotto", "tatts", "gambling", "once", "week"),
+    R("Chemist", "chemmart", "health", "once", "month"),
+    R("Pharmacy", "phcy", "health", "once", "month"),
+    R("Medical", "medical", "health", "once", "month"),
+    R("Compounding", "compoundin", "health", "once", "month"),
+    R("Amazon", "amazon", "retail", "once", "month"),
+    R("PayPal", "paypal", "retail", "once", "month"),
+    R("HFM", "hfm", "groceries", "once", "week"),
+    R("Mini mart", "mini mart", "groceries", "once", "week"),
+    R("Cross Hub", "cross hub", "cigarettes", "recurring", "day"),
+    R("Grok", "grok", "subscriptions", "recurring", "month"),
+  ];
+}
+function ensureDefaultRules() {
+  if (matchRulesSeeded) return;
+  if (!matchRules.length) matchRules = defaultMatchRules();
+  matchRulesSeeded = true;
+}
+function categoryOptions(selected) {
+  return Object.keys(CATEGORIES).map(k => `<option value="${k}" ${k === selected ? "selected" : ""}>${escHtml(CATEGORIES[k].label)}</option>`).join("");
+}
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cur = "", q = false;
+  const src = String(text || "").replace(/^\uFEFF/, "");
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (q) {
+      if (c === '"') { if (src[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+      else cur += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(cur); cur = ""; }
+    else if (c === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+    else if (c !== "\r") cur += c;
+  }
+  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim()));
+}
+const BANK_MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+function parseBankDate(s) {
+  s = String(s || "").trim();
+  let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+  m = /^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2,4})$/.exec(s);
+  if (m) { let y = +m[3]; if (y < 100) y += 2000; return new Date(y, BANK_MONTHS[m[2].toLowerCase()] ?? 0, +m[1]); }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+function isoDate(d) {
+  if (!d || isNaN(d.getTime())) return "";
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function cleanMerchant(desc, merchant) {
+  const fromMerchant = merchant && String(merchant).trim();
+  let s = fromMerchant ? String(merchant) : String(desc || "");
+  s = s.replace(/\s+/g, " ").trim();
+  if (!fromMerchant) {
+    s = s.replace(/^(visa purchase o\/seas|visa purchase|eftpos debit|internet deposit|internet withdrawal|osko withdrawal|osko deposit|foreign currency conversn fee)\s*/i, "");
+    s = s.replace(/^\d{1,2}[a-z]{3}(?:\d{2}:\d{2})?\s*/i, "");
+    s = s.replace(/^(pos|v1510)\s+\d{1,2}\/\d{1,2}\s*/i, "");
+    s = s.replace(/^[a-z]{3}\d{1,2}(\.\d{2})?\s*/i, "");
+  }
+  s = s.replace(/^(smp\*|kpay\*|sq \*|paypal \*)/i, "");
+  for (let i = 0; i < 3; i++) s = s.replace(/\s+(nswau|au|sydney|potts poi|potts point|kings cro|surry hil|melbourne|footscray|belrose|liverpool)$/i, "");
+  return s.replace(/\s+/g, " ").trim() || "Unknown";
+}
+function merchantKey(name) {
+  return String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\b(pty|ltd|sydney|potts|point|kings|cross|surry|hills|nsw|au|the|melbourne)\b/g, " ").replace(/\s+/g, " ").trim().slice(0, 48);
+}
+function median(nums) {
+  const a = nums.filter(n => n > 0).slice().sort((x, y) => x - y);
+  if (!a.length) return 0;
+  const mid = Math.floor(a.length / 2);
+  return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+}
+function inferFrequency(dates) {
+  const uniq = [...new Set(dates.filter(Boolean))].sort();
+  if (uniq.length < 2) return "month";
+  const gaps = [];
+  for (let i = 1; i < uniq.length; i++) gaps.push((new Date(uniq[i]) - new Date(uniq[i - 1])) / 86400000);
+  const g = median(gaps);
+  if (g <= 2) return "day";
+  if (g <= 10) return "week";
+  if (g <= 18) return "2week";
+  if (g <= 45) return "month";
+  return "year";
+}
+function ruleHits(rule, tx) {
+  if (!rule || rule.enabled === false) return false;
+  const desc = (((tx.txType ? tx.txType + " " : "") + (tx.description || ""))).toLowerCase();
+  const merch = (tx.merchant || "").toLowerCase();
+  const bank = ((tx.bankCategory || "") + " " + (tx.bankSub || "")).toLowerCase();
+  const hay = rule.field === "merchant" ? merch : rule.field === "bank" ? bank : rule.field === "description" ? desc : (desc + " " + merch + " " + bank);
+  const pat = String(rule.pattern || "");
+  if (!pat.trim()) return false;
+  let ok = false;
+  const mode = rule.mode || "contains";
+  if (mode === "equals") ok = hay.trim() === pat.toLowerCase();
+  else if (mode === "starts") ok = hay.trim().startsWith(pat.toLowerCase());
+  else if (mode === "word") ok = hasWord(hay, pat.toLowerCase());
+  else if (mode === "regex") { try { ok = new RegExp(pat, "i").test(hay); } catch (e) { ok = false; } }
+  else ok = hay.includes(pat.toLowerCase());
+  if (!ok) return false;
+  const amt = Math.abs(tx.spend || 0);
+  if (rule.min !== "" && rule.min != null && amt < num(rule.min)) return false;
+  if (rule.max !== "" && rule.max != null && amt > num(rule.max)) return false;
+  if (rule.direction === "out" && !(tx.spend > 0)) return false;
+  if (rule.direction === "in" && tx.spend > 0) return false;
+  return true;
+}
+function classifyTx(tx) {
+  const rule = matchRules.find(r => ruleHits(r, tx));
+  if (rule) {
+    tx.ruleId = rule.id;
+    tx.ruleName = rule.name;
+    tx.category = CATEGORIES[rule.category] ? rule.category : "other";
+    tx.treatment = rule.treatment || "once";
+    tx.frequency = rule.frequency || "month";
+    tx.attention = tx.treatment === "attention" || (tx.category === "other" && tx.treatment !== "ignore");
+    if (tx.treatment === "attention") tx.treatment = "once";
+    return;
+  }
+  if (!(tx.spend > 0)) {
+    tx.treatment = "ignore";
+    tx.category = "other";
+    tx.ruleName = "Money in";
+    tx.attention = false;
+    return;
+  }
+  tx.category = detectCategoryKey(tx.merchant + " " + tx.description);
+  tx.treatment = "once";
+  tx.frequency = "month";
+  tx.attention = tx.category === "other";
+  tx.ruleName = tx.attention ? "" : "Keyword";
+}
+function detectCategoryKey(name) {
+  const cat = detectCategory(name);
+  const hit = Object.entries(CATEGORIES).find(([, c]) => c === cat);
+  return hit ? hit[0] : "other";
+}
+function seenImportKeys() {
+  const set = new Set();
+  importLog.forEach(log => (log.keys || []).forEach(k => set.add(k)));
+  return set;
+}
+function buildDraft(fileName, text) {
+  const table = parseCSV(text);
+  if (table.length < 2) throw new Error("That file has no transaction rows.");
+  const headers = table[0];
+  const idx = {};
+  headers.forEach((h, i) => { idx[String(h || "").trim().toLowerCase()] = i; });
+  const col = (...names) => { for (const n of names) if (idx[n] != null) return idx[n]; return -1; };
+  const dateI = col("date");
+  const descI = col("description", "transaction details", "narrative");
+  const merchI = col("merchant name", "merchant");
+  const debitI = col("debit");
+  const creditI = col("credit");
+  const amtI = col("amount");
+  const catI = col("category");
+  const subI = col("subcategory", "sub category");
+  if (dateI < 0 || (descI < 0 && merchI < 0)) throw new Error("Could not find a date and a description column.");
+  const bank = (debitI >= 0 && creditI >= 0) ? "Bank of Melbourne" : (headers.join(" ").toLowerCase().includes("transaction details") ? "NAB" : "Bank CSV");
+  const seen = seenImportKeys();
+  const txs = table.slice(1).map((cells, n) => {
+    const description = descI >= 0 ? cells[descI] : "";
+    const merchant = cleanMerchant(description, merchI >= 0 ? cells[merchI] : "");
+    let spend = 0, credit = 0;
+    if (amtI >= 0) {
+      const amt = num(cells[amtI]);
+      if (amt < 0) spend = -amt; else credit = amt;
+    } else {
+      spend = num(debitI >= 0 ? cells[debitI] : 0);
+      credit = num(creditI >= 0 ? cells[creditI] : 0);
+    }
+    const when = parseBankDate(cells[dateI]);
+    const tx = {
+      id: "t" + n,
+      date: isoDate(when),
+      dateLabel: when ? when.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }) : String(cells[dateI] || ""),
+      description: String(description || "").replace(/\s+/g, " ").trim(),
+      merchant,
+      merchantKey: merchantKey(merchant),
+      spend: round2(spend),
+      credit: round2(credit),
+      bankCategory: catI >= 0 ? cells[catI] : "",
+      bankSub: subI >= 0 ? cells[subI] : "",
+      txType: col("transaction type") >= 0 ? cells[col("transaction type")] : ""
+    };
+    classifyTx(tx);
+    tx.fingerprint = tx.date + "|" + tx.spend.toFixed(2) + "|" + tx.merchantKey;
+    tx.already = seen.has(tx.fingerprint);
+    tx.include = !tx.already;
+    return tx;
+  }).filter(tx => tx.date || tx.merchant);
+  const proposals = [];
+  const buckets = new Map();
+  const ignored = [];
+  txs.forEach(tx => {
+    if (tx.treatment === "ignore" || !(tx.spend > 0)) { ignored.push(tx); return; }
+    if (tx.attention) tx.include = false;
+    if (tx.treatment === "recurring") {
+      const key = "rec:" + (tx.ruleId || tx.merchantKey);
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(tx);
+      return;
+    }
+    const key = "once:" + tx.merchantKey;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(tx);
+  });
+  if (ignored.length) {
+    proposals.push({
+      id: "p-skip", kind: "ignore", name: "Transfers, deposits and ignored", category: "other",
+      frequency: "month", amount: 0, txs: ignored, attention: false, include: false,
+      why: ignored.length + " rows kept out of the budget"
+    });
+  }
+  buckets.forEach((group) => {
+    const first = group[0];
+    const dates = group.map(t => t.date);
+    const recurring = first.treatment === "recurring" || (!first.ruleId && group.length >= 3 && !group.some(t => t.attention));
+    const freq = first.treatment === "recurring" ? (first.frequency || inferFrequency(dates)) : inferFrequency(dates);
+    const latest = group.slice().sort((a, b) => a.date < b.date ? 1 : -1)[0];
+    const typical = round2(median(group.map(t => t.spend)));
+    const attention = group.some(t => t.attention) && !recurring;
+    proposals.push({
+      id: "p" + proposals.length,
+      kind: recurring ? "recurring" : "once",
+      name: first.merchant,
+      category: first.category || "other",
+      frequency: freq,
+      amount: recurring ? round2(latest.spend) : round2(group.reduce((s, t) => s + t.spend, 0)),
+      txs: group,
+      attention,
+      include: group.some(t => t.include !== false) && !group.every(t => t.already),
+      why: recurring
+        ? (first.ruleName ? "Rule · " + first.ruleName : "Repeated " + group.length + " times") + " · latest " + latest.spend.toFixed(2) + (group.length > 1 ? ", typical " + typical.toFixed(2) : "")
+        : (first.ruleName || "One-off")
+    });
+  });
+  proposals.sort((a, b) => {
+    const rank = { attention: 0, recurring: 1, once: 2, ignore: 3 };
+    return (rank[a.attention ? "attention" : a.kind] - rank[b.attention ? "attention" : b.kind]) || a.name.localeCompare(b.name);
+  });
+  importDraft = { fileName, bank, rows: txs.length, proposals };
+  importFilter = "all";
+  importTab = "draft";
+}
+function filteredProposals() {
+  const list = (importDraft && importDraft.proposals) || [];
+  if (importFilter === "bills") return list.filter(p => p.kind === "recurring");
+  if (importFilter === "once") return list.filter(p => p.kind === "once" && !p.attention);
+  if (importFilter === "attention") return list.filter(p => p.attention);
+  if (importFilter === "skip") return list.filter(p => p.kind === "ignore");
+  return list.filter(p => p.kind !== "ignore");
+}
+function openImporter(tab) {
+  ensureDefaultRules();
+  if (tab) importTab = tab;
+  document.getElementById("importModal").classList.add("active");
+  renderImporter();
+}
+function closeImporter() { document.getElementById("importModal").classList.remove("active"); }
+function readBankFile(e) {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { buildDraft(file.name, reader.result); renderImporter(); }
+    catch (err) { alert(err.message || "Could not read that CSV."); }
+  };
+  reader.readAsText(file);
+}
+function renderImporter() {
+  const pane = document.getElementById("importPane");
+  if (!pane) return;
+  document.querySelectorAll("#importModal .imp-tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === importTab));
+  if (importTab === "rules") { pane.innerHTML = renderRulesPane(); return; }
+  if (importTab === "history") { pane.innerHTML = renderHistoryPane(); return; }
+  pane.innerHTML = renderDraftPane();
+}
+function renderDraftPane() {
+  const d = importDraft;
+  const counts = { bills: 0, once: 0, attention: 0, skip: 0 };
+  (d ? d.proposals : []).forEach(p => {
+    if (p.kind === "ignore") counts.skip++;
+    else if (p.attention) counts.attention++;
+    else if (p.kind === "recurring") counts.bills++;
+    else counts.once++;
+  });
+  const chips = [
+    ["all", "To review"],
+    ["bills", "Bills " + counts.bills],
+    ["once", "One-off " + counts.once],
+    ["attention", "Needs attention " + counts.attention],
+    ["skip", "Skipped " + counts.skip]
+  ].map(([id, label]) => `<button type="button" class="${importFilter === id ? "on" : ""}" onclick="importFilter='${id}'; renderImporter()">${label}</button>`).join("");
+  const cards = d ? filteredProposals().map(renderProposal).join("") : "";
+  const chosen = d ? d.proposals.filter(p => p.include) : [];
+  const total = chosen.reduce((s, p) => s + (p.kind === "recurring" ? num(p.amount) : p.txs.reduce((a, t) => a + t.spend, 0)), 0);
+  return `
+    <label class="imp-drop">Drop a Bank of Melbourne or NAB CSV here, or click to choose
+      <input type="file" accept=".csv,text/csv" onchange="readBankFile(event)">
+    </label>
+    ${d ? `<div class="imp-meta" style="margin-top:10px;">${escHtml(d.bank)} · ${escHtml(d.fileName)} · ${d.rows} rows · ${d.proposals.filter(p => p.kind === "recurring").length} bill suggestions</div>` : `<div class="imp-meta" style="margin-top:10px;">Credits, Quick Zone transfers and linked-account moves are skipped. Anything with no rule is marked as needing attention.</div>`}
+    <div class="imp-chips">${chips}</div>
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <button class="btn small" onclick="importSelect('all')">Select visible</button>
+      <button class="btn small" onclick="importSelect('none')">Clear</button>
+      <button class="btn small" onclick="importSelect('attention')">Only unmatched</button>
+    </div>
+    <div>${cards || '<div class="imp-meta">Nothing in this view yet.</div>'}</div>
+    <div style="position:sticky; bottom:0; margin-top:12px; padding:12px; border-radius:12px; background:#121820; border:1px solid rgba(176,196,220,.16); display:grid; grid-template-columns:1fr auto; gap:8px; align-items:end;">
+      <label style="font-size:.72rem; color:#8b97a6; text-transform:uppercase; letter-spacing:.04em;">Import source name
+        <input id="importSourceName" type="text" placeholder="NAB business · November" style="width:100%; margin-top:4px; background:#0c1016; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px;">
+      </label>
+      <button class="btn primary" onclick="commitImport()">Commit ${chosen.length} · ${money(total)}</button>
+    </div>`;
+}
+function renderProposal(p) {
+  const cls = p.attention ? "attention" : p.kind;
+  const freq = p.kind === "recurring" ? `<label>Every<select data-field="frequency" data-id="${p.id}">${FREQS.map(f => `<option value="${f}" ${p.frequency === f ? "selected" : ""}>${FREQ_LABELS[f]}</option>`).join("")}</select></label>` : `<div class="imp-meta">${p.txs.length} charge${p.txs.length === 1 ? "" : "s"}</div>`;
+  const lines = p.txs.slice(0, 12).map(t => {
+    if (p.kind === "once") return `<label class="imp-meta" style="display:flex; gap:8px; align-items:center; text-transform:none; letter-spacing:0; font-size:.8rem;"><input type="checkbox" data-field="tx" data-id="${p.id}" data-tx="${t.id}" ${t.include !== false ? "checked" : ""}> ${escHtml(t.dateLabel)} · ${money(t.spend)}${t.already ? " · already imported" : ""}</label>`;
+    return `<div>${escHtml(t.dateLabel)} · ${money(t.spend || t.credit)}${t.already ? " · already imported" : ""}</div>`;
+  }).join("");
+  const more = p.txs.length > 12 ? `<div class="imp-meta">… ${p.txs.length - 12} more</div>` : "";
+  const exists = p.kind === "recurring" && expenses.some(e => String(e.name || "").trim().toLowerCase() === p.name.trim().toLowerCase());
+  return `<article class="imp-card ${cls}">
+    <div class="imp-card head">
+      <input type="checkbox" data-field="include" data-id="${p.id}" ${p.include ? "checked" : ""}>
+      <label>Name<input data-field="name" data-id="${p.id}" type="text" value="${escHtml(p.name)}"></label>
+      <label>Category<select data-field="category" data-id="${p.id}">${categoryOptions(p.category)}</select></label>
+      <label>Treat as<select data-field="kind" data-id="${p.id}">
+        <option value="recurring" ${p.kind === "recurring" ? "selected" : ""}>Bill</option>
+        <option value="once" ${p.kind === "once" ? "selected" : ""}>One-off</option>
+        <option value="ignore" ${p.kind === "ignore" ? "selected" : ""}>Skip</option>
+      </select></label>
+      <label>Amount<input data-field="amount" data-id="${p.id}" type="number" step="0.01" value="${num(p.amount)}"></label>
+      ${freq}
+    </div>
+    <div class="imp-meta">${escHtml(p.why)}${p.attention ? " · no confident match" : ""}${exists ? " · a bill with this name is already in the budget" : ""}${p.txs.some(t => t.already) ? " · some lines were committed before" : ""}</div>
+    <div class="imp-meta">${lines}${more}</div>
+  </article>`;
+}
+function importSelect(mode) {
+  if (!importDraft) return;
+  const visible = new Set(filteredProposals().map(p => p.id));
+  importDraft.proposals.forEach(p => {
+    if (!visible.has(p.id)) return;
+    if (mode === "none") p.include = false;
+    else if (mode === "attention") p.include = !!p.attention;
+    else if (p.kind !== "ignore") p.include = true;
+  });
+  renderImporter();
+}
+function onImportChange(e) {
+  const el = e.target;
+  if (!el || !el.dataset || !el.dataset.id || !importDraft) return;
+  const p = importDraft.proposals.find(x => x.id === el.dataset.id);
+  if (!p) return;
+  const field = el.dataset.field;
+  if (field === "include") {
+    p.include = el.checked;
+    p.txs.forEach(t => { t.include = el.checked; });
+  } else if (field === "tx") {
+    const t = p.txs.find(x => x.id === el.dataset.tx);
+    if (t) t.include = el.checked;
+    p.include = p.txs.some(t => t.include !== false);
+  } else if (field === "amount") p.amount = num(el.value);
+  else if (field === "kind") { p.kind = el.value; if (p.kind === "ignore") p.include = false; p.attention = false; }
+  else p[field] = el.value;
+  if (field === "kind" || field === "include") renderImporter();
+}
+function commitImport() {
+  if (!importDraft) { alert("Choose a CSV first."); return; }
+  const source = (document.getElementById("importSourceName").value || "").trim();
+  if (!source) { alert("Enter a name for this import before committing."); document.getElementById("importSourceName").focus(); return; }
+  const chosen = importDraft.proposals.filter(p => p.include && p.kind !== "ignore");
+  if (!chosen.length) { alert("Select at least one draft entry."); return; }
+  const added = [];
+  const skipped = [];
+  const keys = [];
+  chosen.forEach(p => {
+    if (p.kind === "recurring") {
+      const name = p.name.trim() || "Imported bill";
+      p.txs.forEach(t => keys.push(t.fingerprint));
+      if (expenses.some(e => String(e.name || "").trim().toLowerCase() === name.toLowerCase())) {
+        skipped.push(name);
+        return;
+      }
+      expenses.push({ name, frequency: FREQS.indexOf(p.frequency) >= 0 ? p.frequency : "month", amount: round2(num(p.amount)), categoryOverride: p.category, paid: false });
+      added.push({ name, amount: round2(num(p.amount)), kind: "recurring", category: p.category, count: p.txs.length });
+    } else {
+      p.txs.filter(t => t.include !== false).forEach(t => {
+        keys.push(t.fingerprint);
+        purchases.push({ name: (p.name || t.merchant) + " · " + t.dateLabel, amount: round2(t.spend), categoryOverride: p.category });
+        added.push({ name: t.merchant, amount: round2(t.spend), kind: "once", category: p.category, count: 1 });
+      });
+    }
+  });
+  importLog.unshift({
+    id: "imp" + Date.now().toString(36),
+    source, fileName: importDraft.fileName, bank: importDraft.bank,
+    at: new Date().toISOString(), added, skipped, keys,
+    total: round2(added.reduce((s, a) => s + a.amount, 0))
+  });
+  scheduleSave();
+  render();
+  importTab = "history";
+  renderImporter();
+}
+function renderHistoryPane() {
+  if (!importLog.length) return '<div class="imp-meta">No imports committed yet. A source name is stored with each commit.</div>';
+  return importLog.map(log => {
+    const when = new Date(log.at).toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    const lines = (log.added || []).slice(0, 12).map(a => `<div>${escHtml(a.name)} · ${money(a.amount)} · ${a.kind === "recurring" ? "bill" : "one-off"}</div>`).join("");
+    return `<article class="imp-card once">
+      <div style="display:flex; justify-content:space-between; gap:12px;">
+        <div><strong>${escHtml(log.source)}</strong><div class="imp-meta">${escHtml(log.bank || "")} · ${escHtml(log.fileName || "")} · ${escHtml(when)}</div></div>
+        <div style="text-align:right; color:#c4b5fd;">${money(log.total || 0)}<div class="imp-meta">${(log.added || []).length} entries</div></div>
+      </div>
+      <div class="imp-meta">${lines}${(log.skipped || []).length ? "<div>Already in the budget: " + escHtml(log.skipped.join(", ")) + "</div>" : ""}</div>
+    </article>`;
+  }).join("");
+}
+function renderRulesPane() {
+  const modeOpts = [["contains", "Contains"], ["word", "Whole word"], ["starts", "Starts with"], ["equals", "Equals"], ["regex", "Regex"]];
+  const fieldOpts = [["any", "Anywhere"], ["description", "Description"], ["merchant", "Merchant"], ["bank", "Bank category"]];
+  const dirOpts = [["out", "Money out"], ["in", "Money in"], ["any", "Either"]];
+  const treatOpts = [["recurring", "Recurring bill"], ["once", "One-off"], ["ignore", "Ignore"], ["attention", "Needs attention"]];
+  const cards = matchRules.map((r, i) => `<article class="rule-card">
+    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+      <label style="flex-direction:row; align-items:center; text-transform:none; letter-spacing:0; font-size:.85rem; color:var(--text);"><input type="checkbox" ${r.enabled !== false ? "checked" : ""} onchange="patchRule('${r.id}','enabled', this.checked)"> ${escHtml(r.name || "Rule")}${r.builtin ? " · starter" : ""}</label>
+      <span>
+        <button class="btn small" onclick="moveRule('${r.id}',-1)" ${i === 0 ? "disabled" : ""}>Up</button>
+        <button class="btn small" onclick="moveRule('${r.id}',1)">Down</button>
+        <button class="btn small" onclick="deleteRule('${r.id}')">Delete</button>
+      </span>
+    </div>
+    <div class="rule-grid">
+      <label>Name<input value="${escHtml(r.name)}" onchange="patchRule('${r.id}','name', this.value)"></label>
+      <label>Match<select onchange="patchRule('${r.id}','mode', this.value)">${modeOpts.map(([v, l]) => `<option value="${v}" ${r.mode === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label>Look in<select onchange="patchRule('${r.id}','field', this.value)">${fieldOpts.map(([v, l]) => `<option value="${v}" ${(r.field || "any") === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label>Pattern<input value="${escHtml(r.pattern)}" onchange="patchRule('${r.id}','pattern', this.value)"></label>
+      <label>Direction<select onchange="patchRule('${r.id}','direction', this.value)">${dirOpts.map(([v, l]) => `<option value="${v}" ${(r.direction || "out") === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label>Then<select onchange="patchRule('${r.id}','treatment', this.value)">${treatOpts.map(([v, l]) => `<option value="${v}" ${r.treatment === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label>Category<select onchange="patchRule('${r.id}','category', this.value)">${categoryOptions(r.category)}</select></label>
+      <label>Every<select onchange="patchRule('${r.id}','frequency', this.value)">${FREQS.map(f => `<option value="${f}" ${r.frequency === f ? "selected" : ""}>${FREQ_LABELS[f]}</option>`).join("")}</select></label>
+    </div>
+    <div class="rule-grid" style="margin-top:8px; grid-template-columns: 120px 120px 1fr;">
+      <label>Min $<input type="number" step="0.01" value="${r.min ?? ""}" onchange="patchRule('${r.id}','min', this.value)"></label>
+      <label>Max $<input type="number" step="0.01" value="${r.max ?? ""}" onchange="patchRule('${r.id}','max', this.value)"></label>
+      <div class="imp-meta" style="align-self:end;">First matching rule wins. Use min and max to split a merchant, for example Amazon under $20 as a subscription and the rest as retail.</div>
+    </div>
+  </article>`).join("");
+  return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div class="imp-meta">Rules run top to bottom. Bank of Melbourne and NAB exports both use these.</div>
+    <button class="btn" onclick="addMatchRule()">+ Add rule</button>
+  </div>${cards}`;
+}
+function patchRule(id, field, value) {
+  const r = matchRules.find(x => x.id === id);
+  if (!r) return;
+  if (field === "enabled") r.enabled = !!value;
+  else if (field === "min" || field === "max") r[field] = value === "" ? "" : num(value);
+  else r[field] = value;
+  scheduleSave();
+}
+function moveRule(id, dir) {
+  const i = matchRules.findIndex(r => r.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= matchRules.length) return;
+  const [row] = matchRules.splice(i, 1);
+  matchRules.splice(j, 0, row);
+  scheduleSave();
+  renderImporter();
+}
+function deleteRule(id) {
+  matchRules = matchRules.filter(r => r.id !== id);
+  scheduleSave();
+  renderImporter();
+}
+function addMatchRule() {
+  matchRules.unshift({
+    id: "r" + Math.random().toString(36).slice(2, 8),
+    name: "New rule", enabled: true, mode: "contains", field: "any", pattern: "",
+    min: "", max: "", direction: "out", category: "other", treatment: "once", frequency: "month", builtin: false
+  });
+  scheduleSave();
+  renderImporter();
+}
+function reclassifyDraft() {}
+document.getElementById("importPane") && document.getElementById("importPane").addEventListener("change", onImportChange);
+
 (async function init() {
   document.getElementById("syncStatus").textContent = "Loading…";
   const ok = await loadRemote();
@@ -3231,6 +3824,7 @@ document.addEventListener("dblclick", (e) => {
   if (sel) sel.value = budgetInterval;
   if (!currentPeriodKey) loadPeriod(getPeriodKey(new Date(), budgetInterval));
   renderIncomeSources();
+  ensureDefaultRules();
   render();
   calcSalary();
   updatePeriodButtons();
