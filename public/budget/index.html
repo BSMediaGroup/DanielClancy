@@ -110,6 +110,7 @@
   .stat .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
   .stat .value { font-size: 1.5rem; font-weight: 650; margin-top: 4px; }
   .stat .value.green { color: var(--green); }
+  .stat .value.amber { color: #f0a05a; }
   .stat .value.red { color: var(--red); }
   .stat .value.purple, .purple { color: #c4b5fd; }
   .stat.savings { border-color: rgba(164,113,247,.45); position: relative; cursor: pointer; }
@@ -1408,8 +1409,8 @@ function closeIncomeModal() {
 }
 const SUPER_DEFAULTS = { AU: 12, US: 6, UK: 5, NZ: 3, CA: 5 };
 const NATIONS = ["AU", "US", "UK", "NZ", "CA", "Other"];
-const EMP_TYPES = ["fulltime", "parttime", "contract", "casual", "other"];
-const INCOME_TYPES = ["wages", "salary", "commission", "donations", "freelance", "investment", "other"];
+const EMP_TYPES = ["fulltime", "parttime", "contract", "casual", "government allowance", "other"];
+const INCOME_TYPES = ["wages", "salary", "commission", "donations", "freelance", "investment", "government allowance", "other"];
 
 function normalizeSources() {
   if (!Array.isArray(incomeSources)) incomeSources = [];
@@ -1428,8 +1429,10 @@ function normalizeSources() {
 }
 function sourceMonthlyNet(s) {
   if (!s || s.included === false) return 0;
+  const cash = toMonthly(s.amount, s.entryPeriod || "month");
+  if (s.taxed === false) return cash;
   if (s.entryMode === "gross") return calcNetFromGross(toAnnual(s.amount, s.entryPeriod || "year")) / 12;
-  return toMonthly(s.amount, s.entryPeriod || "month");
+  return cash;
 }
 function includedMonthlyNet() {
   return incomeSources.reduce((sum, s) => sum + sourceMonthlyNet(s), 0);
@@ -1438,6 +1441,10 @@ function includedAnnualGross() {
   let gross = 0;
   incomeSources.forEach(s => {
     if (s.included === false) return;
+    if (s.taxed === false) {
+      gross += toAnnual(s.amount, s.entryPeriod || "month");
+      return;
+    }
     if (s.isMain) gross += num(s.grossAnnual);
     else if (s.entryMode === "gross") gross += toAnnual(s.amount, s.entryPeriod || "year");
   });
@@ -1445,14 +1452,14 @@ function includedAnnualGross() {
 }
 function syncIncomeFields() {
   normalizeSources();
-  const net = round2(includedMonthlyNet());
-  const gross = Math.round(includedAnnualGross());
   const income = document.getElementById("income");
+  if (income) income.value = round2(includedMonthlyNet());
+  const main = incomeSources.find(s => s.isMain);
+  const job = main ? Math.round(num(main.grossAnnual)) : 0;
   const g1 = document.getElementById("grossSalary");
   const g2 = document.getElementById("grossSalaryTop");
-  if (income) income.value = net;
-  if (g1) g1.value = gross;
-  if (g2) g2.value = gross;
+  if (g1 && document.activeElement !== g1) g1.value = job;
+  if (g2 && document.activeElement !== g2) g2.value = job;
   const note = document.getElementById("netSourceNote");
   if (note) {
     const n = incomeSources.filter(s => s.included !== false).length;
@@ -1476,7 +1483,7 @@ function renderIncomeSources() {
           <div style="min-width:0;">
             <div class="label" style="color:#8dcea8; display:flex; align-items:center; gap:8px;">${s.isMain ? "Main income" : "Other income"} ${pill}</div>
             <h4>${escHtml(s.label || "Untitled")}</h4>
-            <div class="save-desc">${escHtml(s.incomeType || "income")} · ${s.entryMode === "gross" ? "Gross" : "Net"} ${money(num(s.amount))} / ${escHtml(s.entryPeriod || "month")}${s.isMain && num(s.grossAnnual) ? " · gross " + money(num(s.grossAnnual)) + " / year" : ""}</div>
+            <div class="save-desc">${escHtml(s.incomeType || "income")} · ${s.taxed === false ? "Untaxed" : (s.entryMode === "gross" ? "Gross" : "Net")} ${money(num(s.amount))} / ${escHtml(s.entryPeriod || "month")}${s.isMain && s.taxed !== false && num(s.grossAnnual) ? " · gross " + money(num(s.grossAnnual)) + " / year" : ""}</div>
           </div>
           <div class="save-figure" style="color:${on ? "#7ddea0" : "#8b97a6"};">${money(monthly)}<div style="font-size:.68rem; font-weight:500; color:#8b97a6;">/ month</div></div>
         </div>
@@ -1488,7 +1495,7 @@ function renderIncomeSources() {
       <label style="font-size:.78rem; color:#8b97a6;">Name<input type="text" value="${escHtml(s.label || "")}" style="${field}" onchange="patchSource(${i}, 'label', this.value)"></label>
       <div style="display:grid; grid-template-columns:1.1fr .7fr .8fr; gap:8px; margin-top:8px;">
         <label style="font-size:.78rem; color:#8b97a6;">Amount<input type="number" step="0.01" value="${num(s.amount)}" style="${field}" onchange="patchSource(${i}, 'amount', this.value)"></label>
-        <label style="font-size:.78rem; color:#8b97a6;">Entered as<select style="${field}" onchange="patchSource(${i}, 'entryMode', this.value)"><option value="net" ${s.entryMode !== "gross" ? "selected" : ""}>Net</option><option value="gross" ${s.entryMode === "gross" ? "selected" : ""}>Gross</option></select></label>
+        <label style="font-size:.78rem; color:#8b97a6;">Entered as<select style="${field}${s.taxed === false ? ";opacity:.55" : ""}" onchange="patchSource(${i}, 'entryMode', this.value)"><option value="net" ${s.taxed === false ? "disabled" : ""} ${s.taxed !== false && s.entryMode !== "gross" ? "selected" : ""}>Net</option><option value="gross" ${s.taxed === false || s.entryMode === "gross" ? "selected" : ""}>Gross</option></select></label>
         <label style="font-size:.78rem; color:#8b97a6;">Every<select style="${field}" onchange="patchSource(${i}, 'entryPeriod', this.value)">${periodOpts}</select></label>
       </div>
       ${s.isMain ? `<label style="display:block; margin-top:8px; font-size:.78rem; color:#8b97a6;">Gross annual salary<input type="number" step="100" value="${num(s.grossAnnual)}" style="${field}" onchange="patchSource(${i}, 'grossAnnual', this.value)"></label>` : ""}
@@ -1498,10 +1505,12 @@ function renderIncomeSources() {
         <label style="font-size:.78rem; color:#8b97a6;">Nation<select style="${field}" onchange="patchSource(${i}, 'nation', this.value)">${NATIONS.map(n => `<option value="${n}" ${s.nation === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>
         <label style="font-size:.78rem; color:#8b97a6;">State<input type="text" value="${escHtml(s.state || "")}" style="${field}" onchange="patchSource(${i}, 'state', this.value)"></label>
       </div>
-      <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+      <div style="display:flex; align-items:center; gap:16px; margin-top:10px; flex-wrap:wrap;">
+        <label style="font-size:.85rem;"><input type="checkbox" ${s.taxed === false ? "" : "checked"} onchange="patchSource(${i}, 'taxed', this.checked)"> Taxed</label>
         <label style="font-size:.85rem;"><input type="checkbox" ${s.hasSuper ? "checked" : ""} onchange="patchSource(${i}, 'hasSuper', this.checked)"> Superannuation</label>
         ${s.hasSuper ? `<label style="font-size:.78rem; color:#8b97a6;">Rate %<input type="number" step="0.5" value="${num(s.superRate || SUPER_DEFAULTS[s.nation] || 12)}" style="${field} width:80px;" onchange="patchSource(${i}, 'superRate', this.value)"></label>` : ""}
       </div>
+      ${s.taxed === false ? `<div class="imp-meta" style="margin-top:6px;">Untaxed. The amount is used as both gross and net, so it shows on both cards.</div>` : ""}
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
         <label style="font-size:.78rem; color:#8b97a6;">Pay frequency<select style="${field}" onchange="patchSource(${i}, 'payFreq', this.value)"><option value="weekly" ${s.payFreq === "weekly" ? "selected" : ""}>Weekly</option><option value="fortnightly" ${s.payFreq === "fortnightly" ? "selected" : ""}>Fortnightly</option><option value="monthly" ${s.payFreq === "monthly" ? "selected" : ""}>Monthly</option></select></label>
         <label style="font-size:.78rem; color:#8b97a6;">Pay day<input type="number" min="1" max="31" value="${num(s.payDay || 15)}" style="${field}" onchange="patchSource(${i}, 'payDay', this.value)"></label>
@@ -1535,9 +1544,14 @@ function toggleSource(idx, included) {
 function patchSource(idx, field, value) {
   const s = incomeSources[idx];
   if (!s) return;
-  if (field === "hasSuper") s.hasSuper = !!value;
+  if (field === "hasSuper" || field === "taxed") s[field] = !!value;
   else if (field === "amount" || field === "superRate" || field === "payDay" || field === "grossAnnual") s[field] = num(value);
   else s[field] = value;
+  if (field === "taxed" && s.taxed === false) s.entryMode = "gross";
+  if ((field === "incomeType" || field === "empType") && value === "government allowance") {
+    s.taxed = false;
+    s.entryMode = "gross";
+  }
   if (field === "nation" && s.hasSuper) s.superRate = SUPER_DEFAULTS[s.nation] || s.superRate || 12;
   if (s.isMain && field === "grossAnnual" && s.entryMode !== "gross") {
     s.amount = round2(calcNetFromGross(num(value)) / 12);
@@ -1889,20 +1903,26 @@ function render() {
   const sub = document.getElementById("savingsSub");
   const alertEl = document.getElementById("savingsAlert");
   if (sub) {
+    const taken = periodSnap.purchaseDraw > 0 || periodSnap.drawn > 0;
+    sub.className = "leftover-sub" + (taken ? " warn" : "");
     if (periodSnap.purchaseDraw > 0) sub.textContent = "Purchases took " + money(periodSnap.purchaseDraw) + " · balance " + money(periodSnap.endBal);
     else if (periodSnap.drawn > 0) sub.textContent = "Drawn " + money(periodSnap.drawn) + " · balance " + money(periodSnap.endBal);
     else if (periodSnap.kept + 0.01 < periodSnap.planned) sub.textContent = "of " + money(periodSnap.planned) + " planned";
     else sub.textContent = periodSnap.endBal > 0 ? "Balance " + money(periodSnap.endBal) : "";
   }
   if (alertEl) {
-    alertEl.innerHTML = periodSnap.depleted
+    const taken = periodSnap.purchaseDraw > 0 || periodSnap.drawn > 0;
+    const icon = periodSnap.depleted
       ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
-      : "";
-    alertEl.title = periodSnap.depleted ? "Savings are depleted for this period" : "";
+      : taken
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>'
+        : "";
+    alertEl.innerHTML = icon;
+    alertEl.title = periodSnap.depleted ? "Savings are depleted for this period" : taken ? "Savings were reduced this period" : "";
   }
   const leftEl = document.getElementById("sumLeftover");
   leftEl.textContent = money(leftoverMonth);
-  leftEl.className = "value " + (leftoverMonth >= 0 ? "green" : "red");
+  leftEl.className = "value " + (leftoverMonth > 0.009 ? "green" : leftoverMonth < -0.009 ? "red" : "amber");
 
   // Sections by frequency
   const container = document.getElementById("expenseSections");
@@ -3186,8 +3206,8 @@ function calcNetFromGross(gross) {
   return gross - tax - medicare;
 }
 function updateDisplays() {
-  const g = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
-  const n = parseFloat(document.getElementById("income").value) || 0;
+  const g = Math.round(includedAnnualGross());
+  const n = round2(includedMonthlyNet());
   const gStr = "$" + g.toLocaleString();
   const nStr = money(n);
   document.getElementById("grossDisplay").textContent = gStr;
