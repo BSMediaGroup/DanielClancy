@@ -214,6 +214,17 @@
   }
   .col-headers .num { text-align: right; }
   .col-headers .num.on { color: var(--green); font-weight: 700; }
+  .col-sort {
+    background: none; border: none; color: inherit; font: inherit; letter-spacing: inherit;
+    text-transform: inherit; cursor: pointer; padding: 0; text-align: inherit;
+  }
+  .col-headers .num .col-sort { width: calc(100% - 12px); text-align: right; }
+  .purchase-head {
+    display: grid; grid-template-columns: 28px 1fr 70px 80px 100px 40px;
+    gap: 8px; align-items: center; padding: 8px 16px 4px;
+    font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.04em;
+  }
+  .purchase-head .num { text-align: right; }
   .collapsible-header {
     display: flex; justify-content: space-between; align-items: center;
     cursor: pointer; user-select: none;
@@ -1369,10 +1380,26 @@ function renderPurchases() {
     el.innerHTML = '<div style="padding:12px 16px; color:var(--text-muted); font-size:0.85rem;">No one-off purchases</div>';
     return;
   }
-  el.innerHTML = purchases.map((p, i) => {
+  const rows = purchases.map((p, i) => ({ p, i }));
+  if (purchaseSort) {
+    const dir = purchaseSort.dir === "asc" ? 1 : -1;
+    rows.sort((a, b) => {
+      const va = purchaseSort.key === "name" ? String(a.p.name || "").toLowerCase()
+        : purchaseSort.key === "category" ? String((a.p.categoryOverride ? (CATEGORIES[a.p.categoryOverride] || detectCategory(a.p.name)) : detectCategory(a.p.name)).label || "").toLowerCase()
+        : purchaseSort.key === "tax" ? ((a.p.work ? 2 : 0) + (a.p.taxDeductible ? 1 : 0))
+        : num(a.p.amount);
+      const vb = purchaseSort.key === "name" ? String(b.p.name || "").toLowerCase()
+        : purchaseSort.key === "category" ? String((b.p.categoryOverride ? (CATEGORIES[b.p.categoryOverride] || detectCategory(b.p.name)) : detectCategory(b.p.name)).label || "").toLowerCase()
+        : purchaseSort.key === "tax" ? ((b.p.work ? 2 : 0) + (b.p.taxDeductible ? 1 : 0))
+        : num(b.p.amount);
+      if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
+      return String(va).localeCompare(String(vb)) * dir;
+    });
+  }
+  el.innerHTML = `<div class="purchase-head"><span></span>${purchaseSortLabel("name", "Name")}${purchaseSortLabel("tax", "Tax")}${purchaseSortLabel("category", "Category")}<span class="num">${purchaseSortLabel("amount", "Amount")}</span><span></span></div>` + rows.map(({ p, i }) => {
     const cat = p.categoryOverride ? (CATEGORIES[p.categoryOverride] || detectCategory(p.name)) : detectCategory(p.name);
     return `<div class="purchase-row" ondblclick="openEntryEditor('purchase', ${i}, event)" title="Double-click to edit or convert">
-      <div class="exp-icon" style="width:24px; height:24px;">${cat.icon}</div>
+      <div class="exp-icon" style="width:24px; height:24px; cursor:pointer;" title="Change category" onclick="event.stopPropagation(); openPurchaseCategoryPicker(${i})">${cat.icon}</div>
       <input type="text" value="${escHtml(p.name)}" class="name-input" onchange="updatePurchase(${i}, 'name', this.value)">
       <div class="tax-flags">
         <button type="button" class="tax-flag work${p.work ? " on" : ""}" title="Work expense" onclick="togglePurchaseFlag(${i}, 'work')">W</button>
@@ -1928,7 +1955,7 @@ function render() {
   const container = document.getElementById("expenseSections");
   container.innerHTML = "";
   FREQS.forEach(freq => {
-    const group = expenses.filter(e => e.frequency === freq);
+    const group = sortedGroup(freq, expenses.filter(e => e.frequency === freq));
     const section = document.createElement("div");
     section.className = "section";
     section.id = "sec-" + freq;
@@ -1943,11 +1970,11 @@ function render() {
       <div class="freq-scroll">
       <div class="col-headers">
         <span></span>
-        <span>Name<span class="col-resizer" data-col="name"></span></span>
+        <span>${sortLabel(freq, "name", "Name")}<span class="col-resizer" data-col="name"></span></span>
         <span></span>
-        <span title="W = work expense · T = otherwise tax deductible">Tax</span>
-        <span>Category<span class="col-resizer" data-col="category"></span></span>
-        ${PROJ_COLS.map(c => `<span class="num${c.key === freq ? " on" : ""}">${c.label}<span class="col-resizer" data-col="${c.key}"></span></span>`).join("")}
+        <span title="W = work expense · T = otherwise tax deductible">${sortLabel(freq, "tax", "Tax")}</span>
+        <span>${sortLabel(freq, "category", "Category")}<span class="col-resizer" data-col="category"></span></span>
+        ${PROJ_COLS.map(c => `<span class="num${c.key === freq ? " on" : ""}">${sortLabel(freq, c.key, c.label)}<span class="col-resizer" data-col="${c.key}"></span></span>`).join("")}
         <span></span>
       </div>
       <div class="collapsible-body"><div class="section-body" id="group-${freq}"></div></div>
@@ -1965,7 +1992,7 @@ function render() {
       const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
       if (e.paid) row.classList.add("paid");
       row.innerHTML = `
-        <div class="exp-icon">${cat.icon}</div>
+        <div class="exp-icon" style="cursor:pointer" title="Change category" onclick="event.stopPropagation(); openCategoryPicker(${globalIdx})">${cat.icon}</div>
         <input type="text" value="${escHtml(e.name)}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
         <div class="paid-check ${e.paid ? 'checked' : ''}" onclick="togglePaid(${globalIdx})" title="Mark as paid">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2383,8 +2410,54 @@ function updateCharts(expenses, income, savings, leftover) {
   });
 }
 
-let pickerIdx = -1;
+let expenseSort = {};
+let purchaseSort = null;
+function toggleExpenseSort(freq, key) {
+  const numeric = key !== "name" && key !== "category";
+  const cur = expenseSort[freq];
+  if (!cur || cur.key !== key) expenseSort[freq] = { key, dir: numeric ? "desc" : "asc" };
+  else if ((numeric && cur.dir === "desc") || (!numeric && cur.dir === "asc")) expenseSort[freq] = { key, dir: numeric ? "asc" : "desc" };
+  else delete expenseSort[freq];
+  render();
+}
+function expenseSortValue(e, key) {
+  if (key === "name") return String(e.name || "").toLowerCase();
+  if (key === "category") {
+    const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
+    return String(cat.label || "").toLowerCase();
+  }
+  if (key === "tax") return (e.work ? 2 : 0) + (e.taxDeductible ? 1 : 0);
+  return project(toDaily(num(e.amount), e.frequency), key);
+}
+function sortedGroup(freq, group) {
+  const s = expenseSort[freq];
+  if (!s) return group;
+  const dir = s.dir === "asc" ? 1 : -1;
+  return group.slice().sort((a, b) => {
+    const va = expenseSortValue(a, s.key);
+    const vb = expenseSortValue(b, s.key);
+    if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
+    return String(va).localeCompare(String(vb)) * dir;
+  });
+}
+function sortLabel(freq, key, label) {
+  const s = expenseSort[freq];
+  const mark = s && s.key === key ? (s.dir === "asc" ? " ↑" : " ↓") : "";
+  return `<button type="button" class="col-sort" onclick="event.stopPropagation(); toggleExpenseSort('${freq}','${key}')">${label}${mark}</button>`;
+}
+function togglePurchaseSort(key) {
+  const numeric = key === "amount" || key === "tax";
+  if (!purchaseSort || purchaseSort.key !== key) purchaseSort = { key, dir: numeric ? "desc" : "asc" };
+  else if ((numeric && purchaseSort.dir === "desc") || (!numeric && purchaseSort.dir === "asc")) purchaseSort = { key, dir: numeric ? "asc" : "desc" };
+  else purchaseSort = null;
+  renderPurchases();
+}
+function purchaseSortLabel(key, label) {
+  const mark = purchaseSort && purchaseSort.key === key ? (purchaseSort.dir === "asc" ? " ↑" : " ↓") : "";
+  return `<button type="button" class="col-sort" onclick="event.stopPropagation(); togglePurchaseSort('${key}')">${label}${mark}</button>`;
+}
 
+let pickerIdx = -1;
 let purchasePickerIdx = -1;
 function openPurchaseCategoryPicker(idx) {
   purchasePickerIdx = idx;
@@ -2432,7 +2505,7 @@ function closeCategoryPicker() {
 }
 let convertEdit = null;
 function openEntryEditor(kind, idx, ev) {
-  if (ev && ev.target && ev.target.closest && ev.target.closest("input, button, select, textarea, .tax-flag, .paid-check")) return;
+  if (ev && ev.target && ev.target.closest && ev.target.closest("input, button, select, textarea, .tax-flag, .paid-check, .exp-icon")) return;
   const item = kind === "expense" ? expenses[idx] : purchases[idx];
   if (!item) return;
   convertEdit = { kind, idx };
