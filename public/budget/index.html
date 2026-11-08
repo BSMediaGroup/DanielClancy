@@ -145,7 +145,13 @@
       #121820;
     cursor: pointer;
   }
-  .save-card:hover { border-color: rgba(196,181,253,.55); }
+  .save-card.paused { opacity: .72; }
+  .save-card.paused .save-figure { color: #8b97a6; text-decoration: line-through; }
+  .save-pause {
+    border: 1px solid rgba(176,196,220,.22); background: rgba(0,0,0,.25); color: #c5ced8;
+    border-radius: 999px; padding: 3px 9px; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .save-pause.on { color: #f0a05a; border-color: rgba(240,160,90,.5); background: rgba(240,160,90,.1); }
   .save-card.editing { cursor: default; }
   .save-card h4 { font-family: "Source Sans 3", sans-serif; font-size: 1rem; font-weight: 750; margin: 2px 0; }
   .save-card .save-desc { color: #8b97a6; font-size: .82rem; min-height: 1.1em; }
@@ -1630,6 +1636,7 @@ function normalizeGoal(g) {
     balance: num(g.balance),
     targetDate: g.targetDate || "",
     description: String(g.description || ""),
+    paused: !!g.paused,
     isMain: !!g.isMain
   };
 }
@@ -1648,8 +1655,8 @@ function monthsUntil(dateStr) {
   const now = new Date();
   return Math.max(0, (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth()) + (end.getDate() - now.getDate()) / 30.4375);
 }
-function goalMonthly(g) {
-  if (!g) return 0;
+function goalMonthly(g, ignorePause) {
+  if (!g || (g.paused && !ignorePause)) return 0;
   if (g.mode === "target") {
     const left = Math.max(0, num(g.goal) - num(g.balance));
     const m = monthsUntil(g.targetDate);
@@ -1680,6 +1687,7 @@ function periodSavings(spendable, expMonth) {
   } else {
     let need = -cash;
     for (let i = 0; i < start.length && need > 0.009; i++) {
+      if (savingsGoals[i] && savingsGoals[i].paused) continue;
       const take = Math.min(start[i], need);
       drawParts[i] = take;
       need -= take;
@@ -1708,6 +1716,7 @@ function projectGoalBalance(g, monthsAhead) {
   return start + goalMonthly(g) * monthsAhead;
 }
 function goalForecast(g) {
+  if (g.paused) return "Paused. This goal is not counted in the savings card or leftover until you resume it.";
   const monthly = goalMonthly(g);
   const weekly = project(toDaily(monthly, "month"), "week");
   if (g.mode === "target") {
@@ -1837,8 +1846,8 @@ function render() {
   if (listEl) {
     listEl.innerHTML = savingsGoals.map((g, i) => `
       <div class="proj-card" style="text-align:left; margin-bottom:8px; border:1px solid rgba(164,113,247,.28);">
-        <div class="label" style="color:#c4b5fd;">${escHtml(g.name)} · ${g.mode === "target" ? "By date" : FREQ_LABELS[g.frequency] || "Monthly"}</div>
-        <div class="value" style="color:#c4b5fd;">${money(goalMonthly(g))}<span style="font-size:.75rem; font-weight:500; color:#b9a6f2;"> / month</span></div>
+        <div class="label" style="color:${g.paused ? "#8b97a6" : "#c4b5fd"};">${escHtml(g.name)} · ${g.paused ? "Paused" : (g.mode === "target" ? "By date" : FREQ_LABELS[g.frequency] || "Monthly")}</div>
+        <div class="value" style="color:${g.paused ? "#8b97a6" : "#c4b5fd"};${g.paused ? "text-decoration:line-through;" : ""}">${money(goalMonthly(g, true))}<span style="font-size:.75rem; font-weight:500; color:#b9a6f2;"> / month</span></div>
         <div class="label" style="margin-top:6px;">${escHtml(goalForecast(g))}</div>
       </div>`).join("");
   }
@@ -2022,7 +2031,7 @@ function updateCharts(expenses, income, savings, leftover) {
     barValues.map(v => +v.toFixed(2)),
     catEntries.map(([k, v]) => [k, +v.toFixed(2)]),
     savPath, leftPath, goalPath,
-    goals.map(g => [g.name, g.mode, g.frequency, num(g.amount), num(g.goal), num(g.balance), g.targetDate]),
+    goals.map(g => [g.name, g.mode, g.frequency, num(g.amount), num(g.goal), num(g.balance), g.targetDate, !!g.paused]),
     [periodSnap.kept, periodSnap.drawn, periodSnap.endBal, periodSnap.leftover],
     trend
   ]);
@@ -2581,6 +2590,14 @@ function removeSavingsGoal(id) {
   scheduleSave();
   render();
 }
+function toggleGoalPause(id) {
+  const g = savingsGoals.find(x => x.id === id);
+  if (!g) return;
+  g.paused = !g.paused;
+  scheduleSave();
+  render();
+  if (document.getElementById("savingsModal").classList.contains("active")) renderSavingsEditor();
+}
 function editSavingsCard(id) {
   editingGoalId = id;
   renderSavingsEditor();
@@ -2608,16 +2625,17 @@ function renderSavingsEditor() {
   if (!el) return;
   el.innerHTML = savingsGoals.map((g, i) => {
     const endBal = (periodSnap.endParts || [])[i] ?? num(g.balance);
-    const monthly = goalMonthly(g);
+    const monthly = goalMonthly(g, true);
     const pct = goalProgress(g, endBal);
     const editing = editingGoalId === g.id;
     const freqOpts = FREQS.map(f => `<option value="${f}" ${g.frequency === f ? "selected" : ""}>${FREQ_LABELS[f]}</option>`).join("");
     const recurring = g.mode !== "target";
+    const pauseBtn = `<button class="save-pause${g.paused ? " on" : ""}" onclick="event.stopPropagation(); toggleGoalPause('${g.id}')">${g.paused ? "Paused" : "Active"}</button>`;
     if (!editing) {
-      return `<article class="save-card" onclick="editSavingsCard('${g.id}')">
-        <div style="display:flex; justify-content:space-between; gap:12px;">
+      return `<article class="save-card${g.paused ? " paused" : ""}" onclick="editSavingsCard('${g.id}')">
+        <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
           <div style="min-width:0;">
-            <div class="label" style="color:#b9a6f2;">${recurring ? (FREQ_LABELS[g.frequency] || "Recurring") : "One-off by date"}${g.isMain ? " · Main" : ""}</div>
+            <div class="label" style="color:#b9a6f2; display:flex; align-items:center; gap:8px;">${recurring ? (FREQ_LABELS[g.frequency] || "Recurring") : "One-off by date"}${g.isMain ? " · Main" : ""} ${pauseBtn}</div>
             <h4>${escHtml(g.name || "Untitled goal")}</h4>
             <div class="save-desc">${escHtml(g.description || "Add a note")}</div>
           </div>
@@ -2633,7 +2651,7 @@ function renderSavingsEditor() {
       </article>`;
     }
     return `<article class="save-card editing" onclick="event.stopPropagation()">
-      <div class="label" style="color:#b9a6f2; margin-bottom:8px;">${g.isMain ? "Main goal" : "Goal"}</div>
+      <div class="label" style="color:#b9a6f2; margin-bottom:8px; display:flex; align-items:center; gap:8px;">${g.isMain ? "Main goal" : "Goal"} ${pauseBtn}</div>
       <div style="display:grid; grid-template-columns:1.4fr .8fr auto; gap:8px; align-items:end;">
         <label>Title<input type="text" value="${escHtml(g.name)}" oninput="patchGoal('${g.id}','name', this.value, true)" onchange="patchGoal('${g.id}','name', this.value)"></label>
         <label>Type<select onchange="patchGoal('${g.id}','mode', this.value)">
