@@ -112,8 +112,47 @@
   .stat .value.green { color: var(--green); }
   .stat .value.red { color: var(--red); }
   .stat .value.purple, .purple { color: #c4b5fd; }
-  .stat.savings { border-color: rgba(164,113,247,.45); }
+  .stat.savings { border-color: rgba(164,113,247,.45); position: relative; cursor: pointer; }
   .stat.savings .label { color: #b9a6f2; }
+  .stat .edit-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: transparent; border: none; color: var(--text-muted);
+    cursor: pointer; padding: 4px; border-radius: 4px; box-shadow: none;
+  }
+  .stat .edit-btn:hover { color: #c4b5fd; background: rgba(164,113,247,.12); }
+  .stat .alert-ico { display: inline-flex; vertical-align: -2px; margin-left: 4px; color: #ffb020; }
+  input[type="date"], input[type="time"], input[type="datetime-local"] { color-scheme: dark; }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.4);
+    opacity: .85;
+    cursor: pointer;
+  }
+  .col-headers span { position: relative; }
+  .col-resizer {
+    position: absolute; top: -6px; right: -8px; width: 12px; bottom: -6px;
+    cursor: col-resize; z-index: 3;
+  }
+  .col-resizer::after {
+    content: ""; position: absolute; top: 20%; bottom: 20%; left: 5px; width: 2px;
+    border-radius: 2px; background: rgba(176,196,220,.28);
+  }
+  body.col-resizing, body.col-resizing * { cursor: col-resize !important; user-select: none; }
+  .save-card {
+    border: 1px solid rgba(164,113,247,.28);
+    border-radius: 14px; padding: 14px 14px 12px; margin-bottom: 10px;
+    background:
+      linear-gradient(180deg, rgba(164,113,247,.1), rgba(164,113,247,.03) 42%, transparent),
+      #121820;
+    cursor: pointer;
+  }
+  .save-card:hover { border-color: rgba(196,181,253,.55); }
+  .save-card.editing { cursor: default; }
+  .save-card h4 { font-family: "Source Sans 3", sans-serif; font-size: 1rem; font-weight: 750; margin: 2px 0; }
+  .save-card .save-desc { color: #8b97a6; font-size: .82rem; min-height: 1.1em; }
+  .save-card .save-figure { color: #c4b5fd; font-family: "Source Sans 3", sans-serif; font-size: 1.25rem; font-weight: 750; text-align: right; }
+  .save-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: #b0b8c4; font-size: .78rem; }
+  .save-bar { height: 4px; border-radius: 4px; background: rgba(255,255,255,.06); margin-top: 10px; overflow: hidden; }
+  .save-bar span { display: block; height: 100%; background: linear-gradient(90deg, #6d28d9, #c4b5fd); }
   .income-row {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
@@ -737,9 +776,11 @@
       <div class="label">Expenses / month</div>
       <div class="value" id="sumExpenses">$0</div>
     </div>
-    <div class="stat savings">
-      <div class="label">Savings / month</div>
+    <div class="stat savings" ondblclick="openSavingsModal()" title="Double-click to manage savings">
+      <button class="edit-btn" onclick="event.stopPropagation(); openSavingsModal()" title="Manage savings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      <div class="label">Savings / month <span class="alert-ico" id="savingsAlert"></span></div>
       <div class="value purple" id="sumSavings">$0</div>
+      <div class="leftover-sub" id="savingsSub"></div>
     </div>
     <div class="stat">
       <div class="label">Leftover / month</div>
@@ -811,6 +852,16 @@
         <input type="hidden" id="savingsGoal" value="10000">
         <input type="hidden" id="savingsBalance" value="0">
         <div id="savingsGoalList"></div>
+        <div class="charts" style="margin-top:12px;">
+          <div class="chart-card">
+            <h3>This period</h3>
+            <div class="chart-stage bars"><canvas id="savingsHealth"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Goal health</h3>
+            <div class="chart-stage"><canvas id="savingsMix"></canvas></div>
+          </div>
+        </div>
         <div class="chart-card" style="margin-top:12px;">
           <h3>Savings forecast</h3>
           <div class="chart-stage line"><canvas id="savingsChart"></canvas></div>
@@ -884,6 +935,20 @@ const PROJ_COLS = [
   { key: "year", label: "Year" }
 ];
 const SAVE_COLORS = ["#c4b5fd", "#a78bfa", "#8b5cf6", "#ddd6fe", "#7c3aed", "#e9d5ff"];
+const COL_DEFAULTS = { name: 220, category: 108, day: 86, week: 86, "2week": 84, "4week": 84, month: 90, year: 96 };
+let colWidths = Object.assign({}, COL_DEFAULTS);
+try {
+  const savedCols = JSON.parse(localStorage.getItem("budget_col_widths") || "null");
+  if (savedCols && typeof savedCols === "object") colWidths = Object.assign({}, COL_DEFAULTS, savedCols);
+} catch {}
+function colTemplate() {
+  return "28px " + (colWidths.name || 220) + "px 22px " + (colWidths.category || 108) + "px " + PROJ_COLS.map(c => (colWidths[c.key] || 86) + "px").join(" ") + " 32px";
+}
+function applyColWidths() {
+  const t = colTemplate();
+  document.querySelectorAll(".expense-row, .col-headers").forEach(el => { el.style.gridTemplateColumns = t; });
+}
+let resizeCol = null, resizeStartX = 0, resizeStartW = 0;
 
 
 let budgetInterval = "month";
@@ -1034,6 +1099,8 @@ let catChart = null;
 let lineChart = null;
 let trendChart = null;
 let savingsChart = null;
+let savingsHealthChart = null;
+let savingsMixChart = null;
 let lastChartSig = "";
 
 const DEFAULT_EXPENSES = [
@@ -1541,6 +1608,7 @@ function normalizeGoal(g) {
     goal: num(g.goal),
     balance: num(g.balance),
     targetDate: g.targetDate || "",
+    description: String(g.description || ""),
     isMain: !!g.isMain
   };
 }
@@ -1565,7 +1633,7 @@ function goalMonthly(g) {
     const left = Math.max(0, num(g.goal) - num(g.balance));
     const m = monthsUntil(g.targetDate);
     if (left <= 0) return 0;
-    if (m <= 0) return left;
+    if (m <= 0) return 0;
     return left / m;
   }
   return project(toDaily(num(g.amount), g.frequency || "month"), "month");
@@ -1573,6 +1641,41 @@ function goalMonthly(g) {
 function totalSavingsMonth() {
   return savingsGoals.reduce((sum, g) => sum + goalMonthly(g), 0);
 }
+function periodSavings(spendable, expMonth) {
+  const plannedParts = savingsGoals.map(goalMonthly);
+  const planned = plannedParts.reduce((a, b) => a + b, 0);
+  const cash = spendable - expMonth;
+  const start = savingsGoals.map(g => Math.max(0, num(g.balance)));
+  const startBal = start.reduce((a, b) => a + b, 0);
+  const keptParts = plannedParts.map(() => 0);
+  const drawParts = start.map(() => 0);
+  let leftover = 0;
+  if (cash >= planned) {
+    plannedParts.forEach((p, i) => { keptParts[i] = p; });
+    leftover = cash - planned;
+  } else if (cash >= 0) {
+    const scale = planned > 0 ? cash / planned : 0;
+    plannedParts.forEach((p, i) => { keptParts[i] = p * scale; });
+  } else {
+    let need = -cash;
+    for (let i = 0; i < start.length && need > 0.009; i++) {
+      const take = Math.min(start[i], need);
+      drawParts[i] = take;
+      need -= take;
+    }
+    leftover = need > 0.009 ? -need : 0;
+  }
+  const kept = keptParts.reduce((a, b) => a + b, 0);
+  const drawn = drawParts.reduce((a, b) => a + b, 0);
+  const endParts = start.map((b, i) => b + keptParts[i] - drawParts[i]);
+  const endBal = endParts.reduce((a, b) => a + b, 0);
+  return {
+    planned, kept, drawn, leftover, startBal, endBal, keptParts, drawParts, endParts,
+    depleted: (drawn > 0 && endBal <= 0.009) || (cash < 0 && startBal <= 0),
+    uncovered: leftover < -0.009
+  };
+}
+let periodSnap = { planned: 0, kept: 0, drawn: 0, leftover: 0, startBal: 0, endBal: 0, endParts: [], depleted: false, uncovered: false };
 function projectGoalBalance(g, monthsAhead) {
   const start = num(g.balance);
   if (g.mode === "target") {
@@ -1623,18 +1726,31 @@ function render() {
   const phone = num(document.getElementById("phoneAllowance").value);
   const spendable = income + phone;
   mirrorMainSavings();
-  const savings = totalSavingsMonth();
-  const savingsDaily = toDaily(savings, "month");
-
+  const plannedSave = totalSavingsMonth();
+  const savingsDaily = toDaily(plannedSave, "month");
   let totalDaily = 0;
   expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
-
   const expMonth = project(totalDaily, "month");
-  const leftoverMonth = spendable - expMonth - savings;
+  periodSnap = periodSavings(spendable, expMonth);
+  const savings = periodSnap.kept - periodSnap.drawn;
+  const leftoverMonth = periodSnap.leftover;
 
   document.getElementById("sumIncome").textContent = money(spendable);
   document.getElementById("sumExpenses").textContent = money(expMonth);
   document.getElementById("sumSavings").textContent = money(savings);
+  const sub = document.getElementById("savingsSub");
+  const alertEl = document.getElementById("savingsAlert");
+  if (sub) {
+    if (periodSnap.drawn > 0) sub.textContent = "Drawn " + money(periodSnap.drawn) + " · balance " + money(periodSnap.endBal);
+    else if (periodSnap.kept + 0.01 < periodSnap.planned) sub.textContent = "of " + money(periodSnap.planned) + " planned";
+    else sub.textContent = periodSnap.endBal > 0 ? "Balance " + money(periodSnap.endBal) : "";
+  }
+  if (alertEl) {
+    alertEl.innerHTML = periodSnap.depleted
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+      : "";
+    alertEl.title = periodSnap.depleted ? "Savings are depleted for this period" : "";
+  }
   const leftEl = document.getElementById("sumLeftover");
   leftEl.textContent = money(leftoverMonth);
   leftEl.className = "value " + (leftoverMonth >= 0 ? "green" : "red");
@@ -1657,8 +1773,11 @@ function render() {
       </div>
       <div class="freq-scroll">
       <div class="col-headers">
-        <span></span><span>Name</span><span></span><span>Category</span>
-        ${PROJ_COLS.map(c => `<span class="num${c.key === freq ? " on" : ""}">${c.label}</span>`).join("")}
+        <span></span>
+        <span>Name<span class="col-resizer" data-col="name"></span></span>
+        <span></span>
+        <span>Category<span class="col-resizer" data-col="category"></span></span>
+        ${PROJ_COLS.map(c => `<span class="num${c.key === freq ? " on" : ""}">${c.label}<span class="col-resizer" data-col="${c.key}"></span></span>`).join("")}
         <span></span>
       </div>
       <div class="collapsible-body"><div class="section-body" id="group-${freq}"></div></div>
@@ -1691,6 +1810,7 @@ function render() {
       body.innerHTML = `<div style="padding:12px 16px; color:var(--text-muted); font-size:0.85rem;">No ${FREQ_LABELS[freq].toLowerCase()} expenses</div>`;
     }
   });
+  applyColWidths();
 
   const listEl = document.getElementById("savingsGoalList");
   if (listEl) {
@@ -1861,7 +1981,7 @@ function updateCharts(expenses, income, savings, leftover) {
   for (let i = 0; i < 13; i++) {
     const d = new Date(startY, startM + i, 1);
     lineLabels.push(names[d.getMonth()] + " " + String(d.getFullYear()).slice(2));
-    savPath.push(Math.round(goals.reduce((s, g) => s + projectGoalBalance(g, i), 0) * 100) / 100);
+    savPath.push(Math.round((periodSnap.endBal + periodSnap.planned * i) * 100) / 100);
     leftPath.push(Math.round(leftover * i * 100) / 100);
     goalPath.push(Math.round(goal * 100) / 100);
   }
@@ -1882,6 +2002,7 @@ function updateCharts(expenses, income, savings, leftover) {
     catEntries.map(([k, v]) => [k, +v.toFixed(2)]),
     savPath, leftPath, goalPath,
     goals.map(g => [g.name, g.mode, g.frequency, num(g.amount), num(g.goal), num(g.balance), g.targetDate]),
+    [periodSnap.kept, periodSnap.drawn, periodSnap.endBal, periodSnap.leftover],
     trend
   ]);
   if (sig === lastChartSig && pieChart) return;
@@ -1977,7 +2098,7 @@ function updateCharts(expenses, income, savings, leftover) {
   const saveSets = [];
   goals.forEach((g, i) => {
     const color = SAVE_COLORS[i % SAVE_COLORS.length];
-    const data = lineLabels.map((_, m) => Math.round(projectGoalBalance(g, m) * 100) / 100);
+    const data = lineLabels.map((_, m) => Math.round((((periodSnap.endParts || [])[i] ?? num(g.balance)) + goalMonthly(g) * m) * 100) / 100);
     saveSets.push({ label: (g.name || "Savings") + " glow", data, borderColor: hexAlpha(color, 0.22), borderWidth: 8, pointRadius: 0, tension: 0.42, fill: false });
     saveSets.push({ label: g.name || "Savings", data, borderColor: color, backgroundColor: i === 0 ? (c) => areaFill(c.chart, color) : "transparent", fill: i === 0, tension: 0.42, borderWidth: 2.6, pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: color, pointBorderColor: "#0e141c", pointBorderWidth: 2 });
   });
@@ -1991,6 +2112,46 @@ function updateCharts(expenses, income, savings, leftover) {
       interaction: lineHover,
       plugins: { legend: lineLegend, tooltip: Object.assign({}, chartTip, { filter: (item) => String(item.dataset.label).indexOf("glow") < 0, callbacks: { label: (c) => " " + c.dataset.label + "  $" + Number(c.raw).toLocaleString() } }) },
       scales: lineScales
+    }
+  });
+
+  const healthLabels = ["Planned", "Kept", "Drawn", "Balance"];
+  const healthValues = [periodSnap.planned, periodSnap.kept, periodSnap.drawn, periodSnap.endBal];
+  const healthColors = ["#8b5cf6", "#c4b5fd", "#f0a05a", periodSnap.depleted ? "#ff6b63" : "#a78bfa"];
+  savingsHealthChart = putChart(savingsHealthChart, "savingsHealth", {
+    type: "bar",
+    data: {
+      labels: healthLabels,
+      datasets: [{
+        data: healthValues,
+        borderRadius: 6,
+        borderSkipped: false,
+        barPercentage: 0.55,
+        backgroundColor: (c) => verticalGradient(c.chart, healthColors[c.dataIndex]),
+        hoverBackgroundColor: healthColors.map(c => shadeHex(c, 24))
+      }]
+    },
+    plugins: [valueLabels],
+    options: {
+      animation: drawAnim(90),
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: Object.assign({}, chartTip, { callbacks: { label: (c) => " $" + Number(c.raw).toFixed(2) } }) },
+      scales: {
+        x: { ticks: { color: "#8b97a6", font: { size: 11, family: "Blinker" } }, grid: { display: false } },
+        y: { ticks: { color: "#8b97a6", font: { size: 10 } }, grid: { color: "rgba(176,196,220,0.08)" }, border: { display: false }, beginAtZero: true }
+      }
+    }
+  });
+  const mixLabels = goals.map(g => g.name || "Savings");
+  const mixValues = goals.map((g, i) => Math.max(0, (periodSnap.endParts || [])[i] || 0));
+  const mixShown = mixValues.some(v => v > 0) ? mixValues : goals.map(g => Math.max(num(g.goal), goalMonthly(g), 1));
+  savingsMixChart = putChart(savingsMixChart, "savingsMix", {
+    type: "doughnut",
+    data: { labels: mixLabels, datasets: [{ data: mixShown, backgroundColor: SAVE_COLORS, borderColor: "#121820", borderWidth: 2, spacing: 2, borderRadius: 4, hoverOffset: 6 }] },
+    options: {
+      cutout: "66%",
+      animation: { duration: 1100, easing: "easeOutQuart" },
+      plugins: { legend: lineLegend, tooltip: Object.assign({}, chartTip, { callbacks: { label: (c) => " " + c.label + "  $" + Number(c.raw).toFixed(2) } }) }
     }
   });
 
@@ -2372,16 +2533,21 @@ function exportPDF() {
   doc.save("budget-" + period.replace(/\s+/g, "-").toLowerCase() + ".pdf");
 }
 
-function openSavingsModal() {
+let editingGoalId = null;
+function openSavingsModal(id) {
+  editingGoalId = id || null;
   renderSavingsEditor();
   document.getElementById("savingsModal").classList.add("active");
 }
 function closeSavingsModal() {
+  editingGoalId = null;
   document.getElementById("savingsModal").classList.remove("active");
   render();
 }
 function addSavingsGoal() {
-  savingsGoals.push(normalizeGoal({ id: "g" + Date.now(), name: "New goal", mode: "recurring", amount: 0, frequency: "month", goal: 0, balance: 0 }));
+  const id = "g" + Date.now();
+  savingsGoals.push(normalizeGoal({ id, name: "New goal", description: "", mode: "recurring", amount: 0, frequency: "month", goal: 0, balance: 0 }));
+  editingGoalId = id;
   renderSavingsEditor();
   scheduleSave();
 }
@@ -2389,9 +2555,16 @@ function removeSavingsGoal(id) {
   const target = savingsGoals.find(g => g.id === id);
   if (!target || target.isMain || savingsGoals.length < 2) return;
   savingsGoals = savingsGoals.filter(g => g.id !== id);
+  if (editingGoalId === id) editingGoalId = null;
   renderSavingsEditor();
   scheduleSave();
   render();
+}
+function editSavingsCard(id) {
+  editingGoalId = id;
+  renderSavingsEditor();
+  const field = document.querySelector("#savingsEditor .save-card.editing input, #savingsEditor .save-card.editing textarea");
+  if (field) field.focus();
 }
 function patchGoal(id, field, value, live) {
   const g = savingsGoals.find(x => x.id === id);
@@ -2404,34 +2577,65 @@ function patchGoal(id, field, value, live) {
   scheduleSave();
   if (!live) render();
 }
+function goalProgress(g, endBal) {
+  const target = num(g.goal);
+  if (target <= 0) return 0;
+  return Math.max(0, Math.min(100, (endBal / target) * 100));
+}
 function renderSavingsEditor() {
   const el = document.getElementById("savingsEditor");
   if (!el) return;
-  el.innerHTML = savingsGoals.map(g => {
+  el.innerHTML = savingsGoals.map((g, i) => {
+    const endBal = (periodSnap.endParts || [])[i] ?? num(g.balance);
+    const monthly = goalMonthly(g);
+    const pct = goalProgress(g, endBal);
+    const editing = editingGoalId === g.id;
     const freqOpts = FREQS.map(f => `<option value="${f}" ${g.frequency === f ? "selected" : ""}>${FREQ_LABELS[f]}</option>`).join("");
     const recurring = g.mode !== "target";
-    return `<div style="border:1px solid rgba(164,113,247,.32); border-radius:12px; padding:12px; margin-bottom:10px; background:rgba(164,113,247,.05);">
-      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-        <input type="text" value="${escHtml(g.name)}" onchange="patchGoal('${g.id}','name', this.value)" style="flex:1;">
-        <select onchange="patchGoal('${g.id}','mode', this.value)" style="color:#c4b5fd;">
+    if (!editing) {
+      return `<article class="save-card" onclick="editSavingsCard('${g.id}')">
+        <div style="display:flex; justify-content:space-between; gap:12px;">
+          <div style="min-width:0;">
+            <div class="label" style="color:#b9a6f2;">${recurring ? (FREQ_LABELS[g.frequency] || "Recurring") : "One-off by date"}${g.isMain ? " · Main" : ""}</div>
+            <h4>${escHtml(g.name || "Untitled goal")}</h4>
+            <div class="save-desc">${escHtml(g.description || "Add a note")}</div>
+          </div>
+          <div class="save-figure">${money(monthly)}<div style="font-size:.68rem; font-weight:500; color:#8b97a6;">/ month</div></div>
+        </div>
+        <div class="save-meta">
+          <span>Balance ${money(endBal)}</span>
+          <span>Target ${num(g.goal) ? money(num(g.goal)) : "—"}</span>
+          ${g.targetDate ? `<span>By ${escHtml(g.targetDate)}</span>` : ""}
+        </div>
+        <div class="save-bar" title="${pct.toFixed(0)}% of target"><span style="width:${pct}%"></span></div>
+        <div style="margin-top:8px; color:#c4b5fd; font-size:.82rem;">${escHtml(goalForecast(g))}</div>
+      </article>`;
+    }
+    return `<article class="save-card editing" onclick="event.stopPropagation()">
+      <div class="label" style="color:#b9a6f2; margin-bottom:8px;">${g.isMain ? "Main goal" : "Goal"}</div>
+      <div style="display:grid; grid-template-columns:1.4fr .8fr auto; gap:8px; align-items:end;">
+        <label>Title<input type="text" value="${escHtml(g.name)}" oninput="patchGoal('${g.id}','name', this.value, true)" onchange="patchGoal('${g.id}','name', this.value)"></label>
+        <label>Type<select onchange="patchGoal('${g.id}','mode', this.value)">
           <option value="recurring" ${recurring ? "selected" : ""}>Per interval</option>
           <option value="target" ${!recurring ? "selected" : ""}>One-off by date</option>
-        </select>
-        ${g.isMain ? "" : `<button class="btn small" onclick="removeSavingsGoal('${g.id}')">✕</button>`}
+        </select></label>
+        ${g.isMain ? "<span></span>" : `<button class="btn small" onclick="removeSavingsGoal('${g.id}')">Remove</button>`}
       </div>
-      ${recurring ? `<div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px;">
+      <label style="margin-top:8px;">Description<textarea rows="2" oninput="patchGoal('${g.id}','description', this.value, true)" onchange="patchGoal('${g.id}','description', this.value)" style="width:100%; resize:vertical; background:#0c1016; border:1px solid rgba(176,196,220,.16); color:#f4f7fb; border-radius:8px; padding:8px; font-family:inherit;">${escHtml(g.description)}</textarea></label>
+      ${recurring ? `<div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; margin-top:8px;">
           <label>Amount<input type="number" step="0.01" value="${num(g.amount)}" oninput="patchGoal('${g.id}','amount', this.value, true)" onchange="patchGoal('${g.id}','amount', this.value)"></label>
           <label>Every<select onchange="patchGoal('${g.id}','frequency', this.value)">${freqOpts}</select></label>
-          <label>Goal<input type="number" step="1" value="${num(g.goal)}" oninput="patchGoal('${g.id}','goal', this.value, true)" onchange="patchGoal('${g.id}','goal', this.value)"></label>
+          <label>Target<input type="number" step="1" value="${num(g.goal)}" oninput="patchGoal('${g.id}','goal', this.value, true)" onchange="patchGoal('${g.id}','goal', this.value)"></label>
           <label>Balance<input type="number" step="0.01" value="${num(g.balance)}" oninput="patchGoal('${g.id}','balance', this.value, true)" onchange="patchGoal('${g.id}','balance', this.value)"></label>
-        </div>` : `<div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px;">
+        </div>` : `<div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin-top:8px;">
           <label>Target<input type="number" step="1" value="${num(g.goal)}" oninput="patchGoal('${g.id}','goal', this.value, true)" onchange="patchGoal('${g.id}','goal', this.value)"></label>
           <label>Saved so far<input type="number" step="0.01" value="${num(g.balance)}" oninput="patchGoal('${g.id}','balance', this.value, true)" onchange="patchGoal('${g.id}','balance', this.value)"></label>
           <label>Reach by<input type="date" value="${escHtml(g.targetDate)}" onchange="patchGoal('${g.id}','targetDate', this.value)"></label>
         </div>`}
       <div id="forecast-${g.id}" style="margin-top:8px; color:#c4b5fd; font-size:.86rem;">${escHtml(goalForecast(g))}</div>
-    </div>`;
-  }).join("") + `<div style="color:#8b97a6; font-size:.8rem;">Purple figures are what this month sets aside. A dated goal calculates the contribution. The main goal stays at $850 a month until you change it.</div>`;
+      <button class="btn small" style="margin-top:10px;" onclick="editingGoalId=null; renderSavingsEditor();">Done editing</button>
+    </article>`;
+  }).join("");
 }
 
 function openShareModal() { document.getElementById("shareModal").classList.add("active"); }
@@ -2916,10 +3120,34 @@ function setDensity(mode) {
 }
 
 
-document.querySelectorAll(".modal-overlay").forEach(overlay => {
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) overlay.classList.remove("active");
-  });
+document.addEventListener("click", (e) => {
+  if (e.target.classList && e.target.classList.contains("modal-overlay")) e.target.classList.remove("active");
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  document.querySelectorAll(".modal-overlay.active").forEach(el => el.classList.remove("active"));
+});
+document.addEventListener("mousedown", (e) => {
+  const handle = e.target.closest ? e.target.closest(".col-resizer") : null;
+  if (!handle) return;
+  e.preventDefault();
+  resizeCol = handle.dataset.col;
+  resizeStartX = e.clientX;
+  resizeStartW = colWidths[resizeCol] || 86;
+  document.body.classList.add("col-resizing");
+});
+document.addEventListener("mousemove", (e) => {
+  if (!resizeCol) return;
+  const min = resizeCol === "name" ? 120 : resizeCol === "category" ? 72 : 64;
+  const max = resizeCol === "name" ? 520 : 280;
+  colWidths[resizeCol] = Math.max(min, Math.min(max, Math.round(resizeStartW + e.clientX - resizeStartX)));
+  applyColWidths();
+});
+document.addEventListener("mouseup", () => {
+  if (!resizeCol) return;
+  try { localStorage.setItem("budget_col_widths", JSON.stringify(colWidths)); } catch {}
+  resizeCol = null;
+  document.body.classList.remove("col-resizing");
 });
 
 (async function init() {
