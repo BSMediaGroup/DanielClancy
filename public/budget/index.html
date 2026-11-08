@@ -187,7 +187,7 @@
   .freq-scroll { max-width: 100%; overflow-x: auto; }
   .expense-row, .col-headers {
     display: grid;
-    grid-template-columns: 28px minmax(0, 1.45fr) 22px minmax(72px, .8fr) repeat(6, minmax(68px, .78fr)) 32px;
+    grid-template-columns: 28px minmax(0, 1.45fr) 22px 70px minmax(72px, .8fr) repeat(6, minmax(68px, .78fr)) 32px;
     gap: 12px;
     align-items: center;
     padding: 7px 12px;
@@ -429,7 +429,7 @@
   .leftover-sub.warn { color: var(--orange); }
   .leftover-sub.bad { color: var(--red); }
   .purchase-row {
-    display: grid; grid-template-columns: 28px 1fr 80px 100px 40px;
+    display: grid; grid-template-columns: 28px 1fr 70px 80px 100px 40px;
     gap: 8px; align-items: center; padding: 8px 16px;
     border-bottom: 1px solid var(--border);
   }
@@ -439,6 +439,16 @@
     color: var(--text); padding: 6px 8px; font-size: 0.9rem; font-family: inherit;
   }
   .purchase-row .amt { text-align: right; font-variant-numeric: tabular-nums; }
+  .tax-flags { display: flex; gap: 4px; justify-content: flex-start; }
+  .tax-flag {
+    width: 28px; height: 26px; border-radius: 7px; border: 1px solid rgba(176,196,220,.22);
+    background: transparent; color: #8b97a6; font-size: .68rem; font-weight: 750; cursor: pointer; font-family: inherit;
+  }
+  .tax-flag.on.work { background: rgba(126,176,255,.22); color: #dbe7ff; border-color: rgba(126,176,255,.6); }
+  .tax-flag.on.ded { background: rgba(61,204,110,.16); color: #b6f0c8; border-color: rgba(61,204,110,.55); }
+  .tax-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+  .tax-table th { text-align: left; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: #8b97a6; padding: 8px 8px; border-bottom: 1px solid rgba(176,196,220,.14); }
+  .tax-table td { padding: 8px; border-bottom: 1px solid rgba(176,196,220,.08); }
 
 
   .income-sources-btn {
@@ -704,7 +714,7 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         PDF
       </button>
-      <button class="btn" onclick="document.getElementById('savingsSection').scrollIntoView({behavior:'smooth'})">Savings</button>
+      <button class="btn" onclick="openTax()">Tax</button>
       <button class="btn" onclick="document.getElementById('ytdSection').scrollIntoView({behavior:'smooth'})">YTD</button>
     </div>
     <div style="display:flex; gap:8px;">
@@ -960,6 +970,16 @@
     <div class="modal-body" id="importPane" style="overflow:auto; flex:1;"></div>
   </div>
 </div>
+<div class="modal-overlay" id="taxModal">
+  <div class="modal wide" style="display:flex; flex-direction:column; max-height:92vh;">
+    <div class="modal-header">
+      <h2 style="margin:0;">Tax</h2>
+      <button class="btn" onclick="closeTax()" style="margin-left:auto;">&times;</button>
+    </div>
+    <div class="modal-body" id="taxPane" style="overflow:auto; flex:1;"></div>
+  </div>
+</div>
+
 <script>
 const FREQS = ["day", "week", "2week", "4week", "month", "year"];
 const FREQ_DAYS = { day: 1, week: 7, "2week": 14, "4week": 28, month: 365 / 12, year: 365 };
@@ -980,13 +1000,13 @@ try {
   if (savedCols && typeof savedCols === "object") colWidths = Object.assign({}, COL_DEFAULTS, savedCols);
 } catch {}
 function colTemplate() {
-  return "28px " + (colWidths.name || 220) + "px 22px " + (colWidths.category || 108) + "px " + PROJ_COLS.map(c => (colWidths[c.key] || 86) + "px").join(" ") + " 32px";
+  return "28px " + (colWidths.name || 220) + "px 22px 70px " + (colWidths.category || 108) + "px " + PROJ_COLS.map(c => (colWidths[c.key] || 86) + "px").join(" ") + " 32px";
 }
 function applyColWidths() {
   const t = colTemplate();
   document.querySelectorAll(".expense-row, .col-headers").forEach(el => { el.style.gridTemplateColumns = t; });
 }
-const COL_INDEX = { name: 1, category: 3, day: 4, week: 5, "2week": 6, "4week": 7, month: 8, year: 9 };
+const COL_INDEX = { name: 1, category: 4, day: 5, week: 6, "2week": 7, "4week": 8, month: 9, year: 10 };
 function measureText(text) {
   const probe = document.createElement("span");
   probe.style.cssText = "position:absolute; left:-9999px; top:0; white-space:nowrap; font:600 0.9rem Blinker, sans-serif;";
@@ -1353,6 +1373,10 @@ function renderPurchases() {
     return `<div class="purchase-row">
       <div class="exp-icon" style="width:24px; height:24px; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.icon}</div>
       <input type="text" value="${escHtml(p.name)}" class="name-input" onchange="updatePurchase(${i}, 'name', this.value)">
+      <div class="tax-flags">
+        <button type="button" class="tax-flag work${p.work ? " on" : ""}" title="Work expense" onclick="togglePurchaseFlag(${i}, 'work')">W</button>
+        <button type="button" class="tax-flag ded${p.taxDeductible ? " on" : ""}" title="Otherwise tax deductible" onclick="togglePurchaseFlag(${i}, 'taxDeductible')">T</button>
+      </div>
       <span class="cat-label" style="color:#a78bfa; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.label}</span>
       <input type="number" step="0.01" value="${p.amount}" class="amt" onchange="updatePurchase(${i}, 'amount', parseFloat(this.value)||0)">
       <button class="btn small" onclick="removePurchase(${i})" style="padding:4px 8px;">✕</button>
@@ -1855,6 +1879,7 @@ function render() {
         <span></span>
         <span>Name<span class="col-resizer" data-col="name"></span></span>
         <span></span>
+        <span title="W = work expense · T = otherwise tax deductible">Tax</span>
         <span>Category<span class="col-resizer" data-col="category"></span></span>
         ${PROJ_COLS.map(c => `<span class="num${c.key === freq ? " on" : ""}">${c.label}<span class="col-resizer" data-col="${c.key}"></span></span>`).join("")}
         <span></span>
@@ -1876,6 +1901,10 @@ function render() {
         <input type="text" value="${escHtml(e.name)}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
         <div class="paid-check ${e.paid ? 'checked' : ''}" onclick="togglePaid(${globalIdx})" title="Mark as paid">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="tax-flags">
+          <button type="button" class="tax-flag work${e.work ? " on" : ""}" title="Work expense" onclick="toggleExpenseFlag(${globalIdx}, 'work')">W</button>
+          <button type="button" class="tax-flag ded${e.taxDeductible ? " on" : ""}" title="Otherwise tax deductible" onclick="toggleExpenseFlag(${globalIdx}, 'taxDeductible')">T</button>
         </div>
         <span class="cat-label" ondblclick="openCategoryPicker(${globalIdx})" style="cursor:pointer;" title="Double-click to change">${cat.label}</span>
         ${PROJ_COLS.map(c => c.key === freq
@@ -2338,6 +2367,18 @@ function togglePaid(idx) {
   expenses[idx].paid = !expenses[idx].paid;
   scheduleSave();
   render();
+}
+function toggleExpenseFlag(idx, field) {
+  if (!expenses[idx]) return;
+  expenses[idx][field] = !expenses[idx][field];
+  scheduleSave();
+  render();
+}
+function togglePurchaseFlag(idx, field) {
+  if (!purchases[idx]) return;
+  purchases[idx][field] = !purchases[idx][field];
+  scheduleSave();
+  renderPurchases();
 }
 
 function addExpense(freq) {
@@ -3695,6 +3736,10 @@ function renderProposal(p) {
       ${freq}
     </div>
     <div class="imp-meta">${escHtml(p.why)}${p.attention ? " · no confident match" : ""}${exists ? " · a bill with this name is already in the budget" : ""}${p.txs.some(t => t.already) ? " · some lines were committed before" : ""}</div>
+    ${(p.kind === "ignore" || p.kind === "income") ? "" : `<div class="imp-meta" style="display:flex; gap:16px;">
+      <label style="flex-direction:row; align-items:center; gap:6px; text-transform:none; letter-spacing:0; font-size:.82rem; color:#dbe7ff;"><input type="checkbox" data-field="work" data-id="${p.id}" ${p.work ? "checked" : ""}> Work expense</label>
+      <label style="flex-direction:row; align-items:center; gap:6px; text-transform:none; letter-spacing:0; font-size:.82rem; color:#d7f5e3;"><input type="checkbox" data-field="taxDeductible" data-id="${p.id}" ${p.taxDeductible ? "checked" : ""}> Otherwise tax deductible</label>
+    </div>`}
     <div class="imp-meta">${lines}${more}</div>
   </article>`;
 }
@@ -3723,6 +3768,7 @@ function onImportChange(e) {
     if (t) t.include = el.checked;
     p.include = p.txs.some(t => t.include !== false);
   } else if (field === "amount") p.amount = num(el.value);
+  else if (field === "work" || field === "taxDeductible") p[field] = !!el.checked;
   else if (field === "kind") {
     p.kind = el.value;
     if (p.kind === "ignore" || p.kind === "income") { p.include = false; p.txs.forEach(t => { t.include = false; }); }
@@ -3748,7 +3794,7 @@ function commitImport() {
         skipped.push(name);
         return;
       }
-      expenses.push({ name, frequency: FREQS.indexOf(p.frequency) >= 0 ? p.frequency : "month", amount: round2(num(p.amount)), categoryOverride: p.category, paid: false });
+      expenses.push({ name, frequency: FREQS.indexOf(p.frequency) >= 0 ? p.frequency : "month", amount: round2(num(p.amount)), categoryOverride: p.category, paid: false, work: !!p.work, taxDeductible: !!p.taxDeductible });
       added.push({ name, amount: round2(num(p.amount)), kind: "recurring", category: p.category, count: p.txs.length });
     } else if (p.kind === "income") {
       const period = ["week", "fortnight", "month", "year"].includes(p.frequency) ? p.frequency : "month";
@@ -3765,7 +3811,7 @@ function commitImport() {
     } else {
       p.txs.filter(t => t.include !== false).forEach(t => {
         keys.push(t.fingerprint);
-        purchases.push({ name: (p.name || t.merchant) + " · " + t.dateLabel, amount: round2(t.spend), categoryOverride: p.category });
+        purchases.push({ name: (p.name || t.merchant) + " · " + t.dateLabel, amount: round2(t.spend), categoryOverride: p.category, work: !!p.work, taxDeductible: !!p.taxDeductible });
         added.push({ name: t.merchant, amount: round2(t.spend), kind: "once", category: p.category, count: 1 });
       });
     }
@@ -3864,6 +3910,137 @@ function addMatchRule() {
 }
 function reclassifyDraft() {}
 document.getElementById("importPane") && document.getElementById("importPane").addEventListener("change", onImportChange);
+
+let taxMedicare = true;
+try { taxMedicare = localStorage.getItem("budget_tax_medicare") !== "0"; } catch (e) {}
+let taxMixChart = null;
+let taxLineChart = null;
+function auIncomeTax(taxable) {
+  const t = Math.max(0, num(taxable));
+  let tax = 0;
+  if (t > 18200) tax += (Math.min(t, 45000) - 18200) * 0.16;
+  if (t > 45000) tax += (Math.min(t, 135000) - 45000) * 0.30;
+  if (t > 135000) tax += (Math.min(t, 190000) - 135000) * 0.37;
+  if (t > 190000) tax += (t - 190000) * 0.45;
+  return tax;
+}
+function auMedicare(taxable) {
+  if (!taxMedicare) return 0;
+  const t = Math.max(0, num(taxable));
+  if (t <= 27222) return 0;
+  if (t < 34027) return (t - 27222) * 0.10;
+  return t * 0.02;
+}
+function auTaxTotal(taxable) { return auIncomeTax(taxable) + auMedicare(taxable); }
+function taxRows() {
+  const rows = [];
+  expenses.forEach(e => {
+    if (!e.work && !e.taxDeductible) return;
+    const monthly = project(toDaily(num(e.amount), e.frequency || "month"), "month");
+    const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
+    rows.push({ name: e.name || "Expense", kind: "Bill", work: !!e.work, other: !!e.taxDeductible && !e.work, monthly, once: 0, cat: cat.label });
+  });
+  purchases.forEach(p => {
+    if (!p.work && !p.taxDeductible) return;
+    const cat = p.categoryOverride ? (CATEGORIES[p.categoryOverride] || detectCategory(p.name)) : detectCategory(p.name);
+    rows.push({ name: p.name || "Purchase", kind: "One-off", work: !!p.work, other: !!p.taxDeductible && !p.work, monthly: 0, once: num(p.amount), cat: cat.label });
+  });
+  return rows;
+}
+function openTax() {
+  document.getElementById("taxModal").classList.add("active");
+  renderTax();
+}
+function closeTax() {
+  document.getElementById("taxModal").classList.remove("active");
+}
+function setTaxMedicare(on) {
+  taxMedicare = !!on;
+  try { localStorage.setItem("budget_tax_medicare", on ? "1" : "0"); } catch (e) {}
+  renderTax();
+}
+function renderTax() {
+  const pane = document.getElementById("taxPane");
+  if (!pane) return;
+  ["taxMix", "taxCats", "taxLine"].forEach(id => { const c = Chart.getChart(id); if (c) c.destroy(); });
+  taxMixChart = null;
+  taxLineChart = null;
+  const rows = taxRows();
+  const workAnnual = rows.filter(r => r.work).reduce((s, r) => s + r.monthly * 12 + r.once, 0);
+  const otherAnnual = rows.filter(r => r.other).reduce((s, r) => s + r.monthly * 12 + r.once, 0);
+  const claim = workAnnual + otherAnnual;
+  const workMonth = rows.filter(r => r.work).reduce((s, r) => s + r.monthly, 0);
+  const otherMonth = rows.filter(r => r.other).reduce((s, r) => s + r.monthly, 0);
+  const onceTotal = rows.reduce((s, r) => s + r.once, 0);
+  const gross = num(document.getElementById("grossSalary").value);
+  const before = auTaxTotal(gross);
+  const after = auTaxTotal(Math.max(0, gross - claim));
+  const saved = Math.max(0, before - after);
+  const marginal = gross > 190000 ? 45 : gross > 135000 ? 37 : gross > 45000 ? 30 : gross > 18200 ? 16 : 0;
+  let otherSpend = 0;
+  expenses.forEach(e => { if (!e.work && !e.taxDeductible) otherSpend += project(toDaily(num(e.amount), e.frequency || "month"), "month") * 12; });
+  purchases.forEach(p => { if (!p.work && !p.taxDeductible) otherSpend += num(p.amount); });
+  const byCat = {};
+  rows.forEach(r => { byCat[r.cat] = (byCat[r.cat] || 0) + r.monthly * 12 + r.once; });
+  const catEntries = Object.entries(byCat).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const labels = [];
+  const dedPath = [];
+  const savePath = [];
+  const monthlyBills = rows.reduce((s, r) => s + r.monthly, 0);
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(); d.setMonth(d.getMonth() + i);
+    labels.push(d.toLocaleString("en-AU", { month: "short" }));
+    const cum = monthlyBills * (i + 1) + onceTotal;
+    dedPath.push(round2(cum));
+    savePath.push(round2(Math.max(0, auTaxTotal(gross) - auTaxTotal(Math.max(0, gross - cum)))));
+  }
+  const body = rows.length ? `<table class="tax-table"><thead><tr><th>Item</th><th>Type</th><th>Claim</th><th>Category</th><th style="text-align:right">This year</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td>${escHtml(r.name)}</td><td>${r.kind}</td><td>${r.work ? "Work" : "Other deductible"}</td><td>${escHtml(r.cat)}</td><td style="text-align:right">${money(r.monthly * 12 + r.once)}</td></tr>`).join("")}
+  </tbody></table>` : `<div class="imp-meta">Nothing is marked yet. On an expense or purchase, W is a work expense and T is something else that is tax deductible. The same two ticks are on each import draft.</div>`;
+  pane.innerHTML = `
+    <div class="imp-meta" style="margin-bottom:12px;">Estimate for an Australian resident, 2025–26 brackets. Work expenses are treated as deductible. An item ticked both ways is counted once, as work. Bills are annualised. One-offs are counted once, not twelve times. This is not tax advice.</div>
+    <label class="imp-meta" style="display:flex; gap:8px; align-items:center; margin-bottom:12px; text-transform:none; letter-spacing:0; font-size:.85rem;"><input type="checkbox" ${taxMedicare ? "checked" : ""} onchange="setTaxMedicare(this.checked)"> Include Medicare levy</label>
+    <div class="cards" style="margin-bottom:12px;">
+      <div class="card"><div class="label">Work / year</div><div class="value" style="color:#9ec2ff;">${money(workAnnual)}</div><div class="imp-meta">${money(workMonth)} / month in bills</div></div>
+      <div class="card"><div class="label">Other deductible / year</div><div class="value" style="color:#7ddea0;">${money(otherAnnual)}</div><div class="imp-meta">${money(otherMonth)} / month in bills</div></div>
+      <div class="card"><div class="label">Total claim</div><div class="value">${money(claim)}</div><div class="imp-meta">Marginal bracket ${marginal}%</div></div>
+      <div class="card"><div class="label">Estimated tax saved</div><div class="value" style="color:#c4b5fd;">${money(saved)}</div><div class="imp-meta">On ${money(gross)} gross</div></div>
+    </div>
+    <div class="charts">
+      <div class="chart-card"><h3>What is claimed</h3><div class="chart-stage"><canvas id="taxMix"></canvas></div></div>
+      <div class="chart-card"><h3>Claim by category</h3><div class="chart-stage bars"><canvas id="taxCats"></canvas></div></div>
+      <div class="chart-card wide"><h3>12-month claim and tax saved</h3><div class="chart-stage line"><canvas id="taxLine"></canvas></div></div>
+    </div>
+    <div style="margin-top:14px;">${body}</div>`;
+  const mix = document.getElementById("taxMix");
+  if (mix) {
+    taxMixChart = new Chart(mix, {
+      type: "doughnut",
+      data: { labels: ["Work", "Other deductible", "Not claimed"], datasets: [{ data: [round2(workAnnual), round2(otherAnnual), round2(otherSpend)], backgroundColor: ["#7eb0ff", "#3dcc6e", "#2c3542"], borderWidth: 0 }] },
+      options: { animation: drawAnim(40), cutout: "62%", plugins: { legend: { position: "bottom", labels: { color: "#c5ced8", boxWidth: 10 } }, tooltip: chartTip } }
+    });
+  }
+  const cats = document.getElementById("taxCats");
+  if (cats) {
+    new Chart(cats, {
+      type: "bar",
+      data: { labels: catEntries.map(e => e[0]), datasets: [{ data: catEntries.map(e => round2(e[1])), backgroundColor: "#c4b5fd", borderRadius: 6, maxBarThickness: 28 }] },
+      options: { animation: drawAnim(50), indexAxis: "y", plugins: { legend: { display: false }, tooltip: chartTip }, scales: { x: { ticks: { color: "#8b97a6" }, grid: { color: "rgba(176,196,220,.08)" } }, y: { ticks: { color: "#c5ced8" }, grid: { display: false } } } }
+    });
+  }
+  const line = document.getElementById("taxLine");
+  if (line) {
+    taxLineChart = new Chart(line, {
+      type: "line",
+      data: { labels, datasets: [
+        { label: "Cumulative claim", data: dedPath, borderColor: "#7eb0ff", backgroundColor: "rgba(126,176,255,.15)", fill: true, tension: 0.35, pointRadius: 2 },
+        { label: "Tax saved", data: savePath, borderColor: "#c4b5fd", backgroundColor: "rgba(196,181,253,.12)", fill: true, tension: 0.35, pointRadius: 2 }
+      ] },
+      options: { animation: drawAnim(30), plugins: { legend: { position: "bottom", labels: { color: "#c5ced8", boxWidth: 10 } }, tooltip: chartTip }, scales: { x: { ticks: { color: "#8b97a6" }, grid: { display: false } }, y: { ticks: { color: "#8b97a6" }, grid: { color: "rgba(176,196,220,.08)" } } } }
+    });
+  }
+}
+
 
 (async function init() {
   document.getElementById("syncStatus").textContent = "Loading…";
