@@ -1619,18 +1619,20 @@ function removeSource(idx) {
 }
 function updateSuperDisplay() {
   let superTotal = 0;
-  let grossShown = 0;
   incomeSources.forEach(s => {
-    if (s.included === false) return;
+    if (s.included === false || !s.hasSuper) return;
     const rate = (num(s.superRate) || SUPER_DEFAULTS[s.nation] || 12) / 100;
-    const base = s.isMain ? num(s.grossAnnual) : (s.entryMode === "gross" ? toAnnual(s.amount, s.entryPeriod || "year") : 0);
-    if (s.isMain) grossShown += num(s.grossAnnual);
-    if (s.hasSuper) superTotal += base * rate;
+    let base = 0;
+    if (s.taxed === false) base = toAnnual(s.amount, s.entryPeriod || "month");
+    else if (s.isMain) base = num(s.grossAnnual);
+    else if (s.entryMode === "gross") base = toAnnual(s.amount, s.entryPeriod || "year");
+    superTotal += base * rate;
   });
+  const grossShown = includedAnnualGross();
   const el = document.getElementById("superDisplay");
   const remEl = document.getElementById("totalRemDisplay");
   if (el) el.textContent = superTotal > 0 ? "+ $" + Math.round(superTotal).toLocaleString() + " super" : "";
-  if (remEl) remEl.textContent = superTotal > 0 ? "($" + Math.round(grossShown + superTotal).toLocaleString() + " total remuneration)" : "";
+  if (remEl) remEl.textContent = grossShown > 0 ? "($" + Math.round(grossShown + superTotal).toLocaleString() + " total remuneration)" : "";
 }
 function toggleSourceDropdown() {
   document.getElementById("sourceDropdown").classList.toggle("open");
