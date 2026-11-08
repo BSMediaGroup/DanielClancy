@@ -461,6 +461,18 @@
   .tax-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
   .tax-table th { text-align: left; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: #8b97a6; padding: 8px 8px; border-bottom: 1px solid rgba(176,196,220,.14); }
   .tax-table td { padding: 8px; border-bottom: 1px solid rgba(176,196,220,.08); }
+  .tax-table tr.tax-row { cursor: pointer; }
+  .tax-table tr.tax-row:hover td { background: rgba(176,196,220,.05); }
+  .tax-editor { display: grid; grid-template-columns: 1.2fr .8fr; gap: 10px; padding: 4px 4px 12px; }
+  .tax-editor label { display: block; font-size: .75rem; color: #8b97a6; }
+  .tax-editor input, .tax-editor textarea, .tax-editor select {
+    width: 100%; margin-top: 4px; background: #0c1016; border: 1px solid rgba(176,196,220,.16);
+    color: #f4f7fb; border-radius: 8px; padding: 8px; font-family: inherit; font-size: .88rem;
+  }
+  .tax-editor textarea { min-height: 74px; resize: vertical; }
+  .tax-editor .span2 { grid-column: 1 / -1; }
+  .tax-editor input:disabled, .tax-editor select:disabled { opacity: .45; }
+  .tax-link { color: #9ec2ff; font-size: .78rem; }
 
 
   .income-sources-btn {
@@ -2548,10 +2560,18 @@ function saveEntryEditor() {
   const work = document.getElementById("eeWork").checked;
   const taxDeductible = document.getElementById("eeDed").checked;
   const paid = !!src.paid;
+  const taxMeta = {
+    taxTitle: src.taxTitle || "",
+    taxNote: src.taxNote || "",
+    taxClaimMode: src.taxClaimMode === "amount" ? "amount" : "percent",
+    receiptUrl: src.receiptUrl || ""
+  };
+  if (src.taxClaimPct != null && src.taxClaimPct !== "") taxMeta.taxClaimPct = num(src.taxClaimPct);
+  if (src.taxClaimAmount != null && src.taxClaimAmount !== "") taxMeta.taxClaimAmount = num(src.taxClaimAmount);
   if (convertEdit.kind === "expense") expenses.splice(convertEdit.idx, 1);
   else purchases.splice(convertEdit.idx, 1);
-  if (nextKind === "expense") expenses.push({ name, amount, frequency, categoryOverride, work, taxDeductible, paid });
-  else purchases.push({ name, amount, categoryOverride, work, taxDeductible });
+  if (nextKind === "expense") expenses.push({ name, amount, frequency, categoryOverride, work, taxDeductible, paid, ...taxMeta });
+  else purchases.push({ name, amount, categoryOverride, work, taxDeductible, ...taxMeta });
   convertEdit = null;
   document.getElementById("entryEditor").classList.remove("active");
   scheduleSave();
@@ -4142,20 +4162,82 @@ function auMedicare(taxable) {
   return t * 0.02;
 }
 function auTaxTotal(taxable) { return auIncomeTax(taxable) + auMedicare(taxable); }
+function claimShare(item, base) {
+  const full = Math.max(0, num(base));
+  if (item && item.taxClaimMode === "amount") {
+    const dollars = Math.max(0, num(item.taxClaimAmount));
+    const used = Math.min(full, dollars);
+    return { mode: "amount", pct: full > 0 ? (used / full) * 100 : 0, fraction: full > 0 ? used / full : 0, used };
+  }
+  let pct = item && item.taxClaimPct;
+  if (pct == null || pct === "") pct = 100;
+  pct = Math.max(0, Math.min(100, num(pct)));
+  return { mode: "percent", pct, fraction: pct / 100, used: full * pct / 100 };
+}
 function taxRows() {
   const rows = [];
-  expenses.forEach(e => {
+  expenses.forEach((e, idx) => {
     if (!e.work && !e.taxDeductible) return;
-    const monthly = project(toDaily(num(e.amount), e.frequency || "month"), "month");
+    const base = num(e.amount);
+    const share = claimShare(e, base);
+    const monthly = project(toDaily(base, e.frequency || "month"), "month") * share.fraction;
     const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
-    rows.push({ name: e.name || "Expense", kind: "Bill", work: !!e.work, other: !!e.taxDeductible && !e.work, monthly, once: 0, cat: cat.label });
+    rows.push({ name: (e.taxTitle || "").trim() || e.name || "Expense", spendName: e.name || "Expense", kind: "Bill", src: "expense", idx, work: !!e.work, other: !!e.taxDeductible && !e.work, monthly, once: 0, cat: cat.label, share, base, freq: e.frequency || "month", item: e });
   });
-  purchases.forEach(p => {
+  purchases.forEach((p, idx) => {
     if (!p.work && !p.taxDeductible) return;
+    const base = num(p.amount);
+    const share = claimShare(p, base);
     const cat = p.categoryOverride ? (CATEGORIES[p.categoryOverride] || detectCategory(p.name)) : detectCategory(p.name);
-    rows.push({ name: p.name || "Purchase", kind: "One-off", work: !!p.work, other: !!p.taxDeductible && !p.work, monthly: 0, once: num(p.amount), cat: cat.label });
+    rows.push({ name: (p.taxTitle || "").trim() || p.name || "Purchase", spendName: p.name || "Purchase", kind: "One-off", src: "purchase", idx, work: !!p.work, other: !!p.taxDeductible && !p.work, monthly: 0, once: base * share.fraction, cat: cat.label, share, base, freq: "once", item: p });
   });
   return rows;
+}
+let taxEditKey = "";
+function toggleTaxEdit(key) {
+  taxEditKey = taxEditKey === key ? "" : key;
+  renderTax();
+}
+function patchTax(kind, idx, field, value) {
+  const item = kind === "expense" ? expenses[idx] : purchases[idx];
+  if (!item) return;
+  if (field === "taxClaimMode") {
+    item.taxClaimMode = value === "amount" ? "amount" : "percent";
+    if (item.taxClaimMode === "amount" && (item.taxClaimAmount == null || item.taxClaimAmount === "")) item.taxClaimAmount = num(item.amount);
+    if (item.taxClaimMode === "percent" && (item.taxClaimPct == null || item.taxClaimPct === "")) item.taxClaimPct = 100;
+  } else if (field === "taxClaimPct") item.taxClaimPct = Math.max(0, Math.min(100, num(value)));
+  else if (field === "taxClaimAmount") item.taxClaimAmount = Math.max(0, num(value));
+  else if (field === "taxTitle") item.taxTitle = value;
+  else if (field === "taxNote") item.taxNote = value;
+  else if (field === "receiptUrl") item.receiptUrl = String(value || "").trim();
+  scheduleSave();
+  renderTax();
+}
+function taxEditorHtml(r) {
+  const item = r.item;
+  const pct = item.taxClaimPct == null || item.taxClaimPct === "" ? 100 : num(item.taxClaimPct);
+  const dollars = item.taxClaimAmount == null || item.taxClaimAmount === "" ? r.base : num(item.taxClaimAmount);
+  const amountMode = item.taxClaimMode === "amount";
+  const link = goalImage(item.receiptUrl);
+  const spend = r.freq === "once" ? money(r.base) + " once" : money(r.base) + " / " + String(FREQ_LABELS[r.freq] || r.freq).toLowerCase();
+  return `<tr><td colspan="6" onclick="event.stopPropagation()"><div class="tax-editor">
+    <label class="span2">Claim title<input type="text" value="${escHtml(item.taxTitle || "")}" placeholder="${escHtml(r.spendName)}" onchange="patchTax('${r.src}', ${r.idx}, 'taxTitle', this.value)"></label>
+    <label class="span2">Details<textarea onchange="patchTax('${r.src}', ${r.idx}, 'taxNote', this.value)">${escHtml(item.taxNote || "")}</textarea></label>
+    <label>How much is deductible
+      <select onchange="patchTax('${r.src}', ${r.idx}, 'taxClaimMode', this.value)">
+        <option value="percent" ${amountMode ? "" : "selected"}>Percentage of this spend</option>
+        <option value="amount" ${amountMode ? "selected" : ""}>Exact dollar amount</option>
+      </select>
+    </label>
+    <label>${amountMode ? "Deductible amount of this spend ($)" : "Percent deductible"}
+      ${amountMode
+        ? `<input type="number" min="0" step="0.01" value="${dollars}" onchange="patchTax('${r.src}', ${r.idx}, 'taxClaimAmount', this.value)">`
+        : `<input type="number" min="0" max="100" step="1" value="${pct}" onchange="patchTax('${r.src}', ${r.idx}, 'taxClaimPct', this.value)">`}
+    </label>
+    <div class="span2 imp-meta">Spend is ${spend}. ${amountMode ? "The dollar amount is capped at that spend." : "100% claims the whole spend."} This year this claims ${money(r.monthly * 12 + r.once)}.</div>
+    <label class="span2">Receipt or invoice URL<input type="url" value="${escHtml(item.receiptUrl || "")}" placeholder="https://" onchange="patchTax('${r.src}', ${r.idx}, 'receiptUrl', this.value)"></label>
+    ${link ? `<div class="span2"><a class="tax-link" href="${escHtml(link)}" target="_blank" rel="noopener">Open receipt</a></div>` : (item.receiptUrl ? `<div class="span2 imp-meta">Use a full http or https link.</div>` : "")}
+  </div></td></tr>`;
 }
 function openTax() {
   document.getElementById("taxModal").classList.add("active");
@@ -4188,8 +4270,16 @@ function renderTax() {
   const saved = Math.max(0, before - after);
   const marginal = gross > 190000 ? 45 : gross > 135000 ? 37 : gross > 45000 ? 30 : gross > 18200 ? 16 : 0;
   let otherSpend = 0;
-  expenses.forEach(e => { if (!e.work && !e.taxDeductible) otherSpend += project(toDaily(num(e.amount), e.frequency || "month"), "month") * 12; });
-  purchases.forEach(p => { if (!p.work && !p.taxDeductible) otherSpend += num(p.amount); });
+  expenses.forEach(e => {
+    const full = project(toDaily(num(e.amount), e.frequency || "month"), "month") * 12;
+    if (!e.work && !e.taxDeductible) otherSpend += full;
+    else otherSpend += full * (1 - claimShare(e, num(e.amount)).fraction);
+  });
+  purchases.forEach(p => {
+    const full = num(p.amount);
+    if (!p.work && !p.taxDeductible) otherSpend += full;
+    else otherSpend += full * (1 - claimShare(p, full).fraction);
+  });
   const byCat = {};
   rows.forEach(r => { byCat[r.cat] = (byCat[r.cat] || 0) + r.monthly * 12 + r.once; });
   const catEntries = Object.entries(byCat).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
@@ -4204,8 +4294,14 @@ function renderTax() {
     dedPath.push(round2(cum));
     savePath.push(round2(Math.max(0, auTaxTotal(gross) - auTaxTotal(Math.max(0, gross - cum)))));
   }
-  const body = rows.length ? `<table class="tax-table"><thead><tr><th>Item</th><th>Type</th><th>Claim</th><th>Category</th><th style="text-align:right">This year</th></tr></thead><tbody>
-    ${rows.map(r => `<tr><td>${escHtml(r.name)}</td><td>${r.kind}</td><td>${r.work ? "Work" : "Other deductible"}</td><td>${escHtml(r.cat)}</td><td style="text-align:right">${money(r.monthly * 12 + r.once)}</td></tr>`).join("")}
+  const body = rows.length ? `<table class="tax-table"><thead><tr><th>Item</th><th>Type</th><th>Claim</th><th>Deductible</th><th>Category</th><th style="text-align:right">This year</th></tr></thead><tbody>
+    ${rows.map(r => {
+      const key = r.src + ":" + r.idx;
+      const link = goalImage(r.item.receiptUrl);
+      const shareText = r.share.mode === "amount" ? money(r.share.used) + " of " + money(r.base) : (r.share.pct % 1 ? r.share.pct.toFixed(1) : String(Math.round(r.share.pct))) + "%";
+      const title = escHtml(r.name) + (r.name !== r.spendName ? `<div class="imp-meta">${escHtml(r.spendName)}</div>` : "");
+      return `<tr class="tax-row" onclick="toggleTaxEdit('${key}')"><td>${title}${link ? ` <a class="tax-link" href="${escHtml(link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Receipt</a>` : ""}</td><td>${r.kind}</td><td>${r.work ? "Work" : "Other deductible"}</td><td>${shareText}</td><td>${escHtml(r.cat)}</td><td style="text-align:right">${money(r.monthly * 12 + r.once)}</td></tr>${taxEditKey === key ? taxEditorHtml(r) : ""}`;
+    }).join("")}
   </tbody></table>` : `<div class="imp-meta">Nothing is marked yet. On an expense or purchase, W is a work expense and T is something else that is tax deductible. The same two ticks are on each import draft.</div>`;
   pane.innerHTML = `
     <div class="imp-meta" style="margin-bottom:12px;">Estimate for an Australian resident, 2025–26 brackets. Work expenses are treated as deductible. An item ticked both ways is counted once, as work. Bills are annualised. One-offs are counted once, not twelve times. This is not tax advice.</div>
