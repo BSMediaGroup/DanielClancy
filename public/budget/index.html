@@ -736,11 +736,12 @@
       </div>
       <input type="number" id="grossSalaryTop" value="90000" step="100" class="editing" style="display:none;" onblur="finishEdit('gross')" onkeydown="if(event.key==='Enter')this.blur()">
     </div>
-    <div class="salary-card" onclick="editField('net')">
-      <button class="edit-btn" onclick="event.stopPropagation(); editField('net')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-      <div class="label">Net monthly (after tax)</div>
+    <div class="salary-card" onclick="openIncomeModal()" title="Included sources. Click to manage.">
+      <button class="edit-btn" onclick="event.stopPropagation(); openIncomeModal()" title="Manage income"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      <div class="label">Net monthly (included sources)</div>
       <div class="display" id="netDisplay">$5,888</div>
-      <input type="number" id="income" value="5888" step="0.01" class="editing" style="display:none;" onblur="finishEdit('net')" onkeydown="if(event.key==='Enter')this.blur()">
+      <div class="leftover-sub" id="netSourceNote"></div>
+      <input type="number" id="income" value="5888" step="0.01" class="editing" style="display:none;">
     </div>
     <div class="salary-card" onclick="editField('phone')">
       <button class="edit-btn" onclick="event.stopPropagation(); editField('phone')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
@@ -765,7 +766,7 @@
     <div class="salary-inputs">
       <div>
         <label>Gross annual salary</label>
-        <input type="number" id="grossSalary" value="90000" step="100" oninput="syncGrossFromDetail(); calcSalary(); scheduleSave();">
+        <input type="number" id="grossSalary" value="90000" step="100" oninput="syncGrossFromDetail(); scheduleSave();">
       </div>
       <div>
         <label>Super rate %</label>
@@ -1122,10 +1123,9 @@ function loadPeriod(key) {
   expenses = p.expenses || [];
   purchases = p.purchases || [];
   incomeSources = p.incomeSources || [];
+  normalizeSources();
   document.getElementById("periodTitle").textContent = formatPeriodTitle(key, budgetInterval);
-  updateDisplays();
-  updateSuperDisplay();
-  render();
+  refreshIncome();
 }
 
 function savePeriod() {
@@ -1411,172 +1411,194 @@ const NATIONS = ["AU", "US", "UK", "NZ", "CA", "Other"];
 const EMP_TYPES = ["fulltime", "parttime", "contract", "casual", "other"];
 const INCOME_TYPES = ["wages", "salary", "commission", "donations", "freelance", "investment", "other"];
 
+function normalizeSources() {
+  if (!Array.isArray(incomeSources)) incomeSources = [];
+  incomeSources.forEach(s => {
+    if (!s.id) s.id = "src" + Math.random().toString(36).slice(2, 8);
+    if (s.included === undefined) s.included = true;
+    if (!s.entryMode) s.entryMode = "net";
+    if (!s.entryPeriod) s.entryPeriod = "month";
+  });
+  let main = incomeSources.find(s => s.isMain);
+  if (!main && incomeSources.length) { main = incomeSources[0]; main.isMain = true; }
+  if (main && (main.grossAnnual === undefined || main.grossAnnual === null)) {
+    const grossEl = document.getElementById("grossSalary");
+    main.grossAnnual = num(grossEl && grossEl.value) || 90000;
+  }
+}
+function sourceMonthlyNet(s) {
+  if (!s || s.included === false) return 0;
+  if (s.entryMode === "gross") return calcNetFromGross(toAnnual(s.amount, s.entryPeriod || "year")) / 12;
+  return toMonthly(s.amount, s.entryPeriod || "month");
+}
+function includedMonthlyNet() {
+  return incomeSources.reduce((sum, s) => sum + sourceMonthlyNet(s), 0);
+}
+function includedAnnualGross() {
+  let gross = 0;
+  incomeSources.forEach(s => {
+    if (s.included === false) return;
+    if (s.isMain) gross += num(s.grossAnnual);
+    else if (s.entryMode === "gross") gross += toAnnual(s.amount, s.entryPeriod || "year");
+  });
+  return gross;
+}
+function syncIncomeFields() {
+  normalizeSources();
+  const net = round2(includedMonthlyNet());
+  const gross = Math.round(includedAnnualGross());
+  const income = document.getElementById("income");
+  const g1 = document.getElementById("grossSalary");
+  const g2 = document.getElementById("grossSalaryTop");
+  if (income) income.value = net;
+  if (g1) g1.value = gross;
+  if (g2) g2.value = gross;
+  const note = document.getElementById("netSourceNote");
+  if (note) {
+    const n = incomeSources.filter(s => s.included !== false).length;
+    const extra = incomeSources.filter(s => !s.isMain && s.included !== false).reduce((sum, s) => sum + sourceMonthlyNet(s), 0);
+    note.textContent = n ? (n + " included" + (extra > 0 ? " · " + money(extra) + " from other sources" : "")) : "Nothing included";
+  }
+}
+let editingSourceId = null;
 function renderIncomeSources() {
   const el = document.getElementById("incomeSourcesList");
-  el.innerHTML = incomeSources.map((s, i) => `
-    <div style="background:var(--bg-elevated); border-radius:10px; padding:14px; margin-bottom:10px;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-        <input type="checkbox" ${s.included ? "checked" : ""} onchange="toggleSource(${i}, this.checked)">
-        <input type="text" value="${escHtml(s.label)}" onchange="updateSource(${i}, 'label', this.value)" style="flex:1; background:#0d1117; border:1px solid var(--border); border-radius:6px; color:var(--text); padding:6px 10px; font-weight:${s.isMain ? '600' : '400'};">
-        <div style="display:flex; gap:4px;">
-          <select onchange="updateSource(${i}, 'entryMode', this.value)" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px; font-size:0.75rem;">
-            <option value="net" ${s.entryMode === 'net' ? 'selected' : ''}>Net</option>
-            <option value="gross" ${s.entryMode === 'gross' ? 'selected' : ''}>Gross</option>
-          </select>
-          <input type="number" step="0.01" value="${s.amount}" onchange="updateSource(${i}, 'amount', parseFloat(this.value)||0)" style="width:80px; background:#0d1117; border:1px solid var(--border); border-radius:4px; color:var(--text); padding:4px 6px;">
-          <select onchange="updateSource(${i}, 'entryPeriod', this.value)" style="background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px; font-size:0.75rem;">
-            <option value="year" ${s.entryPeriod === 'year' ? 'selected' : ''}>/year</option>
-            <option value="month" ${s.entryPeriod === 'month' ? 'selected' : ''}>/month</option>
-            <option value="fortnight" ${s.entryPeriod === 'fortnight' ? 'selected' : ''}>/fortnight</option>
-            <option value="week" ${s.entryPeriod === 'week' ? 'selected' : ''}>/week</option>
-          </select>
+  if (!el) return;
+  const field = "width:100%; margin-top:4px; background:#0c1016; border:1px solid rgba(176,196,220,.16); color:#f4f7fb; border-radius:8px; padding:8px; font-family:inherit;";
+  el.innerHTML = incomeSources.map((s, i) => {
+    const monthly = sourceMonthlyNet(Object.assign({}, s, { included: true }));
+    const on = s.included !== false;
+    const editing = editingSourceId === s.id;
+    const pill = `<button class="save-pause${on ? "" : " on"}" onclick="event.stopPropagation(); toggleSource(${i}, ${on ? "false" : "true"})">${on ? "Included" : "Excluded"}</button>`;
+    if (!editing) {
+      return `<article class="save-card${on ? "" : " paused"}" onclick="editIncomeSource('${s.id}')" style="border-color:rgba(61,204,110,.3); background:linear-gradient(180deg, rgba(61,204,110,.1), rgba(61,204,110,.03) 42%, transparent), #121820;">
+        <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+          <div style="min-width:0;">
+            <div class="label" style="color:#8dcea8; display:flex; align-items:center; gap:8px;">${s.isMain ? "Main income" : "Other income"} ${pill}</div>
+            <h4>${escHtml(s.label || "Untitled")}</h4>
+            <div class="save-desc">${escHtml(s.incomeType || "income")} · ${s.entryMode === "gross" ? "Gross" : "Net"} ${money(num(s.amount))} / ${escHtml(s.entryPeriod || "month")}${s.isMain && num(s.grossAnnual) ? " · gross " + money(num(s.grossAnnual)) + " / year" : ""}</div>
+          </div>
+          <div class="save-figure" style="color:${on ? "#7ddea0" : "#8b97a6"};">${money(monthly)}<div style="font-size:.68rem; font-weight:500; color:#8b97a6;">/ month</div></div>
         </div>
-        ${s.isMain ? '' : `<button class="btn small" onclick="removeSource(${i})">✕</button>`}
+      </article>`;
+    }
+    const periodOpts = ["year", "month", "fortnight", "week"].map(p => `<option value="${p}" ${s.entryPeriod === p ? "selected" : ""}>/${p}</option>`).join("");
+    return `<article class="save-card editing" onclick="event.stopPropagation()" style="border-color:rgba(61,204,110,.4);">
+      <div class="label" style="color:#8dcea8; margin-bottom:8px; display:flex; align-items:center; gap:8px;">${s.isMain ? "Main income" : "Income"} ${pill}</div>
+      <label style="font-size:.78rem; color:#8b97a6;">Name<input type="text" value="${escHtml(s.label || "")}" style="${field}" onchange="patchSource(${i}, 'label', this.value)"></label>
+      <div style="display:grid; grid-template-columns:1.1fr .7fr .8fr; gap:8px; margin-top:8px;">
+        <label style="font-size:.78rem; color:#8b97a6;">Amount<input type="number" step="0.01" value="${num(s.amount)}" style="${field}" onchange="patchSource(${i}, 'amount', this.value)"></label>
+        <label style="font-size:.78rem; color:#8b97a6;">Entered as<select style="${field}" onchange="patchSource(${i}, 'entryMode', this.value)"><option value="net" ${s.entryMode !== "gross" ? "selected" : ""}>Net</option><option value="gross" ${s.entryMode === "gross" ? "selected" : ""}>Gross</option></select></label>
+        <label style="font-size:.78rem; color:#8b97a6;">Every<select style="${field}" onchange="patchSource(${i}, 'entryPeriod', this.value)">${periodOpts}</select></label>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.8rem;">
-        <div>
-          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Employment</label>
-          <select onchange="updateSource(${i}, 'empType', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
-            ${EMP_TYPES.map(t => `<option value="${t}" ${s.empType === t ? 'selected' : ''}>${t}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Income type</label>
-          <select onchange="updateSource(${i}, 'incomeType', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
-            ${INCOME_TYPES.map(t => `<option value="${t}" ${s.incomeType === t ? 'selected' : ''}>${t}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Nation</label>
-          <select onchange="updateSourceNation(${i}, this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
-            ${NATIONS.map(n => `<option value="${n}" ${s.nation === n ? 'selected' : ''}>${n}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">State</label>
-          <input type="text" value="${escHtml(s.state || "")}" placeholder="Optional" onchange="updateSource(${i}, 'state', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
-        </div>
+      ${s.isMain ? `<label style="display:block; margin-top:8px; font-size:.78rem; color:#8b97a6;">Gross annual salary<input type="number" step="100" value="${num(s.grossAnnual)}" style="${field}" onchange="patchSource(${i}, 'grossAnnual', this.value)"></label>` : ""}
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+        <label style="font-size:.78rem; color:#8b97a6;">Employment<select style="${field}" onchange="patchSource(${i}, 'empType', this.value)">${EMP_TYPES.map(t => `<option value="${t}" ${s.empType === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+        <label style="font-size:.78rem; color:#8b97a6;">Income type<select style="${field}" onchange="patchSource(${i}, 'incomeType', this.value)">${INCOME_TYPES.map(t => `<option value="${t}" ${s.incomeType === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+        <label style="font-size:.78rem; color:#8b97a6;">Nation<select style="${field}" onchange="patchSource(${i}, 'nation', this.value)">${NATIONS.map(n => `<option value="${n}" ${s.nation === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        <label style="font-size:.78rem; color:#8b97a6;">State<input type="text" value="${escHtml(s.state || "")}" style="${field}" onchange="patchSource(${i}, 'state', this.value)"></label>
       </div>
-      <div style="display:flex; align-items:center; gap:10px; margin-top:10px; font-size:0.8rem;">
-        <label style="display:flex; align-items:center; gap:6px; color:var(--text-secondary);">
-          <input type="checkbox" ${s.hasSuper ? 'checked' : ''} onchange="toggleSuper(${i}, this.checked)"> Superannuation
-        </label>
-        ${s.hasSuper ? `<span style="color:var(--text-muted);" ondblclick="editSuperRate(${i})" title="Double-click to edit">${s.superRate || SUPER_DEFAULTS[s.nation] || 12}%</span>` : ''}
+      <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+        <label style="font-size:.85rem;"><input type="checkbox" ${s.hasSuper ? "checked" : ""} onchange="patchSource(${i}, 'hasSuper', this.checked)"> Superannuation</label>
+        ${s.hasSuper ? `<label style="font-size:.78rem; color:#8b97a6;">Rate %<input type="number" step="0.5" value="${num(s.superRate || SUPER_DEFAULTS[s.nation] || 12)}" style="${field} width:80px;" onchange="patchSource(${i}, 'superRate', this.value)"></label>` : ""}
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; font-size:0.8rem;">
-        <div>
-          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Pay frequency</label>
-          <select onchange="updateSource(${i}, 'payFreq', this.value)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;">
-            <option value="weekly" ${s.payFreq === 'weekly' ? 'selected' : ''}>Weekly</option>
-            <option value="fortnightly" ${s.payFreq === 'fortnightly' ? 'selected' : ''}>Fortnightly</option>
-            <option value="monthly" ${s.payFreq === 'monthly' ? 'selected' : ''}>Monthly</option>
-          </select>
-        </div>
-        <div>
-          <label style="color:var(--text-muted); display:block; margin-bottom:2px;">Pay day</label>
-          <input type="number" min="1" max="31" value="${s.payDay || 15}" onchange="updateSource(${i}, 'payDay', parseInt(this.value)||1)" style="width:100%; background:#0d1117; border:1px solid var(--border); color:var(--text); padding:4px; border-radius:4px;" title="Day of month or week">
-        </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+        <label style="font-size:.78rem; color:#8b97a6;">Pay frequency<select style="${field}" onchange="patchSource(${i}, 'payFreq', this.value)"><option value="weekly" ${s.payFreq === "weekly" ? "selected" : ""}>Weekly</option><option value="fortnightly" ${s.payFreq === "fortnightly" ? "selected" : ""}>Fortnightly</option><option value="monthly" ${s.payFreq === "monthly" ? "selected" : ""}>Monthly</option></select></label>
+        <label style="font-size:.78rem; color:#8b97a6;">Pay day<input type="number" min="1" max="31" value="${num(s.payDay || 15)}" style="${field}" onchange="patchSource(${i}, 'payDay', this.value)"></label>
       </div>
-    </div>
-  `).join("");
+      <div style="display:flex; justify-content:space-between; margin-top:12px;">
+        ${s.isMain ? "<span></span>" : `<button class="btn small" onclick="removeSource(${i})">Remove</button>`}
+        <button class="btn small" onclick="editingSourceId=null; renderIncomeSources();">Done</button>
+      </div>
+    </article>`;
+  }).join("");
   renderSourceMenu();
-  updateSuperDisplay();
 }
-function updateSourceNation(idx, nation) {
-  incomeSources[idx].nation = nation;
-  if (incomeSources[idx].hasSuper && !incomeSources[idx].superRateEdited) {
-    incomeSources[idx].superRate = SUPER_DEFAULTS[nation] || 12;
-  }
-  scheduleSave();
+function editIncomeSource(id) {
+  editingSourceId = id;
   renderIncomeSources();
 }
-function toggleSuper(idx, on) {
-  incomeSources[idx].hasSuper = on;
-  if (on && !incomeSources[idx].superRate) {
-    incomeSources[idx].superRate = SUPER_DEFAULTS[incomeSources[idx].nation] || 12;
-  }
+function renderSourceMenu() {
+  const menu = document.getElementById("sourceMenu");
+  if (!menu) return;
+  menu.innerHTML = incomeSources.map((s, i) => `
+    <label><input type="checkbox" ${s.included !== false ? "checked" : ""} onchange="toggleSource(${i}, this.checked)"> ${escHtml(s.label || "Income")}</label>
+  `).join("");
+}
+function toggleSource(idx, included) {
+  if (!incomeSources[idx]) return;
+  incomeSources[idx].included = !!included;
   scheduleSave();
   renderIncomeSources();
+  render();
 }
-function editSuperRate(idx) {
-  const rate = prompt("Super rate %", incomeSources[idx].superRate || 12);
-  if (rate !== null) {
-    incomeSources[idx].superRate = parseFloat(rate) || 12;
-    incomeSources[idx].superRateEdited = true;
-    scheduleSave();
-    renderIncomeSources();
+function patchSource(idx, field, value) {
+  const s = incomeSources[idx];
+  if (!s) return;
+  if (field === "hasSuper") s.hasSuper = !!value;
+  else if (field === "amount" || field === "superRate" || field === "payDay" || field === "grossAnnual") s[field] = num(value);
+  else s[field] = value;
+  if (field === "nation" && s.hasSuper) s.superRate = SUPER_DEFAULTS[s.nation] || s.superRate || 12;
+  if (s.isMain && field === "grossAnnual" && s.entryMode !== "gross") {
+    s.amount = round2(calcNetFromGross(num(value)) / 12);
+    s.entryPeriod = "month";
+    s.entryMode = "net";
   }
+  scheduleSave();
+  render();
+  if (field !== "label" && field !== "state" && field !== "amount" && field !== "payDay") renderIncomeSources();
+}
+function addIncomeSource() {
+  const id = "src" + Date.now().toString(36);
+  incomeSources.push({ id, label: "Other income", amount: 0, included: true, isMain: false, entryMode: "net", entryPeriod: "month", incomeType: "other", empType: "other", nation: "AU", state: "NSW" });
+  editingSourceId = id;
+  scheduleSave();
+  renderIncomeSources();
+  render();
+}
+function removeSource(idx) {
+  if (!incomeSources[idx] || incomeSources[idx].isMain) return;
+  incomeSources.splice(idx, 1);
+  editingSourceId = null;
+  scheduleSave();
+  renderIncomeSources();
+  render();
 }
 function updateSuperDisplay() {
-  const annualGross = parseFloat(document.getElementById("grossSalaryTop").value) || 0;
   let superTotal = 0;
+  let grossShown = 0;
   incomeSources.forEach(s => {
-    if (s.included && s.hasSuper) {
-      const rate = (s.superRate || SUPER_DEFAULTS[s.nation] || 12) / 100;
-      if (s.isMain) {
-        superTotal += annualGross * rate;
-      } else {
-        superTotal += toAnnual(s.amount, s.entryPeriod || "month") * rate;
-      }
-    }
+    if (s.included === false) return;
+    const rate = (num(s.superRate) || SUPER_DEFAULTS[s.nation] || 12) / 100;
+    const base = s.isMain ? num(s.grossAnnual) : (s.entryMode === "gross" ? toAnnual(s.amount, s.entryPeriod || "year") : 0);
+    if (s.isMain) grossShown += num(s.grossAnnual);
+    if (s.hasSuper) superTotal += base * rate;
   });
   const el = document.getElementById("superDisplay");
   const remEl = document.getElementById("totalRemDisplay");
   if (el) el.textContent = superTotal > 0 ? "+ $" + Math.round(superTotal).toLocaleString() + " super" : "";
-  if (remEl) remEl.textContent = superTotal > 0 ? "($" + Math.round(annualGross + superTotal).toLocaleString() + " total remuneration)" : "";
-}
-function renderSourceMenu() {
-  const menu = document.getElementById("sourceMenu");
-  menu.innerHTML = incomeSources.map((s, i) => `
-    <label><input type="checkbox" ${s.included ? "checked" : ""} onchange="toggleSource(${i}, this.checked)"> ${escHtml(s.label)}</label>
-  `).join("");
+  if (remEl) remEl.textContent = superTotal > 0 ? "($" + Math.round(grossShown + superTotal).toLocaleString() + " total remuneration)" : "";
 }
 function toggleSourceDropdown() {
   document.getElementById("sourceDropdown").classList.toggle("open");
 }
-function toggleSource(idx, included) {
-  incomeSources[idx].included = included;
-  scheduleSave();
-  renderIncomeSources();
-  syncMainIncome();
-}
-function updateSource(idx, field, value) {
-  incomeSources[idx][field] = value;
-  if (incomeSources[idx].isMain && field === "amount") {
-    document.getElementById("income").value = value;
-    updateDisplays();
+function refreshIncome() {
+  syncIncomeFields();
+  updateDisplays();
   updateSuperDisplay();
-  }
-  scheduleSave();
-  renderIncomeSources();
-}
-function addIncomeSource() {
-  incomeSources.push({ id: Date.now().toString(), label: "Other income", amount: 0, included: true, isMain: false });
-  scheduleSave();
-  renderIncomeSources();
-}
-function removeSource(idx) {
-  if (incomeSources[idx].isMain) return;
-  incomeSources.splice(idx, 1);
-  scheduleSave();
-  renderIncomeSources();
-}
-function syncMainIncome() {
-  const main = incomeSources.find(s => s.isMain);
-  if (main) {
-    main.amount = parseFloat(document.getElementById("income").value) || 0;
-  }
+  calcSalary();
+  renderSourceMenu();
+  render();
 }
 function getIncludedIncome() {
-  return incomeSources.filter(s => s.included).reduce((sum, s) => sum + toMonthly(s.amount, s.entryPeriod || "month"), 0);
+  return includedMonthlyNet();
 }
 function spendableIncome() {
-  if (incomeSources.length) return getIncludedIncome();
-  return num(document.getElementById("income").value);
+  return includedMonthlyNet();
 }
 function periodMonthlyIncome(p) {
   if (p && Array.isArray(p.incomeSources) && p.incomeSources.length) {
-    return p.incomeSources.filter(s => s.included).reduce((sum, s) => sum + toMonthly(s.amount, s.entryPeriod || "month"), 0);
+    return p.incomeSources.reduce((sum, s) => sum + sourceMonthlyNet(s), 0);
   }
   return num(p && p.income);
 }
@@ -1843,8 +1865,10 @@ function mirrorMainSavings() {
 }
 
 function render() {
+  syncIncomeFields();
   updateDisplays();
   updateSuperDisplay();
+  calcSalary();
   const income = spendableIncome();
   const phone = num(document.getElementById("phoneAllowance").value);
   const spendable = income + phone;
@@ -3104,23 +3128,28 @@ function finishEdit(which) {
   input.style.display = "none";
   
   if (which === "gross") {
-    // Gross changed → calculate net
-    document.getElementById("grossSalary").value = val;
-    const netAnnual = calcNetFromGross(val);
-    const netMonthly = Math.round(netAnnual / 12 * 100) / 100;
-    document.getElementById("income").value = netMonthly;
+    const main = incomeSources.find(s => s.isMain) || incomeSources[0];
+    if (main) {
+      main.grossAnnual = val;
+      main.included = true;
+      if (main.entryMode === "gross") {
+        main.amount = val;
+        main.entryPeriod = "year";
+      } else {
+        main.amount = round2(calcNetFromGross(val) / 12);
+        main.entryMode = "net";
+        main.entryPeriod = "month";
+      }
+    }
+    scheduleSave();
+    render();
+    return;
   }
-  if (which === "net") {
-    // Net changed → back-calculate gross
-    const grossAnnual = calcGrossFromNet(val * 12);
-    document.getElementById("grossSalaryTop").value = Math.round(grossAnnual);
-    document.getElementById("grossSalary").value = Math.round(grossAnnual);
+  if (which === "phone") {
+    scheduleSave();
+    render();
+    return;
   }
-  
-  updateDisplays();
-  calcSalary();
-  updateSuperDisplay();
-  render();
 }
 
 function calcGrossFromNet(netAnnual) {
@@ -3178,8 +3207,18 @@ function syncGross() {
   calcSalary();
 }
 function syncGrossFromDetail() {
-  const v = document.getElementById("grossSalary").value;
+  const v = num(document.getElementById("grossSalary").value);
   document.getElementById("grossSalaryTop").value = v;
+  const main = incomeSources.find(s => s.isMain);
+  if (main) {
+    main.grossAnnual = v;
+    if (main.entryMode !== "gross") {
+      main.amount = round2(calcNetFromGross(v) / 12);
+      main.entryMode = "net";
+      main.entryPeriod = "month";
+    }
+  }
+  render();
 }
 
 
@@ -4207,9 +4246,9 @@ function renderTax() {
 
 
 <div class="modal-overlay" id="incomeModal">
-  <div class="modal" style="width:min(680px,94vw); max-height:85vh;">
+  <div class="modal" style="width:min(820px,96vw);">
     <div class="modal-header">
-      <h2>Income sources</h2>
+      <h2>Income</h2>
       <button class="btn" onclick="closeIncomeModal()" style="padding:4px 8px;">&times;</button>
     </div>
     <div class="modal-body" style="max-height:65vh; overflow-y:auto; padding:16px 20px;">
@@ -4217,7 +4256,7 @@ function renderTax() {
       <button class="btn" onclick="addIncomeSource()" style="margin-top:12px;">+ Add source</button>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeIncomeModal()">Close</button>
+      <button class="btn primary" onclick="closeIncomeModal()">Done</button>
     </div>
   </div>
 </div>
