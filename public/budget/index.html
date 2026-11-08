@@ -159,6 +159,7 @@
   .save-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; color: #b0b8c4; font-size: .78rem; }
   .save-bar { height: 4px; border-radius: 4px; background: rgba(255,255,255,.06); margin-top: 10px; overflow: hidden; }
   .save-bar span { display: block; height: 100%; background: linear-gradient(90deg, #6d28d9, #c4b5fd); }
+  .save-thumb { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; object-position: center; flex-shrink: 0; background: #0c1016; }
   .income-row {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
@@ -286,6 +287,7 @@
   .imp-chips button.on { color: #fff; border-color: rgba(126,176,255,.6); background: rgba(126,176,255,.18); }
   .imp-card { border: 1px solid rgba(176,196,220,.14); border-left: 3px solid #7eb0ff; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; background: rgba(255,255,255,.02); }
   .imp-card.once { border-left-color: #3dcc6e; }
+  .imp-card.income { border-left-color: #7eb0ff; }
   .imp-card.attention { border-left-color: #f0a05a; background: rgba(240,160,90,.08); }
   .imp-card.ignore { border-left-color: #5c6770; opacity: .72; }
   .imp-card.head { display: grid; grid-template-columns: 22px 1.4fr .9fr .7fr .7fr auto; gap: 8px; align-items: center; }
@@ -1672,9 +1674,20 @@ function normalizeGoal(g) {
     balance: num(g.balance),
     targetDate: g.targetDate || "",
     description: String(g.description || ""),
+    image: goalImage(g.image),
     paused: !!g.paused,
     isMain: !!g.isMain
   };
+}
+function goalImage(v) {
+  const s = String(v || "").trim();
+  if (/^https?:\/\/[^\s<>"']+$/i.test(s)) return s;
+  return "";
+}
+function goalThumb(url) {
+  const src = goalImage(url);
+  if (!src) return "";
+  return `<img class="save-thumb" src="${escHtml(src)}" alt="" onerror="this.remove()">`;
 }
 function goalsFromPeriod(p) {
   if (p && Array.isArray(p.savingsGoals) && p.savingsGoals.length) {
@@ -1881,10 +1894,13 @@ function render() {
   const listEl = document.getElementById("savingsGoalList");
   if (listEl) {
     listEl.innerHTML = savingsGoals.map((g, i) => `
-      <div class="proj-card" style="text-align:left; margin-bottom:8px; border:1px solid rgba(164,113,247,.28);">
+      <div class="proj-card" style="text-align:left; margin-bottom:8px; border:1px solid rgba(164,113,247,.28); display:flex; gap:12px; align-items:center;">
+        ${goalThumb(g.image)}
+        <div style="min-width:0; flex:1;">
         <div class="label" style="color:${g.paused ? "#8b97a6" : "#c4b5fd"};">${escHtml(g.name)} · ${g.paused ? "Paused" : (g.mode === "target" ? "By date" : FREQ_LABELS[g.frequency] || "Monthly")}</div>
         <div class="value" style="color:${g.paused ? "#8b97a6" : "#c4b5fd"};${g.paused ? "text-decoration:line-through;" : ""}">${money(goalMonthly(g, true))}<span style="font-size:.75rem; font-weight:500; color:#b9a6f2;"> / month</span></div>
         <div class="label" style="margin-top:6px;">${escHtml(goalForecast(g))}</div>
+        </div>
       </div>`).join("");
   }
   const projEl = document.getElementById("savingsProjections");
@@ -2658,7 +2674,8 @@ function editSavingsCard(id) {
 function patchGoal(id, field, value, live) {
   const g = savingsGoals.find(x => x.id === id);
   if (!g) return;
-  if (field === "amount" || field === "goal" || field === "balance") g[field] = num(value);
+  if (field === "image") g.image = goalImage(value);
+  else if (field === "amount" || field === "goal" || field === "balance") g[field] = num(value);
   else g[field] = value;
   if (field === "mode" || field === "frequency") renderSavingsEditor();
   const note = document.getElementById("forecast-" + id);
@@ -2685,7 +2702,8 @@ function renderSavingsEditor() {
     if (!editing) {
       return `<article class="save-card${g.paused ? " paused" : ""}" onclick="editSavingsCard('${g.id}')">
         <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-          <div style="min-width:0;">
+          ${goalThumb(g.image)}
+          <div style="min-width:0; flex:1;">
             <div class="label" style="color:#b9a6f2; display:flex; align-items:center; gap:8px;">${recurring ? (FREQ_LABELS[g.frequency] || "Recurring") : "One-off by date"}${g.isMain ? " · Main" : ""} ${pauseBtn}</div>
             <h4>${escHtml(g.name || "Untitled goal")}</h4>
             <div class="save-desc">${escHtml(g.description || "Add a note")}</div>
@@ -2710,6 +2728,10 @@ function renderSavingsEditor() {
           <option value="target" ${!recurring ? "selected" : ""}>One-off by date</option>
         </select></label>
         ${g.isMain ? "<span></span>" : `<button class="btn small" onclick="removeSavingsGoal('${g.id}')">Remove</button>`}
+      </div>
+      <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+        ${goalThumb(g.image)}
+        <label style="flex:1;">Thumbnail image URL<input type="url" value="${escHtml(g.image || "")}" placeholder="https://…" onchange="patchGoal('${g.id}','image', this.value); renderSavingsEditor();" style="width:100%; background:#0c1016; border:1px solid rgba(176,196,220,.16); color:#f4f7fb; border-radius:8px; padding:8px; font-family:inherit;"></label>
       </div>
       <label style="margin-top:8px;">Description<textarea rows="2" oninput="patchGoal('${g.id}','description', this.value, true)" onchange="patchGoal('${g.id}','description', this.value)" style="width:100%; resize:vertical; background:#0c1016; border:1px solid rgba(176,196,220,.16); color:#f4f7fb; border-radius:8px; padding:8px; font-family:inherit;">${escHtml(g.description)}</textarea></label>
       ${recurring ? `<div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; margin-top:8px;">
@@ -3500,7 +3522,7 @@ function buildDraft(fileName, text) {
       txType: col("transaction type") >= 0 ? cells[col("transaction type")] : ""
     };
     classifyTx(tx);
-    tx.fingerprint = tx.date + "|" + tx.spend.toFixed(2) + "|" + tx.merchantKey;
+    tx.fingerprint = tx.date + "|" + tx.spend.toFixed(2) + "|" + tx.credit.toFixed(2) + "|" + tx.merchantKey;
     tx.already = seen.has(tx.fingerprint);
     tx.include = !tx.already;
     return tx;
@@ -3509,6 +3531,15 @@ function buildDraft(fileName, text) {
   const buckets = new Map();
   const ignored = [];
   txs.forEach(tx => {
+    if (tx.credit > 0 && !(tx.spend > 0)) {
+      tx.include = false;
+      proposals.push({
+        id: "c" + tx.id, kind: "income", name: tx.merchant, category: "other",
+        frequency: "month", amount: tx.credit, txs: [tx], attention: false, include: false,
+        why: "Credit · leave unticked unless this should become an income source"
+      });
+      return;
+    }
     if (tx.treatment === "ignore" || !(tx.spend > 0)) { ignored.push(tx); return; }
     if (tx.attention) tx.include = false;
     if (tx.treatment === "recurring") {
@@ -3564,8 +3595,9 @@ function filteredProposals() {
   if (importFilter === "bills") return list.filter(p => p.kind === "recurring");
   if (importFilter === "once") return list.filter(p => p.kind === "once" && !p.attention);
   if (importFilter === "attention") return list.filter(p => p.attention);
+  if (importFilter === "income") return list.filter(p => p.kind === "income");
   if (importFilter === "skip") return list.filter(p => p.kind === "ignore");
-  return list.filter(p => p.kind !== "ignore");
+  return list.filter(p => p.kind !== "ignore" && p.kind !== "income");
 }
 function openImporter(tab) {
   ensureDefaultRules();
@@ -3595,9 +3627,10 @@ function renderImporter() {
 }
 function renderDraftPane() {
   const d = importDraft;
-  const counts = { bills: 0, once: 0, attention: 0, skip: 0 };
+  const counts = { bills: 0, once: 0, attention: 0, skip: 0, income: 0 };
   (d ? d.proposals : []).forEach(p => {
-    if (p.kind === "ignore") counts.skip++;
+    if (p.kind === "income") counts.income++;
+    else if (p.kind === "ignore") counts.skip++;
     else if (p.attention) counts.attention++;
     else if (p.kind === "recurring") counts.bills++;
     else counts.once++;
@@ -3607,16 +3640,18 @@ function renderDraftPane() {
     ["bills", "Bills " + counts.bills],
     ["once", "One-off " + counts.once],
     ["attention", "Needs attention " + counts.attention],
+    ["income", "Credits " + counts.income],
     ["skip", "Skipped " + counts.skip]
   ].map(([id, label]) => `<button type="button" class="${importFilter === id ? "on" : ""}" onclick="importFilter='${id}'; renderImporter()">${label}</button>`).join("");
   const cards = d ? filteredProposals().map(renderProposal).join("") : "";
   const chosen = d ? d.proposals.filter(p => p.include) : [];
-  const total = chosen.reduce((s, p) => s + (p.kind === "recurring" ? num(p.amount) : p.txs.reduce((a, t) => a + t.spend, 0)), 0);
+  const spendTotal = chosen.filter(p => p.kind !== "income").reduce((s, p) => s + (p.kind === "recurring" ? num(p.amount) : p.txs.reduce((a, t) => a + t.spend, 0)), 0);
+  const incomeTotal = chosen.filter(p => p.kind === "income").reduce((s, p) => s + p.txs.filter(t => t.include === true).reduce((a, t) => a + t.credit, 0), 0);
   return `
     <label class="imp-drop">Drop a Bank of Melbourne or NAB CSV here, or click to choose
       <input type="file" accept=".csv,text/csv" onchange="readBankFile(event)">
     </label>
-    ${d ? `<div class="imp-meta" style="margin-top:10px;">${escHtml(d.bank)} · ${escHtml(d.fileName)} · ${d.rows} rows · ${d.proposals.filter(p => p.kind === "recurring").length} bill suggestions</div>` : `<div class="imp-meta" style="margin-top:10px;">Credits, Quick Zone transfers and linked-account moves are skipped. Anything with no rule is marked as needing attention.</div>`}
+    ${d ? `<div class="imp-meta" style="margin-top:10px;">${escHtml(d.bank)} · ${escHtml(d.fileName)} · ${d.rows} rows · ${d.proposals.filter(p => p.kind === "recurring").length} bill suggestions${counts.income ? " · " + counts.income + " credits left unticked" : ""}</div>` : `<div class="imp-meta" style="margin-top:10px;">Credits stay unticked until you choose them under Credits. Transfers are skipped. Anything with no rule is marked as needing attention.</div>`}
     <div class="imp-chips">${chips}</div>
     <div style="display:flex; gap:8px; margin-bottom:10px;">
       <button class="btn small" onclick="importSelect('all')">Select visible</button>
@@ -3628,14 +3663,19 @@ function renderDraftPane() {
       <label style="font-size:.72rem; color:#8b97a6; text-transform:uppercase; letter-spacing:.04em;">Import source name
         <input id="importSourceName" type="text" placeholder="NAB business · November" style="width:100%; margin-top:4px; background:#0c1016; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px;">
       </label>
-      <button class="btn primary" onclick="commitImport()">Commit ${chosen.length} · ${money(total)}</button>
+      <button class="btn primary" onclick="commitImport()">Commit ${chosen.length}${spendTotal ? " · " + money(spendTotal) + " spend" : ""}${incomeTotal ? " · " + money(incomeTotal) + " income" : ""}</button>
     </div>`;
 }
 function renderProposal(p) {
   const cls = p.attention ? "attention" : p.kind;
-  const freq = p.kind === "recurring" ? `<label>Every<select data-field="frequency" data-id="${p.id}">${FREQS.map(f => `<option value="${f}" ${p.frequency === f ? "selected" : ""}>${FREQ_LABELS[f]}</option>`).join("")}</select></label>` : `<div class="imp-meta">${p.txs.length} charge${p.txs.length === 1 ? "" : "s"}</div>`;
+  const periods = [["week", "Week"], ["fortnight", "Fortnight"], ["month", "Month"], ["year", "Year"]];
+  const freq = p.kind === "income"
+    ? `<label>Enter as<select data-field="frequency" data-id="${p.id}">${periods.map(([v, l]) => `<option value="${v}" ${p.frequency === v ? "selected" : ""}>/${l.toLowerCase()}</option>`).join("")}</select></label>`
+    : p.kind === "recurring"
+    ? `<label>Every<select data-field="frequency" data-id="${p.id}">${FREQS.map(f => `<option value="${f}" ${p.frequency === f ? "selected" : ""}>${FREQ_LABELS[f]}</option>`).join("")}</select></label>`
+    : `<div class="imp-meta">${p.txs.length} charge${p.txs.length === 1 ? "" : "s"}</div>`;
   const lines = p.txs.slice(0, 12).map(t => {
-    if (p.kind === "once") return `<label class="imp-meta" style="display:flex; gap:8px; align-items:center; text-transform:none; letter-spacing:0; font-size:.8rem;"><input type="checkbox" data-field="tx" data-id="${p.id}" data-tx="${t.id}" ${t.include !== false ? "checked" : ""}> ${escHtml(t.dateLabel)} · ${money(t.spend)}${t.already ? " · already imported" : ""}</label>`;
+    if (p.kind === "once" || p.kind === "income") return `<label class="imp-meta" style="display:flex; gap:8px; align-items:center; text-transform:none; letter-spacing:0; font-size:.8rem;"><input type="checkbox" data-field="tx" data-id="${p.id}" data-tx="${t.id}" ${t.include === true ? "checked" : ""}> ${escHtml(t.dateLabel)} · ${money(p.kind === "income" ? t.credit : t.spend)}${t.already ? " · already imported" : ""}</label>`;
     return `<div>${escHtml(t.dateLabel)} · ${money(t.spend || t.credit)}${t.already ? " · already imported" : ""}</div>`;
   }).join("");
   const more = p.txs.length > 12 ? `<div class="imp-meta">… ${p.txs.length - 12} more</div>` : "";
@@ -3648,6 +3688,7 @@ function renderProposal(p) {
       <label>Treat as<select data-field="kind" data-id="${p.id}">
         <option value="recurring" ${p.kind === "recurring" ? "selected" : ""}>Bill</option>
         <option value="once" ${p.kind === "once" ? "selected" : ""}>One-off</option>
+        <option value="income" ${p.kind === "income" ? "selected" : ""}>Income source</option>
         <option value="ignore" ${p.kind === "ignore" ? "selected" : ""}>Skip</option>
       </select></label>
       <label>Amount<input data-field="amount" data-id="${p.id}" type="number" step="0.01" value="${num(p.amount)}"></label>
@@ -3662,9 +3703,9 @@ function importSelect(mode) {
   const visible = new Set(filteredProposals().map(p => p.id));
   importDraft.proposals.forEach(p => {
     if (!visible.has(p.id)) return;
-    if (mode === "none") p.include = false;
-    else if (mode === "attention") p.include = !!p.attention;
-    else if (p.kind !== "ignore") p.include = true;
+    if (mode === "none") { p.include = false; p.txs.forEach(t => { t.include = false; }); }
+    else if (mode === "attention") { p.include = !!p.attention; p.txs.forEach(t => { t.include = p.include; }); }
+    else if (p.kind !== "ignore") { p.include = true; p.txs.forEach(t => { t.include = true; }); }
   });
   renderImporter();
 }
@@ -3682,7 +3723,11 @@ function onImportChange(e) {
     if (t) t.include = el.checked;
     p.include = p.txs.some(t => t.include !== false);
   } else if (field === "amount") p.amount = num(el.value);
-  else if (field === "kind") { p.kind = el.value; if (p.kind === "ignore") p.include = false; p.attention = false; }
+  else if (field === "kind") {
+    p.kind = el.value;
+    if (p.kind === "ignore" || p.kind === "income") { p.include = false; p.txs.forEach(t => { t.include = false; }); }
+    p.attention = false;
+  }
   else p[field] = el.value;
   if (field === "kind" || field === "include") renderImporter();
 }
@@ -3705,6 +3750,18 @@ function commitImport() {
       }
       expenses.push({ name, frequency: FREQS.indexOf(p.frequency) >= 0 ? p.frequency : "month", amount: round2(num(p.amount)), categoryOverride: p.category, paid: false });
       added.push({ name, amount: round2(num(p.amount)), kind: "recurring", category: p.category, count: p.txs.length });
+    } else if (p.kind === "income") {
+      const period = ["week", "fortnight", "month", "year"].includes(p.frequency) ? p.frequency : "month";
+      p.txs.filter(t => t.include === true).forEach(t => {
+        keys.push(t.fingerprint);
+        const label = (p.name || t.merchant || "Imported income").trim();
+        incomeSources.push({
+          id: "src" + Math.random().toString(36).slice(2, 8),
+          label, amount: round2(t.credit || p.amount), included: true, isMain: false,
+          entryMode: "net", entryPeriod: period
+        });
+        added.push({ name: label, amount: round2(t.credit || p.amount), kind: "income", category: "", count: 1 });
+      });
     } else {
       p.txs.filter(t => t.include !== false).forEach(t => {
         keys.push(t.fingerprint);
@@ -3720,6 +3777,7 @@ function commitImport() {
     total: round2(added.reduce((s, a) => s + a.amount, 0))
   });
   scheduleSave();
+  renderIncomeSources();
   render();
   importTab = "history";
   renderImporter();
@@ -3728,7 +3786,7 @@ function renderHistoryPane() {
   if (!importLog.length) return '<div class="imp-meta">No imports committed yet. A source name is stored with each commit.</div>';
   return importLog.map(log => {
     const when = new Date(log.at).toLocaleString("en-AU", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-    const lines = (log.added || []).slice(0, 12).map(a => `<div>${escHtml(a.name)} · ${money(a.amount)} · ${a.kind === "recurring" ? "bill" : "one-off"}</div>`).join("");
+    const lines = (log.added || []).slice(0, 12).map(a => `<div>${escHtml(a.name)} · ${money(a.amount)} · ${a.kind === "recurring" ? "bill" : a.kind === "income" ? "income" : "one-off"}</div>`).join("");
     return `<article class="imp-card once">
       <div style="display:flex; justify-content:space-between; gap:12px;">
         <div><strong>${escHtml(log.source)}</strong><div class="imp-meta">${escHtml(log.bank || "")} · ${escHtml(log.fileName || "")} · ${escHtml(when)}</div></div>
