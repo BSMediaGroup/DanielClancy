@@ -1370,35 +1370,28 @@ function renderPurchases() {
   }
   el.innerHTML = purchases.map((p, i) => {
     const cat = p.categoryOverride ? (CATEGORIES[p.categoryOverride] || detectCategory(p.name)) : detectCategory(p.name);
-    return `<div class="purchase-row">
-      <div class="exp-icon" style="width:24px; height:24px; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.icon}</div>
+    return `<div class="purchase-row" ondblclick="openEntryEditor('purchase', ${i}, event)" title="Double-click to edit or convert">
+      <div class="exp-icon" style="width:24px; height:24px;">${cat.icon}</div>
       <input type="text" value="${escHtml(p.name)}" class="name-input" onchange="updatePurchase(${i}, 'name', this.value)">
       <div class="tax-flags">
         <button type="button" class="tax-flag work${p.work ? " on" : ""}" title="Work expense" onclick="togglePurchaseFlag(${i}, 'work')">W</button>
         <button type="button" class="tax-flag ded${p.taxDeductible ? " on" : ""}" title="Otherwise tax deductible" onclick="togglePurchaseFlag(${i}, 'taxDeductible')">T</button>
       </div>
-      <span class="cat-label" style="color:#a78bfa; cursor:pointer;" ondblclick="openPurchaseCategoryPicker(${i})" title="Double-click to change">${cat.label}</span>
+      <span class="cat-label" style="color:#a78bfa;">${cat.label}</span>
       <input type="number" step="0.01" value="${p.amount}" class="amt" onchange="updatePurchase(${i}, 'amount', parseFloat(this.value)||0)">
       <button class="btn small" onclick="removePurchase(${i})" style="padding:4px 8px;">✕</button>
     </div>`;
   }).join("");
 }
 function updatePurchaseSubtext() {
-  const income = spendableIncome();
-  const phone = num(document.getElementById("phoneAllowance").value);
-  const spendable = income + phone;
-  const savings = totalSavingsMonth();
-  let totalDaily = 0;
-  expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
-  const expMonth = project(totalDaily, "month");
-  const leftover = spendable - expMonth - savings;
-  const purchaseTotal = purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0);
-  const after = leftover - purchaseTotal;
   const el = document.getElementById("leftoverAfterPurchases");
   if (!el) return;
+  const purchaseTotal = periodSnap.purchaseTotal || 0;
   if (purchaseTotal === 0) { el.textContent = ""; return; }
-  el.textContent = money(after) + " after purchases";
-  el.className = "leftover-sub " + (after >= 100 ? "ok" : after >= 0 ? "warn" : "bad");
+  if (periodSnap.leftover < -0.009) el.textContent = money(purchaseTotal) + " in purchases · short " + money(-periodSnap.leftover);
+  else if (periodSnap.purchaseDraw > 0) el.textContent = money(purchaseTotal) + " in purchases · " + money(periodSnap.purchaseDraw) + " from savings";
+  else el.textContent = money(purchaseTotal) + " in purchases";
+  el.className = "leftover-sub " + (periodSnap.leftover >= 100 ? "ok" : periodSnap.leftover >= 0 ? "warn" : "bad");
 }
 
 
@@ -1742,7 +1735,7 @@ function goalMonthly(g, ignorePause) {
 function totalSavingsMonth() {
   return savingsGoals.reduce((sum, g) => sum + goalMonthly(g), 0);
 }
-function periodSavings(spendable, expMonth) {
+function periodSavings(spendable, expMonth, purchaseTotal) {
   const plannedParts = savingsGoals.map(goalMonthly);
   const planned = plannedParts.reduce((a, b) => a + b, 0);
   const cash = spendable - expMonth;
@@ -1767,17 +1760,44 @@ function periodSavings(spendable, expMonth) {
     }
     leftover = need > 0.009 ? -need : 0;
   }
+  const purchases = Math.max(0, num(purchaseTotal));
+  let purchaseDraw = 0;
+  if (purchases > 0) {
+    let uncovered = leftover < 0 ? -leftover : 0;
+    const pool = leftover > 0 ? leftover : 0;
+    const fromLeft = Math.min(pool, purchases);
+    leftover = pool - fromLeft;
+    let need = purchases - fromLeft;
+    for (let i = 0; i < keptParts.length && need > 0.009; i++) {
+      if (savingsGoals[i] && savingsGoals[i].paused) continue;
+      const take = Math.min(keptParts[i], need);
+      keptParts[i] -= take;
+      need -= take;
+      purchaseDraw += take;
+    }
+    for (let i = 0; i < start.length && need > 0.009; i++) {
+      if (savingsGoals[i] && savingsGoals[i].paused) continue;
+      const avail = Math.max(0, start[i] - drawParts[i]);
+      const take = Math.min(avail, need);
+      drawParts[i] += take;
+      need -= take;
+      purchaseDraw += take;
+    }
+    uncovered += need;
+    leftover = uncovered > 0.009 ? -uncovered : leftover;
+  }
   const kept = keptParts.reduce((a, b) => a + b, 0);
   const drawn = drawParts.reduce((a, b) => a + b, 0);
   const endParts = start.map((b, i) => b + keptParts[i] - drawParts[i]);
   const endBal = endParts.reduce((a, b) => a + b, 0);
   return {
     planned, kept, drawn, leftover, startBal, endBal, keptParts, drawParts, endParts,
-    depleted: (drawn > 0 && endBal <= 0.009) || (cash < 0 && startBal <= 0),
+    purchaseDraw, purchaseTotal: purchases,
+    depleted: ((drawn > 0 || purchaseDraw > 0) && endBal <= 0.009) || (cash < 0 && startBal <= 0) || (purchases > 0 && endBal <= 0.009 && purchaseDraw > 0),
     uncovered: leftover < -0.009
   };
 }
-let periodSnap = { planned: 0, kept: 0, drawn: 0, leftover: 0, startBal: 0, endBal: 0, endParts: [], depleted: false, uncovered: false };
+let periodSnap = { planned: 0, kept: 0, drawn: 0, leftover: 0, startBal: 0, endBal: 0, endParts: [], depleted: false, uncovered: false, purchaseDraw: 0, purchaseTotal: 0 };
 function projectGoalBalance(g, monthsAhead) {
   const start = num(g.balance);
   if (g.mode === "target") {
@@ -1834,7 +1854,8 @@ function render() {
   let totalDaily = 0;
   expenses.forEach(e => { totalDaily += toDaily(e.amount, e.frequency); });
   const expMonth = project(totalDaily, "month");
-  periodSnap = periodSavings(spendable, expMonth);
+  const purchaseTotal = purchases.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  periodSnap = periodSavings(spendable, expMonth, purchaseTotal);
   const savings = periodSnap.kept - periodSnap.drawn;
   const leftoverMonth = periodSnap.leftover;
 
@@ -1844,7 +1865,8 @@ function render() {
   const sub = document.getElementById("savingsSub");
   const alertEl = document.getElementById("savingsAlert");
   if (sub) {
-    if (periodSnap.drawn > 0) sub.textContent = "Drawn " + money(periodSnap.drawn) + " · balance " + money(periodSnap.endBal);
+    if (periodSnap.purchaseDraw > 0) sub.textContent = "Purchases took " + money(periodSnap.purchaseDraw) + " · balance " + money(periodSnap.endBal);
+    else if (periodSnap.drawn > 0) sub.textContent = "Drawn " + money(periodSnap.drawn) + " · balance " + money(periodSnap.endBal);
     else if (periodSnap.kept + 0.01 < periodSnap.planned) sub.textContent = "of " + money(periodSnap.planned) + " planned";
     else sub.textContent = periodSnap.endBal > 0 ? "Balance " + money(periodSnap.endBal) : "";
   }
@@ -1894,10 +1916,12 @@ function render() {
       const daily = toDaily(e.amount, e.frequency);
       const row = document.createElement("div");
       row.className = "expense-row";
+      row.title = "Double-click to edit or convert";
+      row.ondblclick = (ev) => openEntryEditor("expense", globalIdx, ev);
       const cat = e.categoryOverride ? (CATEGORIES[e.categoryOverride] || detectCategory(e.name)) : detectCategory(e.name);
       if (e.paid) row.classList.add("paid");
       row.innerHTML = `
-        <div class="exp-icon" title="${cat.label} (double-click to change)" ondblclick="openCategoryPicker(${globalIdx})" style="cursor:pointer;">${cat.icon}</div>
+        <div class="exp-icon">${cat.icon}</div>
         <input type="text" value="${escHtml(e.name)}" onchange="updateExpense(${globalIdx}, 'name', this.value)">
         <div class="paid-check ${e.paid ? 'checked' : ''}" onclick="togglePaid(${globalIdx})" title="Mark as paid">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1906,7 +1930,7 @@ function render() {
           <button type="button" class="tax-flag work${e.work ? " on" : ""}" title="Work expense" onclick="toggleExpenseFlag(${globalIdx}, 'work')">W</button>
           <button type="button" class="tax-flag ded${e.taxDeductible ? " on" : ""}" title="Otherwise tax deductible" onclick="toggleExpenseFlag(${globalIdx}, 'taxDeductible')">T</button>
         </div>
-        <span class="cat-label" ondblclick="openCategoryPicker(${globalIdx})" style="cursor:pointer;" title="Double-click to change">${cat.label}</span>
+        <span class="cat-label">${cat.label}</span>
         ${PROJ_COLS.map(c => c.key === freq
           ? `<input class="amt base" type="number" step="0.01" value="${num(e.amount)}" onchange="updateExpense(${globalIdx}, 'amount', parseFloat(this.value)||0)">`
           : `<span class="proj">${money(project(daily, c.key))}</span>`).join("")}
@@ -2361,6 +2385,60 @@ function selectCategory(key) {
 }
 function closeCategoryPicker() {
   document.getElementById("categoryPicker").classList.remove("active");
+}
+let convertEdit = null;
+function openEntryEditor(kind, idx, ev) {
+  if (ev && ev.target && ev.target.closest && ev.target.closest("input, button, select, textarea, .tax-flag, .paid-check")) return;
+  const item = kind === "expense" ? expenses[idx] : purchases[idx];
+  if (!item) return;
+  convertEdit = { kind, idx };
+  const freq = item.frequency || "month";
+  const freqOpts = FREQS.map(f => `<option value="${f}" ${freq === f ? "selected" : ""}>${FREQ_LABELS[f]}</option>`).join("");
+  const cat = item.categoryOverride || "";
+  const catOpts = `<option value="">Auto</option>` + Object.entries(CATEGORIES).map(([k, c]) => `<option value="${k}" ${cat === k ? "selected" : ""}>${c.label}</option>`).join("");
+  const field = "width:100%; margin-top:4px; background:#0c1016; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px; font-family:inherit;";
+  document.getElementById("entryEditorBody").innerHTML = `
+    <label style="display:block; margin-bottom:10px; font-size:.78rem; color:#8b97a6;">Name<input id="eeName" type="text" value="${escHtml(item.name || "")}" style="${field}"></label>
+    <label style="display:block; margin-bottom:10px; font-size:.78rem; color:#8b97a6;">Amount<input id="eeAmount" type="number" step="0.01" value="${num(item.amount)}" style="${field}"></label>
+    <label style="display:block; margin-bottom:10px; font-size:.78rem; color:#8b97a6;">Treat as
+      <select id="eeKind" style="${field}" onchange="document.getElementById('eeFreqWrap').style.display=this.value==='expense'?'block':'none'">
+        <option value="expense" ${kind === "expense" ? "selected" : ""}>Regular expense</option>
+        <option value="purchase" ${kind === "purchase" ? "selected" : ""}>One-off purchase</option>
+      </select>
+    </label>
+    <label id="eeFreqWrap" style="display:${kind === "expense" ? "block" : "none"}; margin-bottom:10px; font-size:.78rem; color:#8b97a6;">Every<select id="eeFreq" style="${field}">${freqOpts}</select></label>
+    <label style="display:block; margin-bottom:10px; font-size:.78rem; color:#8b97a6;">Category<select id="eeCat" style="${field}">${catOpts}</select></label>
+    <div style="display:flex; gap:16px; margin:8px 0 14px;">
+      <label style="font-size:.85rem;"><input type="checkbox" id="eeWork" ${item.work ? "checked" : ""}> Work expense</label>
+      <label style="font-size:.85rem;"><input type="checkbox" id="eeDed" ${item.taxDeductible ? "checked" : ""}> Otherwise tax deductible</label>
+    </div>
+    <button class="btn primary" onclick="saveEntryEditor()">Save</button>`;
+  document.getElementById("entryEditor").classList.add("active");
+}
+function closeEntryEditor() {
+  convertEdit = null;
+  document.getElementById("entryEditor").classList.remove("active");
+}
+function saveEntryEditor() {
+  if (!convertEdit) return;
+  const src = convertEdit.kind === "expense" ? expenses[convertEdit.idx] : purchases[convertEdit.idx];
+  if (!src) { closeEntryEditor(); return; }
+  const name = (document.getElementById("eeName").value || "").trim() || "Untitled";
+  const amount = num(document.getElementById("eeAmount").value);
+  const nextKind = document.getElementById("eeKind").value === "purchase" ? "purchase" : "expense";
+  const frequency = FREQS.indexOf(document.getElementById("eeFreq").value) >= 0 ? document.getElementById("eeFreq").value : "month";
+  const categoryOverride = document.getElementById("eeCat").value;
+  const work = document.getElementById("eeWork").checked;
+  const taxDeductible = document.getElementById("eeDed").checked;
+  const paid = !!src.paid;
+  if (convertEdit.kind === "expense") expenses.splice(convertEdit.idx, 1);
+  else purchases.splice(convertEdit.idx, 1);
+  if (nextKind === "expense") expenses.push({ name, amount, frequency, categoryOverride, work, taxDeductible, paid });
+  else purchases.push({ name, amount, categoryOverride, work, taxDeductible });
+  convertEdit = null;
+  document.getElementById("entryEditor").classList.remove("active");
+  scheduleSave();
+  render();
 }
 
 function togglePaid(idx) {
@@ -4158,6 +4236,16 @@ function renderTax() {
     <div class="modal-footer">
       <button class="btn primary" onclick="closeSavingsModal()">Done</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="entryEditor">
+  <div class="modal" style="width:min(520px,96vw);">
+    <div class="modal-header">
+      <h2>Edit entry</h2>
+      <button class="btn" onclick="closeEntryEditor()" style="padding:4px 8px;">&times;</button>
+    </div>
+    <div class="modal-body" id="entryEditorBody"></div>
   </div>
 </div>
 
