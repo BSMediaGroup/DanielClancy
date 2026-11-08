@@ -73,6 +73,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   let data: any;
   try { data = JSON.parse(row.data); }
   catch { return new Response("Share data is unreadable", { status: 500 }); }
+  if (data && data.live === true) {
+    const liveRow = await env.DB.prepare("SELECT data FROM timesheet_data WHERE id = 1").first<{ data: string }>();
+    if (liveRow && liveRow.data) {
+      try {
+        const current = JSON.parse(liveRow.data);
+        if (current && typeof current === "object" && Array.isArray(current.weeks)) data = Object.assign({}, current, { live: true });
+      } catch { /* keep the snapshot stored with the link */ }
+    }
+  }
   const weeks = data.weeks || [];
   const tilEntries = data.tilEntries || [];
   const standard = (data.standard == null || data.standard === "" || !isFinite(Number(data.standard)))
@@ -272,6 +281,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   ::-webkit-scrollbar-thumb{background:#343c48; border-radius:4px}
   *{scrollbar-width:thin; scrollbar-color:#343c48 #0b0f14}
   @media(max-width:720px){.summary{grid-template-columns:1fr 1fr} .badge{display:none}}
+  body.density-compact { zoom: 0.78; }
+  body.density-large { zoom: 1.32; }
+  .density-toggle { position: fixed; bottom: 18px; left: 18px; z-index: 50; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(16,22,30,.92); border: 1px solid rgba(176,196,220,.2); }
+  .density-toggle button { background: transparent; border: none; color: #8b97a6; padding: 6px 11px; border-radius: 999px; cursor: pointer; font-family: Blinker, sans-serif; font-size: .75rem; font-weight: 700; }
+  .density-toggle button.active { background: linear-gradient(180deg, #9ec2ff, #4f86ee); color: #fff; }
 </style>
 </head>
 <body>
@@ -283,7 +297,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       <div class="role">Architectural Technician</div>
       <div class="company">Greg Natale Design</div>
     </div>
-    <div class="badge">Shared view</div>
+    <div class="badge">${data.live ? "Live view" : "Snapshot"}</div>
   </header>
 
   <div class="page-title">Global Timesheet Ledger</div>
@@ -426,6 +440,20 @@ function exportPDF() {
   }
   doc.save("timesheet-daniel-clancy-shared.pdf");
 }
+</script>
+<div class="density-toggle">
+  <button data-d="compact" onclick="setD('compact')">S</button>
+  <button data-d="medium" class="active" onclick="setD('medium')">M</button>
+  <button data-d="large" onclick="setD('large')">L</button>
+</div>
+<script>
+function setD(m){
+  document.body.className = m === "medium" ? "" : "density-" + m;
+  document.querySelectorAll(".density-toggle button").forEach(function (b) { b.classList.toggle("active", b.dataset.d === m); });
+  try { localStorage.setItem("tsweek_share_density", m); } catch (e) {}
+  requestAnimationFrame(function () { window.dispatchEvent(new Event("resize")); });
+}
+try { setD(localStorage.getItem("tsweek_share_density") || "medium"); } catch (e) {}
 </script>
 </body>
 </html>`, { headers: { "Content-Type": "text/html" } });

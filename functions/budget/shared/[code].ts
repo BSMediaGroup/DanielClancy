@@ -123,10 +123,8 @@ const PAGE_CSS = `
       radial-gradient(900px 520px at 50% 115%, rgba(36,64,108,.22), transparent 55%),
       #07090d;
   }
-  body.density-compact { font-size: 14px; }
-  body.density-large { font-size: 17px; }
-  body.density-compact td, body.density-compact th { padding: 6px 8px; }
-  body.density-large td, body.density-large th { padding: 12px 14px; }
+  body.density-compact { zoom: 0.78; }
+  body.density-large { zoom: 1.32; }
   .wrap { max-width: 1100px; margin: 0 auto; }
   header {
     position: sticky; top: 8px; z-index: 200;
@@ -448,6 +446,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   let data: any;
   try { data = JSON.parse(row.data); }
   catch { return new Response("Share data is damaged", { status: 500 }); }
+  if (data && data.live === true) {
+    const liveRow = await env.DB.prepare("SELECT data FROM budget_data WHERE id = 1").first<{ data: string }>();
+    if (liveRow && liveRow.data) {
+      try {
+        const current = JSON.parse(liveRow.data);
+        if (current && typeof current === "object") data = Object.assign({}, current, { live: true });
+      } catch { /* keep the snapshot stored with the link */ }
+    }
+  }
   const sources = Array.isArray(data.incomeSources) ? data.incomeSources : [];
   const income = sourceMonthly(sources, data.income);
   const gross = num(data.grossSalary);
@@ -648,7 +655,7 @@ ${purchases.length ? `<div class="section"><h3 style="color:#f0a05a">One-off pur
   <thead><tr><th></th><th>Purchase</th><th>Category</th><th>Amount</th></tr></thead>
   <tbody>${purchaseRows}</tbody>
 </table></div></div></div>` : ""}
-<div class="note">Shared budget · View only</div>
+<div class="note">${data.live ? "Live budget · updates with the ledger" : "Shared snapshot · view only"}</div>
 </div>
 <script type="application/json" id="bd">${chartJson}</script>
 <script>${CHART_BOOT}</script>
@@ -656,7 +663,10 @@ ${purchases.length ? `<div class="section"><h3 style="color:#f0a05a">One-off pur
 function setD(m){
   document.body.className = m === "medium" ? "" : "density-" + m;
   document.querySelectorAll(".density-toggle button").forEach(function (b) { b.classList.toggle("active", b.dataset.d === m); });
+  try { localStorage.setItem("budget_share_density", m); } catch (e) {}
+  requestAnimationFrame(function () { window.dispatchEvent(new Event("resize")); });
 }
+try { setD(localStorage.getItem("budget_share_density") || "medium"); } catch (e) {}
 window.addEventListener("scroll", function () {
   var h = document.getElementById("hdr");
   if (h) h.classList.toggle("slim", window.scrollY > 40);
@@ -667,5 +677,6 @@ window.addEventListener("scroll", function () {
   <button data-d="medium" class="active" onclick="setD('medium')">M</button>
   <button data-d="large" onclick="setD('large')">L</button>
 </div>
+<script>try { setD(localStorage.getItem("budget_share_density") || "medium"); } catch (e) {}</script>
 </body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 };
